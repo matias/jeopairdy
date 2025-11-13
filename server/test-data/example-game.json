@@ -1,0 +1,632 @@
+{
+  "id": "example-game",
+  "jeopardy": {
+    "round": "jeopardy",
+    "categories": [
+      {
+        "id": "cat-jeopardy-0",
+        "name": "WORLD CAPITALS",
+        "clues": [
+          {
+            "id": "clue-jeopardy-0-0",
+            "category": "WORLD CAPITALS",
+            "value": 200,
+            "clue": "The capital of France",
+            "answer": "What is Paris?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-1",
+            "category": "WORLD CAPITALS",
+            "value": 400,
+            "clue": "The capital of Japan",
+            "answer": "What is Tokyo?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-2",
+            "category": "WORLD CAPITALS",
+            "value": 600,
+            "clue": "The capital of Australia",
+            "answer": "What is Canberra?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-3",
+            "category": "WORLD CAPITALS",
+            "value": 800,
+            "clue": "The capital of Brazil",
+            "answer": "What is Brasília?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-4",
+            "category": "WORLD CAPITALS",
+            "value": 1000,
+            "clue": "The capital of South Africa",
+            "answer": "What is Cape Town?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-1",
+        "name": "SHAKESPEARE",
+        "clues": [
+          {
+            "id": "clue-jeopardy-1-0",
+            "category": "SHAKESPEARE",
+            "value": 200,
+            "clue": "The prince of Denmark in this tragedy",
+            "answer": "Who is Hamlet?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-1",
+            "category": "SHAKESPEARE",
+            "value": 400,
+            "clue": "The star-crossed lovers in Verona",
+            "answer": "Who are Romeo and Juliet?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-2",
+            "category": "SHAKESPEARE",
+            "value": 600,
+            "clue": "The three witches' prophecy about this Scottish king",
+            "answer": "What is Macbeth?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-3",
+            "category": "SHAKESPEARE",
+            "value": 800,
+            "clue": "The Moor of Venice",
+            "answer": "Who is Othello?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-4",
+            "category": "SHAKESPEARE",
+            "value": 1000,
+            "clue": "The forest where A Midsummer Night's Dream takes place",
+            "answer": "What is the Forest of Arden?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-2",
+        "name": "SCIENCE",
+        "clues": [
+          {
+            "id": "clue-jeopardy-2-0",
+            "category": "SCIENCE",
+            "value": 200,
+            "clue": "The chemical symbol for water",
+            "answer": "What is H2O?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-1",
+            "category": "SCIENCE",
+            "value": 400,
+            "clue": "The speed of light in a vacuum",
+            "answer": "What is 299,792,458 meters per second?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-2",
+            "category": "SCIENCE",
+            "value": 600,
+            "clue": "The smallest unit of matter",
+            "answer": "What is an atom?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-3",
+            "category": "SCIENCE",
+            "value": 800,
+            "clue": "The process by which plants make food",
+            "answer": "What is photosynthesis?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-4",
+            "category": "SCIENCE",
+            "value": 1000,
+            "clue": "The theory that explains the origin of the universe",
+            "answer": "What is the Big Bang theory?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-3",
+        "name": "MOVIES",
+        "clues": [
+          {
+            "id": "clue-jeopardy-3-0",
+            "category": "MOVIES",
+            "value": 200,
+            "clue": "The shark movie from 1975",
+            "answer": "What is Jaws?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-1",
+            "category": "MOVIES",
+            "value": 400,
+            "clue": "The director of The Godfather",
+            "answer": "Who is Francis Ford Coppola?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-2",
+            "category": "MOVIES",
+            "value": 600,
+            "clue": "The year Star Wars was released",
+            "answer": "What is 1977?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-3",
+            "category": "MOVIES",
+            "value": 800,
+            "clue": "The actor who played Neo in The Matrix",
+            "answer": "Who is Keanu Reeves?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-4",
+            "category": "MOVIES",
+            "value": 1000,
+            "clue": "The studio that produced Toy Story",
+            "answer": "What is Pixar?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-4",
+        "name": "SPORTS",
+        "clues": [
+          {
+            "id": "clue-jeopardy-4-0",
+            "category": "SPORTS",
+            "value": 200,
+            "clue": "The number of players on a basketball team",
+            "answer": "What is 5?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-1",
+            "category": "SPORTS",
+            "value": 400,
+            "clue": "The sport played at Wimbledon",
+            "answer": "What is tennis?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-2",
+            "category": "SPORTS",
+            "value": 600,
+            "clue": "The country that won the 2018 World Cup",
+            "answer": "What is France?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-3",
+            "category": "SPORTS",
+            "value": 800,
+            "clue": "The sport where you score a touchdown",
+            "answer": "What is American football?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-4",
+            "category": "SPORTS",
+            "value": 1000,
+            "clue": "The number of innings in a regulation baseball game",
+            "answer": "What is 9?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-5",
+        "name": "HISTORY",
+        "clues": [
+          {
+            "id": "clue-jeopardy-5-0",
+            "category": "HISTORY",
+            "value": 200,
+            "clue": "The year World War II ended",
+            "answer": "What is 1945?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-1",
+            "category": "HISTORY",
+            "value": 400,
+            "clue": "The first president of the United States",
+            "answer": "Who is George Washington?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-2",
+            "category": "HISTORY",
+            "value": 600,
+            "clue": "The wall that divided East and West Berlin",
+            "answer": "What is the Berlin Wall?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-3",
+            "category": "HISTORY",
+            "value": 800,
+            "clue": "The ancient civilization that built the pyramids",
+            "answer": "What is Ancient Egypt?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-4",
+            "category": "HISTORY",
+            "value": 1000,
+            "clue": "The year the Declaration of Independence was signed",
+            "answer": "What is 1776?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      }
+    ]
+  },
+  "doubleJeopardy": {
+    "round": "doubleJeopardy",
+    "categories": [
+      {
+        "id": "cat-doubleJeopardy-0",
+        "name": "LITERATURE",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-0-0",
+            "category": "LITERATURE",
+            "value": 400,
+            "clue": "The author of 1984",
+            "answer": "Who is George Orwell?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-1",
+            "category": "LITERATURE",
+            "value": 800,
+            "clue": "The first book in the Harry Potter series",
+            "answer": "What is Harry Potter and the Philosopher's Stone?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-2",
+            "category": "LITERATURE",
+            "value": 1200,
+            "clue": "The author of To Kill a Mockingbird",
+            "answer": "Who is Harper Lee?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-3",
+            "category": "LITERATURE",
+            "value": 1600,
+            "clue": "The novel about a whale and Captain Ahab",
+            "answer": "What is Moby-Dick?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-4",
+            "category": "LITERATURE",
+            "value": 2000,
+            "clue": "The author of The Great Gatsby",
+            "answer": "Who is F. Scott Fitzgerald?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-1",
+        "name": "GEOGRAPHY",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-1-0",
+            "category": "GEOGRAPHY",
+            "value": 400,
+            "clue": "The longest river in the world",
+            "answer": "What is the Nile?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-1",
+            "category": "GEOGRAPHY",
+            "value": 800,
+            "clue": "The highest mountain in the world",
+            "answer": "What is Mount Everest?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-2",
+            "category": "GEOGRAPHY",
+            "value": 1200,
+            "clue": "The largest ocean",
+            "answer": "What is the Pacific Ocean?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-3",
+            "category": "GEOGRAPHY",
+            "value": 1600,
+            "clue": "The smallest country in the world",
+            "answer": "What is Vatican City?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-4",
+            "category": "GEOGRAPHY",
+            "value": 2000,
+            "clue": "The country with the most time zones",
+            "answer": "What is France?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-2",
+        "name": "MUSIC",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-2-0",
+            "category": "MUSIC",
+            "value": 400,
+            "clue": "The band that sang Bohemian Rhapsody",
+            "answer": "What is Queen?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-1",
+            "category": "MUSIC",
+            "value": 800,
+            "clue": "The composer of The Four Seasons",
+            "answer": "Who is Antonio Vivaldi?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-2",
+            "category": "MUSIC",
+            "value": 1200,
+            "clue": "The number of strings on a standard guitar",
+            "answer": "What is 6?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-3",
+            "category": "MUSIC",
+            "value": 1600,
+            "clue": "The opera by Mozart about a magic flute",
+            "answer": "What is The Magic Flute?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-4",
+            "category": "MUSIC",
+            "value": 2000,
+            "clue": "The year The Beatles broke up",
+            "answer": "What is 1970?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-3",
+        "name": "TECHNOLOGY",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-3-0",
+            "category": "TECHNOLOGY",
+            "value": 400,
+            "clue": "The company that created the iPhone",
+            "answer": "What is Apple?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-1",
+            "category": "TECHNOLOGY",
+            "value": 800,
+            "clue": "The year the World Wide Web was invented",
+            "answer": "What is 1989?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-2",
+            "category": "TECHNOLOGY",
+            "value": 1200,
+            "clue": "The programming language created by Guido van Rossum",
+            "answer": "What is Python?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-3",
+            "category": "TECHNOLOGY",
+            "value": 1600,
+            "clue": "The first computer to beat a world chess champion",
+            "answer": "What is Deep Blue?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-4",
+            "category": "TECHNOLOGY",
+            "value": 2000,
+            "clue": "The number of bits in a byte",
+            "answer": "What is 8?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-4",
+        "name": "FOOD & DRINK",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-4-0",
+            "category": "FOOD & DRINK",
+            "value": 400,
+            "clue": "The main ingredient in guacamole",
+            "answer": "What is avocado?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-1",
+            "category": "FOOD & DRINK",
+            "value": 800,
+            "clue": "The country that gave us sushi",
+            "answer": "What is Japan?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-2",
+            "category": "FOOD & DRINK",
+            "value": 1200,
+            "clue": "The number of slices in a standard pizza",
+            "answer": "What is 8?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-3",
+            "category": "FOOD & DRINK",
+            "value": 1600,
+            "clue": "The process of making wine",
+            "answer": "What is fermentation?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-4",
+            "category": "FOOD & DRINK",
+            "value": 2000,
+            "clue": "The French word for a chef's hat",
+            "answer": "What is a toque?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-5",
+        "name": "ANIMALS",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-5-0",
+            "category": "ANIMALS",
+            "value": 400,
+            "clue": "The fastest land animal",
+            "answer": "What is a cheetah?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-1",
+            "category": "ANIMALS",
+            "value": 800,
+            "clue": "The largest mammal in the world",
+            "answer": "What is a blue whale?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-2",
+            "category": "ANIMALS",
+            "value": 1200,
+            "clue": "The only mammal that can fly",
+            "answer": "What is a bat?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-3",
+            "category": "ANIMALS",
+            "value": 1600,
+            "clue": "The animal with the longest neck",
+            "answer": "What is a giraffe?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-4",
+            "category": "ANIMALS",
+            "value": 2000,
+            "clue": "The number of hearts an octopus has",
+            "answer": "What is 3?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      }
+    ]
+  },
+  "finalJeopardy": {
+    "category": "AMERICAN HISTORY",
+    "clue": "This document, signed in 1776, declared the 13 American colonies independent from Great Britain",
+    "answer": "What is the Declaration of Independence?"
+  },
+  "createdAt": "2024-01-01T00:00:00.000Z"
+}
+

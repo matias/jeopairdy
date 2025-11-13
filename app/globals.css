@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap');
+
+:root {
+  --jeopardy-blue: #060CE9;
+  --jeopardy-dark-blue: #0A0A8F;
+  --jeopardy-yellow: #FFCC00;
+  --jeopardy-gold: #DAA520;
+}
+
+body {
+  font-family: 'Oswald', sans-serif;
+}
+
+/* Jeopardy-style board colors */
+.jeopardy-board {
+  background-color: var(--jeopardy-blue);
+}
+
+.jeopardy-category {
+  background-color: var(--jeopardy-blue);
+  color: white;
+  border: 2px solid white;
+}
+
+.jeopardy-clue {
+  background-color: var(--jeopardy-blue);
+  color: var(--jeopardy-yellow);
+  border: 2px solid white;
+}
+
+.jeopardy-clue:hover {
+  background-color: var(--jeopardy-dark-blue);
+}
+
+.jeopardy-clue.revealed {
+  background-color: #666;
+  color: #999;
+}
+
+.jeopardy-title {
+  color: var(--jeopardy-yellow);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
