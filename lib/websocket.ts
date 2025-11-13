@@ -17,7 +17,16 @@ export class WebSocketClient {
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        const wsUrl = this.url.replace('http', 'ws');
+        // Convert http/https URL to ws/wss, or use as-is if already ws/wss
+        let wsUrl = this.url;
+        if (wsUrl.startsWith('http://')) {
+          wsUrl = wsUrl.replace('http://', 'ws://');
+        } else if (wsUrl.startsWith('https://')) {
+          wsUrl = wsUrl.replace('https://', 'wss://');
+        } else if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
+          // If no protocol, assume ws://
+          wsUrl = `ws://${wsUrl}`;
+        }
         this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = () => {

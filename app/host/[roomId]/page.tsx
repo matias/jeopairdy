@@ -8,7 +8,9 @@ import GameBoard from '@/components/GameBoard/GameBoard';
 import ClueDisplay from '@/components/ClueDisplay/ClueDisplay';
 import Scoreboard from '@/components/Scoreboard/Scoreboard';
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
+import { getWebSocketUrl } from '@/lib/websocket-url';
+
+const WS_URL = getWebSocketUrl();
 
 export default function HostPage() {
   const params = useParams();
@@ -114,6 +116,7 @@ export default function HostPage() {
     ? playersMap.get(gameState.currentPlayer)
     : null;
   const buzzerOrder = gameState.buzzerOrder.map(id => playersMap.get(id)).filter(Boolean) as Player[];
+  const judgedPlayers = gameState.judgedPlayers || [];
 
   if (!gameState.config) {
     return (
@@ -157,15 +160,57 @@ export default function HostPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-4xl font-bold">Host Control - Room {roomId}</h1>
-            <button
-              onClick={() => {
-                window.open(`/game/${roomId}`, '_blank', 'width=1920,height=1080');
-              }}
-              className="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-700 font-bold"
-              title="Open game display in a new window for presentation"
-            >
-              Open Game Display
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (!gameState.config) {
+                    alert('No game loaded');
+                    return;
+                  }
+                  
+                  // Extract just the config (not the game state)
+                  const gameConfig = JSON.parse(JSON.stringify(gameState.config));
+                  
+                  // Reset revealed/answered flags so game can be replayed
+                  [gameConfig.jeopardy, gameConfig.doubleJeopardy].forEach((round: any) => {
+                    round.categories.forEach((category: any) => {
+                      category.clues.forEach((clue: any) => {
+                        clue.revealed = false;
+                        clue.answered = false;
+                      });
+                    });
+                  });
+                  
+                  // Format as JSON string
+                  const jsonString = JSON.stringify(gameConfig, null, 2);
+                  
+                  // Log to console
+                  console.log('=== GAME CONFIG JSON ===');
+                  console.log(jsonString);
+                  console.log('=== END GAME CONFIG ===');
+                  
+                  // Copy to clipboard
+                  navigator.clipboard.writeText(jsonString).then(() => {
+                    alert('Game config copied to clipboard and logged to console!');
+                  }).catch(() => {
+                    alert('Game config logged to console. Open DevTools to copy it.');
+                  });
+                }}
+                className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-bold"
+                title="Dump current game config as JSON to console and clipboard"
+              >
+                Dump Game Config
+              </button>
+              <button
+                onClick={() => {
+                  window.open(`/game/${roomId}`, '_blank', 'width=1920,height=1080');
+                }}
+                className="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-700 font-bold"
+                title="Open game display in a new window for presentation"
+              >
+                Open Game Display
+              </button>
+            </div>
           </div>
           <div className="text-lg">
             Round: {gameState.currentRound === 'jeopardy' ? 'Jeopardy' : 
@@ -188,7 +233,12 @@ export default function HostPage() {
         {(gameState.status === 'clueRevealed' || gameState.status === 'buzzing' || 
           gameState.status === 'answering' || gameState.status === 'judging') && (
           <div className="mb-6">
-            <ClueDisplay gameState={gameState} showAnswer={showAnswer} />
+            <ClueDisplay 
+              gameState={gameState} 
+              showAnswer={showAnswer}
+              buzzerOrder={buzzerOrder}
+              playersMap={playersMap}
+            />
             
             <div className="mt-4 flex gap-4">
               {!showAnswer && (
@@ -224,15 +274,25 @@ export default function HostPage() {
             <div className="flex gap-4 mb-4">
               <button
                 onClick={() => handleJudgeAnswer(currentPlayer.id, true)}
-                className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700"
+                disabled={judgedPlayers.includes(currentPlayer.id)}
+                className={`px-6 py-3 rounded ${
+                  judgedPlayers.includes(currentPlayer.id)
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-green-600 hover:bg-green-700'
+                } text-white`}
               >
-                Correct
+                {judgedPlayers.includes(currentPlayer.id) ? 'Judged ✓' : 'Correct'}
               </button>
               <button
                 onClick={() => handleJudgeAnswer(currentPlayer.id, false)}
-                className="px-6 py-3 bg-red-600 text-white rounded hover:bg-red-700"
+                disabled={judgedPlayers.includes(currentPlayer.id)}
+                className={`px-6 py-3 rounded ${
+                  judgedPlayers.includes(currentPlayer.id)
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700'
+                } text-white`}
               >
-                Incorrect
+                {judgedPlayers.includes(currentPlayer.id) ? 'Judged ✓' : 'Incorrect'}
               </button>
             </div>
 
@@ -253,13 +313,27 @@ export default function HostPage() {
 
         {gameState.status === 'judging' && !currentPlayer && (
           <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
-            <p className="mb-4">No one buzzed in. The clue goes unanswered.</p>
-            <button
-              onClick={handleReturnToBoard}
-              className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Back to Board
-            </button>
+            {buzzerOrder.length > 0 && judgedPlayers.length === buzzerOrder.length ? (
+              <>
+                <p className="mb-4">All players have been judged.</p>
+                <button
+                  onClick={handleReturnToBoard}
+                  className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Back to Board
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="mb-4">No one buzzed in. The clue goes unanswered.</p>
+                <button
+                  onClick={handleReturnToBoard}
+                  className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Back to Board
+                </button>
+              </>
+            )}
           </div>
         )}
 

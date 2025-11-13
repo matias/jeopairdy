@@ -1,0 +1,631 @@
+{
+  "id": "game-1762997260479",
+  "jeopardy": {
+    "round": "jeopardy",
+    "categories": [
+      {
+        "id": "cat-jeopardy-0",
+        "name": "Zoey 101 & Nickelodeon Teen TV",
+        "clues": [
+          {
+            "id": "clue-jeopardy-0-0",
+            "category": "Zoey 101 & Nickelodeon Teen TV",
+            "value": 200,
+            "clue": "Zoey Brooks attends this Malibu boarding school, known as PCA for short.",
+            "answer": "What is Pacific Coast Academy?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-1",
+            "category": "Zoey 101 & Nickelodeon Teen TV",
+            "value": 400,
+            "clue": "She stars as Zoey Brooks and sings the theme song \"Follow Me.\"",
+            "answer": "Who is Jamie Lynn Spears?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-2",
+            "category": "Zoey 101 & Nickelodeon Teen TV",
+            "value": 600,
+            "clue": "This curly-haired friend has a long-time crush on Zoey.",
+            "answer": "Who is Chase Matthews?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-3",
+            "category": "Zoey 101 & Nickelodeon Teen TV",
+            "value": 800,
+            "clue": "Quinn Pensky's wild homemade gadgets are nicknamed these.",
+            "answer": "What are Quinnventions?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-4",
+            "category": "Zoey 101 & Nickelodeon Teen TV",
+            "value": 1000,
+            "clue": "Early episodes of Zoey 101 were filmed on this Malibu university campus.",
+            "answer": "What is Pepperdine University?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-1",
+        "name": "Knitting Know-How",
+        "clues": [
+          {
+            "id": "clue-jeopardy-1-0",
+            "category": "Knitting Know-How",
+            "value": 200,
+            "clue": "The two basic stitches in knitting are the knit stitch and this one.",
+            "answer": "What is the purl stitch?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-1",
+            "category": "Knitting Know-How",
+            "value": 400,
+            "clue": "You begin a project by putting loops onto the needle in this step.",
+            "answer": "What is casting on?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-2",
+            "category": "Knitting Know-How",
+            "value": 600,
+            "clue": "Knitting every row creates this bumpy, ridged fabric.",
+            "answer": "What is garter stitch?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-3",
+            "category": "Knitting Know-How",
+            "value": 800,
+            "clue": "Stitches and rows per inch determine this crucial measurement for fit.",
+            "answer": "What is gauge?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-4",
+            "category": "Knitting Know-How",
+            "value": 1000,
+            "clue": "This stranded colorwork style from the Shetland Islands carries floats across the back.",
+            "answer": "What is Fair Isle?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-2",
+        "name": "Lord of the Rings 101",
+        "clues": [
+          {
+            "id": "clue-jeopardy-2-0",
+            "category": "Lord of the Rings 101",
+            "value": 200,
+            "clue": "This hobbit is entrusted to carry the One Ring to Mount Doom.",
+            "answer": "Who is Frodo Baggins?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-1",
+            "category": "Lord of the Rings 101",
+            "value": 400,
+            "clue": "Before he is the White, Gandalf is known by this color.",
+            "answer": "What is the Grey?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-2",
+            "category": "Lord of the Rings 101",
+            "value": 600,
+            "clue": "Also called Strider, he is the heir to the throne of Gondor.",
+            "answer": "Who is Aragorn?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-3",
+            "category": "Lord of the Rings 101",
+            "value": 800,
+            "clue": "Once named Sméagol, this creature calls the Ring \"my precious.\"",
+            "answer": "Who is Gollum?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-4",
+            "category": "Lord of the Rings 101",
+            "value": 1000,
+            "clue": "These nine terrifying Ringwraiths hunt the Fellowship.",
+            "answer": "What are the Nazgul?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-3",
+        "name": "Easy World Capitals",
+        "clues": [
+          {
+            "id": "clue-jeopardy-3-0",
+            "category": "Easy World Capitals",
+            "value": 200,
+            "clue": "Home to the Eiffel Tower, it's the capital of France.",
+            "answer": "What is Paris?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-1",
+            "category": "Easy World Capitals",
+            "value": 400,
+            "clue": "Japan's capital, where you'll find the Imperial Palace.",
+            "answer": "What is Tokyo?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-2",
+            "category": "Easy World Capitals",
+            "value": 600,
+            "clue": "This Egyptian capital sits on the Nile River.",
+            "answer": "What is Cairo?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-3",
+            "category": "Easy World Capitals",
+            "value": 800,
+            "clue": "Not Sydney or Melbourne—this city is Australia's capital.",
+            "answer": "What is Canberra?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-4",
+            "category": "Easy World Capitals",
+            "value": 1000,
+            "clue": "This Canadian capital city is in Ontario.",
+            "answer": "What is Ottawa?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-4",
+        "name": "Animal Group Names",
+        "clues": [
+          {
+            "id": "clue-jeopardy-4-0",
+            "category": "Animal Group Names",
+            "value": 200,
+            "clue": "A family group of lions goes by this royal-sounding name.",
+            "answer": "What is a pride?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-1",
+            "category": "Animal Group Names",
+            "value": 400,
+            "clue": "A group of dolphins or whales is called this.",
+            "answer": "What is a pod?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-2",
+            "category": "Animal Group Names",
+            "value": 600,
+            "clue": "A group of owls has this wise government name.",
+            "answer": "What is a parliament?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-3",
+            "category": "Animal Group Names",
+            "value": 800,
+            "clue": "A flock of these black birds is famously called a murder.",
+            "answer": "What are crows?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-4",
+            "category": "Animal Group Names",
+            "value": 1000,
+            "clue": "A smack is a group of these stinging sea creatures.",
+            "answer": "What are jellyfish?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-5",
+        "name": "Words That Start With 'KN'",
+        "clues": [
+          {
+            "id": "clue-jeopardy-5-0",
+            "category": "Words That Start With 'KN'",
+            "value": 200,
+            "clue": "A medieval warrior in armor, often on horseback.",
+            "answer": "What is a knight?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-1",
+            "category": "Words That Start With 'KN'",
+            "value": 400,
+            "clue": "You bend this joint between your thigh and your shin.",
+            "answer": "What is the knee?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-2",
+            "category": "Words That Start With 'KN'",
+            "value": 600,
+            "clue": "It's the loop or tangle in a string or shoelace.",
+            "answer": "What is a knot?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-3",
+            "category": "Words That Start With 'KN'",
+            "value": 800,
+            "clue": "These bony bumps at the base of your fingers help you knock.",
+            "answer": "What are knuckles?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-4",
+            "category": "Words That Start With 'KN'",
+            "value": 1000,
+            "clue": "This word means a special talent or skill; you've got a real one for crafts.",
+            "answer": "What is a knack?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      }
+    ]
+  },
+  "doubleJeopardy": {
+    "round": "doubleJeopardy",
+    "categories": [
+      {
+        "id": "cat-doubleJeopardy-0",
+        "name": "Zoey 101 & Friends",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-0-0",
+            "category": "Zoey 101 & Friends",
+            "value": 400,
+            "clue": "Jamie Lynn Spears plays this title character who attends Pacific Coast Academy.",
+            "answer": "Who is Zoey Brooks?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-1",
+            "category": "Zoey 101 & Friends",
+            "value": 800,
+            "clue": "On Zoey 101, this brainy girl is famous for her Quinnventions.",
+            "answer": "Who is Quinn Pensky?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-2",
+            "category": "Zoey 101 & Friends",
+            "value": 1200,
+            "clue": "Carly Shay, Sam Puckett, and Freddie Benson star in this web show-centered series.",
+            "answer": "What is iCarly?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-3",
+            "category": "Zoey 101 & Friends",
+            "value": 1600,
+            "clue": "Josh's prank-loving little sister on Drake & Josh is this character.",
+            "answer": "Who is Megan Parker?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-4",
+            "category": "Zoey 101 & Friends",
+            "value": 2000,
+            "clue": "This show set at Hollywood Arts High School stars Victoria Justice and features Ariana Grande as Cat Valentine.",
+            "answer": "What is Victorious?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-1",
+        "name": "Knit Happens",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-1-0",
+            "category": "Knit Happens",
+            "value": 400,
+            "clue": "These two basic stitches are the foundation of most knitting projects.",
+            "answer": "What are knit and purl?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-1",
+            "category": "Knit Happens",
+            "value": 800,
+            "clue": "You work yarn with these tools that come as straight, double-pointed, or circular.",
+            "answer": "What are knitting needles?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-2",
+            "category": "Knit Happens",
+            "value": 1200,
+            "clue": "This common method of starting stitches uses a tail of yarn to create a neat edge.",
+            "answer": "What is the long-tail cast-on?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-3",
+            "category": "Knit Happens",
+            "value": 1600,
+            "clue": "A great beginner project that keeps your neck warm, this long rectangle lets you practice tension.",
+            "answer": "What is a scarf?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-4",
+            "category": "Knit Happens",
+            "value": 2000,
+            "clue": "Shaped like a big safety pin, this tool holds stitches so they do not unravel.",
+            "answer": "What is a stitch holder?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-2",
+        "name": "The Lord of the Rings",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-2-0",
+            "category": "The Lord of the Rings",
+            "value": 400,
+            "clue": "This hobbit from the Shire is the Ring-bearer who sets out for Mount Doom.",
+            "answer": "Who is Frodo Baggins?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-1",
+            "category": "The Lord of the Rings",
+            "value": 800,
+            "clue": "This wizard tells a Balrog you shall not pass.",
+            "answer": "Who is Gandalf?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-2",
+            "category": "The Lord of the Rings",
+            "value": 1200,
+            "clue": "She is the elf who loves Aragorn and the daughter of Elrond.",
+            "answer": "Who is Arwen?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-3",
+            "category": "The Lord of the Rings",
+            "value": 1600,
+            "clue": "Treebeard lives in this forest of Ents.",
+            "answer": "What is Fangorn Forest?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-4",
+            "category": "The Lord of the Rings",
+            "value": 2000,
+            "clue": "This dark land is Sauron's domain, home to the tower of Barad-dur.",
+            "answer": "What is Mordor?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-3",
+        "name": "World Capitals for Kids",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-3-0",
+            "category": "World Capitals for Kids",
+            "value": 400,
+            "clue": "Known as the City of Light, this capital sits on the Seine River.",
+            "answer": "What is Paris?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-1",
+            "category": "World Capitals for Kids",
+            "value": 800,
+            "clue": "This capital of Japan hosted the Summer Olympics in 2021.",
+            "answer": "What is Tokyo?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-2",
+            "category": "World Capitals for Kids",
+            "value": 1200,
+            "clue": "This capital of the United Kingdom features Big Ben and the London Eye.",
+            "answer": "What is London?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-3",
+            "category": "World Capitals for Kids",
+            "value": 1600,
+            "clue": "Canberra is the capital of this country famous for koalas and kangaroos.",
+            "answer": "What is Australia?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-4",
+            "category": "World Capitals for Kids",
+            "value": 2000,
+            "clue": "This capital of Egypt lies along the Nile near the pyramids of Giza.",
+            "answer": "What is Cairo?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-4",
+        "name": "Books & Movies for Kids",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-4-0",
+            "category": "Books & Movies for Kids",
+            "value": 400,
+            "clue": "This wizarding series follows a boy with a lightning scar at Hogwarts School.",
+            "answer": "What is Harry Potter?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-1",
+            "category": "Books & Movies for Kids",
+            "value": 800,
+            "clue": "Sulley and Mike Wazowski star in this Pixar film about a scream factory.",
+            "answer": "What is Monsters, Inc.?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-2",
+            "category": "Books & Movies for Kids",
+            "value": 1200,
+            "clue": "This Dr. Seuss character says I speak for the trees.",
+            "answer": "Who is the Lorax?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-3",
+            "category": "Books & Movies for Kids",
+            "value": 1600,
+            "clue": "In The Chronicles of Narnia, this great lion guides the Pevensie children.",
+            "answer": "Who is Aslan?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-4",
+            "category": "Books & Movies for Kids",
+            "value": 2000,
+            "clue": "In this Roald Dahl book, a brilliant girl with telekinesis loves reading.",
+            "answer": "What is Matilda?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-5",
+        "name": "Simple Science",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-5-0",
+            "category": "Simple Science",
+            "value": 400,
+            "clue": "This is the third planet from the Sun.",
+            "answer": "What is Earth?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-1",
+            "category": "Simple Science",
+            "value": 800,
+            "clue": "H2O is the formula for this.",
+            "answer": "What is water?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-2",
+            "category": "Simple Science",
+            "value": 1200,
+            "clue": "These tiny units build all living things in your body.",
+            "answer": "What are cells?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-3",
+            "category": "Simple Science",
+            "value": 1600,
+            "clue": "This force keeps you on the ground and holds planets in orbit.",
+            "answer": "What is gravity?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-4",
+            "category": "Simple Science",
+            "value": 2000,
+            "clue": "Plants make food using sunlight, water, and carbon dioxide in this process.",
+            "answer": "What is photosynthesis?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      }
+    ]
+  },
+  "finalJeopardy": {
+    "category": "Tight-Knit Pop Culture",
+    "clue": "With a nod to knitting, Zoey 101’s 'tight-knit' PCA friend group points you to this 1954 Tolkien title naming the company that leaves Rivendell.",
+    "answer": "What is The Fellowship of the Ring?"
+  },
+  "createdAt": "2025-11-13T01:27:40.479Z"
+}

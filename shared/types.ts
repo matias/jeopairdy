@@ -64,6 +64,7 @@ export interface GameState {
   players: Map<string, Player>;
   buzzerOrder: string[]; // player IDs in order of buzz
   currentPlayer: string | null; // player who buzzed first
+  judgedPlayers?: string[]; // player IDs that have been judged
   hostId: string;
 }
 

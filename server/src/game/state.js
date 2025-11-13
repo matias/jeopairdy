@@ -13,6 +13,7 @@ class GameManager {
       players: new Map(),
       buzzerOrder: [],
       currentPlayer: null,
+      judgedPlayers: [], // Track which players have been judged
       hostId,
     };
     this.games.set(roomId, gameState);
@@ -73,6 +74,7 @@ class GameManager {
     game.status = "clueRevealed";
     game.buzzerOrder = [];
     game.currentPlayer = null;
+    game.judgedPlayers = []; // Reset judged players for new clue
 
     // Unlock buzzer after a delay (simulate reading time)
     setTimeout(() => {
@@ -115,6 +117,11 @@ class GameManager {
     const game = this.games.get(roomId);
     if (!game || !game.selectedClue || !game.config) return false;
 
+    // Check if player has already been judged
+    if (game.judgedPlayers.includes(playerId)) {
+      return false; // Already judged
+    }
+
     const round = game.currentRound === "jeopardy" 
       ? game.config.jeopardy 
       : game.config.doubleJeopardy;
@@ -128,22 +135,31 @@ class GameManager {
     const player = game.players.get(playerId);
     if (!player) return false;
 
+    // Mark player as judged
+    game.judgedPlayers.push(playerId);
+
     if (correct) {
       player.score += clue.value;
       clue.answered = true;
+      // Correct answer - stay in judging state, don't auto-advance
+      // Host can manually go back to board
     } else {
       player.score -= clue.value;
       // Move to next player in buzzer order
       const currentIndex = game.buzzerOrder.indexOf(playerId);
       if (currentIndex < game.buzzerOrder.length - 1) {
-        game.currentPlayer = game.buzzerOrder[currentIndex + 1];
-        game.status = "answering";
+        const nextPlayerId = game.buzzerOrder[currentIndex + 1];
+        // Check if next player has already been judged
+        if (game.judgedPlayers.includes(nextPlayerId)) {
+          // All players judged, stay in judging state
+          game.currentPlayer = null;
+        } else {
+          game.currentPlayer = nextPlayerId;
+          game.status = "answering";
+        }
       } else {
-        // No more players, clue goes unanswered
-        game.status = "selecting";
-        game.selectedClue = null;
+        // No more players, but don't auto-advance - stay in judging
         game.currentPlayer = null;
-        game.buzzerOrder = [];
       }
     }
 
@@ -279,6 +295,7 @@ class GameManager {
     game.selectedClue = null;
     game.currentPlayer = null;
     game.buzzerOrder = [];
+    game.judgedPlayers = [];
     
     return true;
   }

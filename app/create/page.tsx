@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
 import { WebSocketClient } from '@/lib/websocket';
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
+import { getWebSocketUrl } from '@/lib/websocket-url';
+
+const WS_URL = getWebSocketUrl();
 
 export default function CreatePage() {
   const router = useRouter();

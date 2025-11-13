@@ -15,10 +15,19 @@ const server = createServer(app);
 const wss = new WebSocketServer({ server });
 
 // CORS configuration
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true,
-}));
+// In development, allow all origins for local network access
+// In production, use specific origin from env var
+const corsOptions = process.env.NODE_ENV === 'production'
+  ? {
+      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+      credentials: true,
+    }
+  : {
+      origin: true, // Allow all origins in development
+      credentials: true,
+    };
+
+app.use(cors(corsOptions));
 
 // Middleware
 app.use(express.json());
@@ -43,7 +52,8 @@ app.use('/api/games', gamesRouter);
 
 const PORT = process.env.PORT || 3001;
 
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Listen on all interfaces (0.0.0.0) to allow connections from local network
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT} (accessible from all network interfaces)`);
 });
 

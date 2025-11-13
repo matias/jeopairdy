@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { WebSocketClient } from '@/lib/websocket';
 import { GameConfig } from '@/shared/types';
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
+import { getWebSocketUrl } from '@/lib/websocket-url';
+
+const WS_URL = getWebSocketUrl();
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export default function LoadGamePage() {
