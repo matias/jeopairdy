@@ -20,7 +20,7 @@ export default function GameDisplayPage() {
   useEffect(() => {
     const client = new WebSocketClient(WS_URL);
     client.connect().then(() => {
-      client.joinRoom(roomId, undefined, 'player'); // Join as player to receive updates
+      client.joinRoom(roomId, undefined, 'viewer'); // Join as viewer to receive updates without being added as a player
       
       client.on('roomJoined', (message: any) => {
         setGameState(message.gameState);
@@ -66,14 +66,14 @@ export default function GameDisplayPage() {
 
         {gameState.status === 'selecting' && (
           <div className="mb-6">
-            <GameBoard gameState={gameState} showValues={true} />
+            <GameBoard gameState={gameState} showValues={true} readOnly={true} />
           </div>
         )}
 
         {(gameState.status === 'clueRevealed' || gameState.status === 'buzzing' || 
           gameState.status === 'answering' || gameState.status === 'judging') && (
           <div className="mb-6">
-            <ClueDisplay gameState={gameState} showAnswer={gameState.status === 'judging'} />
+            <ClueDisplay gameState={gameState} showAnswer={false} />
           </div>
         )}
 
@@ -102,9 +102,7 @@ export default function GameDisplayPage() {
             <div className="text-center mb-6">
               <p className="text-2xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
               <p className="text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
-              <p className="text-2xl font-bold text-yellow-300 mt-6">
-                Answer: {gameState.config.finalJeopardy.answer}
-              </p>
+              {/* Answer is never shown on game display */}
             </div>
             <div className="mt-8">
               <Scoreboard gameState={gameState} />

@@ -47,9 +47,9 @@ Requirements:
 - 6 categories, each with 5 clues
 - Clue values: ${values.join(', ')} (in order of difficulty, easiest to hardest)
 - Each clue should have a question (the "answer" in Jeopardy format) and the correct response (the "question" format)
-- Categories should be diverse and interesting
+- Categories should be diverse and interesting. Try to incorporate the topics/themes given below, if any. Be creative! Also try to incorporate the source material given, if any.
 - Clues should increase in difficulty within each category
-- Difficulty level: ${difficulty || 'moderate'}
+- Difficulty level: ${difficulty || 'moderate'}. Easy should be appropriate for kids or beginners, moderate should be appropriate for general audience, and hard should be appropriate for expert level.
 
 ${topics ? `Topics/themes to focus on: ${topics}\n` : ''}
 ${sourceMaterial ? `Source material context: ${sourceMaterial.substring(0, 1000)}...\n` : ''}
@@ -100,7 +100,6 @@ async function generateRound(topics, difficulty, sourceMaterial, round = 'jeopar
           content: prompt,
         },
       ],
-      temperature: 0.7,
       response_format: { type: 'json_object' },
     });
 
@@ -170,7 +169,6 @@ Generate the Final Jeopardy clue now:`;
           content: prompt,
         },
       ],
-      temperature: 0.7,
       response_format: { type: 'json_object' },
     });
 

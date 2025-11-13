@@ -6,12 +6,13 @@ interface GameBoardProps {
   gameState: GameState;
   onSelectClue?: (categoryId: string, clueId: string) => void;
   showValues?: boolean;
+  readOnly?: boolean;
 }
 
 const VALUES = [200, 400, 600, 800, 1000];
 const DOUBLE_VALUES = [400, 800, 1200, 1600, 2000];
 
-export default function GameBoard({ gameState, onSelectClue, showValues = true }: GameBoardProps) {
+export default function GameBoard({ gameState, onSelectClue, showValues = true, readOnly = false }: GameBoardProps) {
   if (!gameState.config) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -66,15 +67,17 @@ export default function GameBoard({ gameState, onSelectClue, showValues = true }
                 return (
                   <td
                     key={`${category.id}-${rowIndex}`}
-                    className={`
-                      jeopardy-clue p-2 text-center cursor-pointer border-2 border-white
-                      ${isRevealed 
-                        ? 'revealed bg-gray-600 text-gray-400 cursor-not-allowed' 
-                        : 'hover:bg-blue-800'
-                      }
-                      ${isSelected ? 'ring-4 ring-yellow-400 ring-offset-2' : ''}
-                    `}
-                    onClick={() => clue && !isRevealed && handleClueClick(category.id, clue.id)}
+                      className={`
+                        jeopardy-clue p-2 text-center border-2 border-white
+                        ${isRevealed
+                          ? 'revealed bg-gray-600 text-gray-400 cursor-not-allowed'
+                          : readOnly
+                          ? 'cursor-default'
+                          : 'cursor-pointer hover:bg-blue-800'
+                        }
+                        ${isSelected ? 'ring-4 ring-yellow-400 ring-offset-2' : ''}
+                      `}
+                      onClick={() => !readOnly && clue && !isRevealed && handleClueClick(category.id, clue.id)}
                   >
                     <div className="h-20 flex items-center justify-center font-bold text-2xl">
                       {isRevealed ? '' : showValues ? `$${value.toLocaleString()}` : ''}

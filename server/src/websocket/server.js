@@ -138,6 +138,29 @@ function handleJoinRoom(ws, message, conn) {
       type: 'gameStateUpdate',
       gameState: serializeGameState(gameState),
     }, ws);
+  } else if (role === 'viewer') {
+    // Viewer joins room (for game display - doesn't add as player)
+    if (!roomId) {
+      ws.send(JSON.stringify({ type: 'error', message: 'Room ID required' }));
+      return;
+    }
+
+    const gameState = gameManager.getGame(roomId);
+    if (!gameState) {
+      ws.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
+      return;
+    }
+
+    conn.roomId = roomId;
+    conn.role = 'viewer';
+
+    ws.send(JSON.stringify({
+      type: 'roomJoined',
+      roomId,
+      gameState: serializeGameState(gameState),
+    }));
+
+    // Don't broadcast - viewer doesn't affect game state
   } else {
     // Player joins room
     if (!roomId) {

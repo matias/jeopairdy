@@ -1,3 +1,9 @@
+// Load environment variables from .env.local or .env
+// dotenv.config() loads .env by default, but we want to prioritize .env.local
+const fs = require('fs');
+const envPath = fs.existsSync('.env.local') ? '.env.local' : '.env';
+require('dotenv').config({ path: envPath });
+
 const express = require('express');
 const { createServer } = require('http');
 const { WebSocketServer } = require('ws');

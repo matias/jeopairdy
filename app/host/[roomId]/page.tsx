@@ -17,7 +17,7 @@ export default function HostPage() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [scoreDelta, setScoreDelta] = useState<{ [playerId: string]: number }>({});
+  const [scoreDelta, setScoreDelta] = useState<{ [playerId: string]: string }>({});
 
   useEffect(() => {
     const client = new WebSocketClient(WS_URL);
@@ -67,7 +67,7 @@ export default function HostPage() {
   const handleUpdateScore = (playerId: string, delta: number) => {
     if (ws) {
       ws.updateScore(playerId, delta);
-      setScoreDelta(prev => ({ ...prev, [playerId]: 0 }));
+      setScoreDelta(prev => ({ ...prev, [playerId]: '' }));
     }
   };
 
@@ -155,7 +155,18 @@ export default function HostPage() {
     <main className="min-h-screen p-8 bg-gray-100">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-4xl font-bold mb-2">Host Control - Room {roomId}</h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-4xl font-bold">Host Control - Room {roomId}</h1>
+            <button
+              onClick={() => {
+                window.open(`/game/${roomId}`, '_blank', 'width=1920,height=1080');
+              }}
+              className="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-700 font-bold"
+              title="Open game display in a new window for presentation"
+            >
+              Open Game Display
+            </button>
+          </div>
           <div className="text-lg">
             Round: {gameState.currentRound === 'jeopardy' ? 'Jeopardy' : 
                    gameState.currentRound === 'doubleJeopardy' ? 'Double Jeopardy' : 
@@ -259,17 +270,27 @@ export default function HostPage() {
               <div key={player.id} className="flex items-center gap-2">
                 <span className="flex-1">{player.name}</span>
                 <input
-                  type="number"
-                  value={scoreDelta[player.id] || 0}
-                  onChange={(e) => setScoreDelta(prev => ({
-                    ...prev,
-                    [player.id]: parseInt(e.target.value) || 0
-                  }))}
+                  type="text"
+                  value={scoreDelta[player.id] !== undefined ? scoreDelta[player.id] : ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Allow empty, negative sign, or valid number
+                    if (value === '' || value === '-' || /^-?\d*$/.test(value)) {
+                      setScoreDelta(prev => ({
+                        ...prev,
+                        [player.id]: value
+                      }));
+                    }
+                  }}
                   className="w-24 px-2 py-1 border rounded"
                   placeholder="±amount"
                 />
                 <button
-                  onClick={() => handleUpdateScore(player.id, scoreDelta[player.id] || 0)}
+                  onClick={() => {
+                    const value = scoreDelta[player.id];
+                    const numValue = value === '' || value === '-' ? 0 : parseInt(value) || 0;
+                    handleUpdateScore(player.id, numValue);
+                  }}
                   className="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
                   Apply

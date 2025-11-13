@@ -69,7 +69,7 @@ export interface GameState {
 
 // WebSocket message types
 export type ClientMessage = 
-  | { type: "joinRoom"; roomId: string; playerName?: string; role: "host" | "player"; playerId?: string }
+  | { type: "joinRoom"; roomId: string; playerName?: string; role: "host" | "player" | "viewer"; playerId?: string }
   | { type: "buzz"; timestamp: number }
   | { type: "selectClue"; categoryId: string; clueId: string }
   | { type: "revealAnswer" }
