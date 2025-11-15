@@ -253,9 +253,9 @@ export default function PlayerPage() {
           />
         )}
 
-        <div className="mt-8">
+        {/* <div className="mt-8">
           <Scoreboard gameState={gameState} highlightPlayer={playerId} />
-        </div>
+        </div> */}
       </div>
     </main>
   );

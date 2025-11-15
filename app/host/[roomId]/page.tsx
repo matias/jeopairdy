@@ -423,6 +423,15 @@ export default function HostPage() {
         </div>
 
         <div className="flex gap-4">
+          {gameState.status === 'selecting' && gameState.currentRound !== 'finalJeopardy' && (
+            <button
+              onClick={handleNextRound}
+              className="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Next Round
+            </button>
+          )}
+
           {gameState.currentRound === 'doubleJeopardy' && gameState.status === 'selecting' && (
             <button
               onClick={handleStartFinalJeopardy}
