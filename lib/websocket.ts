@@ -12,6 +12,11 @@ export class WebSocketClient {
   private playerId: string | null = null;
   private autoReconnect: boolean = true;
   private isConnected: boolean = false;
+  private keepAliveInterval: NodeJS.Timeout | null = null;
+  private lastPongTime: number = 0;
+  private pingInterval = 1000; // Send ping every 1 second
+  private pongTimeout = 3000; // Consider dead if no pong in 3 seconds
+  private isHandlingDeadConnection: boolean = false;
 
   constructor(private url: string, autoReconnect: boolean = true) {
     this.autoReconnect = autoReconnect;
@@ -63,6 +68,9 @@ export class WebSocketClient {
         this.ws.onopen = () => {
           console.log('WebSocket connected');
           this.reconnectAttempts = 0;
+          this.lastPongTime = Date.now();
+          this.isHandlingDeadConnection = false;
+          this.startKeepAlive();
           this.notifyConnectionState(true);
           resolve();
         };
@@ -70,27 +78,124 @@ export class WebSocketClient {
         this.ws.onmessage = (event) => {
           try {
             const message: ServerMessage = JSON.parse(event.data);
+            // Update last pong time when we receive a pong
+            if (message.type === 'pong') {
+              this.lastPongTime = Date.now();
+            }
             this.handleMessage(message);
           } catch (error) {
-            console.error('Error parsing message:', error);
+            console.warn('Error parsing message:', error);
           }
         };
 
         this.ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          reject(error);
+          console.warn('WebSocket error:', error);
+          // Don't reject immediately - let onclose handle it to avoid race conditions
+          // The error will be handled when onclose fires
         };
 
         this.ws.onclose = () => {
           console.log('WebSocket closed');
+          this.stopKeepAlive();
+          const wasConnected = this.isConnected;
           this.ws = null;
+          
+          // If this was a connection attempt that failed (never opened), reject the promise
+          // (This handles the case where connect() was called but failed immediately)
+          // The .catch() handler in attemptReconnect() will handle reconnection
+          if (!wasConnected) {
+            reject(new Error('WebSocket connection failed'));
+            return; // Don't attempt reconnect here - let the .catch() handler do it
+          }
+          
+          // Connection was open and then closed - update state and reconnect
           this.notifyConnectionState(false);
-          this.attemptReconnect();
+          
+          // Only attempt reconnect if we're not already handling a dead connection
+          // (to avoid duplicate reconnection attempts)
+          if (!this.isHandlingDeadConnection) {
+            this.attemptReconnect();
+          }
         };
       } catch (error) {
         reject(error);
       }
     });
+  }
+
+  private startKeepAlive() {
+    this.stopKeepAlive(); // Clear any existing interval
+    this.keepAliveInterval = setInterval(() => {
+      this.sendPing();
+      this.checkConnectionHealth();
+    }, this.pingInterval);
+  }
+
+  private stopKeepAlive() {
+    if (this.keepAliveInterval) {
+      clearInterval(this.keepAliveInterval);
+      this.keepAliveInterval = null;
+    }
+  }
+
+  private sendPing() {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.send({
+        type: 'ping',
+        timestamp: Date.now(),
+      });
+    }
+  }
+
+  private checkConnectionHealth() {
+    if (!this.ws || this.isHandlingDeadConnection) {
+      return;
+    }
+
+    const now = Date.now();
+    const timeSinceLastPong = now - this.lastPongTime;
+    const isReadyStateOpen = this.ws.readyState === WebSocket.OPEN;
+
+    // If readyState is not OPEN, connection is dead
+    if (!isReadyStateOpen) {
+      console.log('Connection health check failed: readyState is not OPEN');
+      this.handleConnectionDead();
+      return;
+    }
+
+    // If we haven't received a pong in the timeout period, consider connection dead
+    // This catches cases where the network is offline but the socket hasn't closed yet
+    if (timeSinceLastPong > this.pongTimeout) {
+      console.log(`Connection health check failed: no pong received in ${timeSinceLastPong}ms`);
+      this.handleConnectionDead();
+      return;
+    }
+  }
+
+  private handleConnectionDead() {
+    // Prevent multiple calls
+    if (this.isHandlingDeadConnection) {
+      return;
+    }
+    this.isHandlingDeadConnection = true;
+
+    console.log('Handling dead connection - closing and triggering reconnection');
+    this.stopKeepAlive();
+    
+    // Manually close the connection
+    if (this.ws) {
+      try {
+        this.ws.close();
+      } catch (e) {
+        // Ignore errors when closing
+      }
+      this.ws = null;
+    }
+
+    // Manually trigger disconnect notification and reconnection
+    // (in case onclose doesn't fire when network is offline)
+    this.notifyConnectionState(false);
+    this.attemptReconnect();
   }
 
   private attemptReconnect() {
@@ -108,13 +213,20 @@ export class WebSocketClient {
       this.reconnectTimeout = setTimeout(() => {
         this.reconnectTimeout = null;
         console.log(`Reconnecting... (attempt ${this.reconnectAttempts})`);
-        this.connect().catch((error) => {
+        this.connect().then(() => {
+          // Connection successful - reset attempts counter will happen in onopen
+          console.log('Reconnection successful');
+        }).catch((error) => {
           console.error('Reconnection failed:', error);
-          // Continue attempting to reconnect
+          // Continue attempting to reconnect by calling attemptReconnect again
+          // Reset the flag so we can try again
+          this.isHandlingDeadConnection = false;
+          this.attemptReconnect();
         });
       }, delay);
     } else {
       console.log('Max reconnection attempts reached');
+      this.isHandlingDeadConnection = false; // Reset flag even if we've given up
     }
   }
 
@@ -258,6 +370,7 @@ export class WebSocketClient {
 
   disconnect() {
     this.disableAutoReconnect();
+    this.stopKeepAlive();
     if (this.ws) {
       this.ws.close();
       this.ws = null;

@@ -68,6 +68,10 @@ function handleWebSocket(ws, req) {
 
 function handleMessage(ws, message, conn) {
   switch (message.type) {
+    case 'ping':
+      // Respond to ping with pong
+      ws.send(JSON.stringify({ type: 'pong', timestamp: message.timestamp }));
+      break;
     case 'joinRoom':
       handleJoinRoom(ws, message, conn);
       break;

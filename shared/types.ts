@@ -87,7 +87,8 @@ export type ClientMessage =
   | { type: "createGame"; prompt: string; difficulty?: string; sourceMaterial?: string }
   | { type: "loadGame"; gameConfig: GameConfig }
   | { type: "returnToBoard" }
-  | { type: "startGame" };
+  | { type: "startGame" }
+  | { type: "ping"; timestamp: number };
 
 export type ServerMessage = 
   | { type: "roomJoined"; roomId: string; gameState: GameState; playerId: string }
@@ -95,5 +96,6 @@ export type ServerMessage =
   | { type: "buzzerLocked"; locked: boolean }
   | { type: "buzzReceived"; playerId: string; timestamp: number }
   | { type: "error"; message: string }
-  | { type: "gameCreated"; gameState: GameState };
+  | { type: "gameCreated"; gameState: GameState }
+  | { type: "pong"; timestamp: number };
 

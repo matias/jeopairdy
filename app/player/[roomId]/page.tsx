@@ -113,7 +113,7 @@ export default function PlayerPage() {
 
       setWs(client);
     }).catch((error) => {
-      console.error('Connection error:', error);
+      console.warn('Connection error:', error);
       connectedRef.current = false;
       setIsConnected(false);
       // Enable auto-reconnect on initial connection failure
