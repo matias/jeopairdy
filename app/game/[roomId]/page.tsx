@@ -115,7 +115,7 @@ export default function GameDisplayPage() {
         {(gameState.status === 'clueRevealed' || gameState.status === 'buzzing' || 
           gameState.status === 'answering' || gameState.status === 'judging') && (
           <div className="mb-6">
-            <ClueDisplay gameState={gameState} showAnswer={false} />
+            <ClueDisplay gameState={gameState} showAnswer={gameState.status === 'judging'} />
           </div>
         )}
 

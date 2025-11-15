@@ -16,15 +16,23 @@ export default function Scoreboard({ gameState, highlightPlayer }: ScoreboardPro
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {sortedPlayers.map((player) => (
+      <div 
+        className="grid gap-4"
+        style={{ gridTemplateColumns: `repeat(${sortedPlayers.length}, minmax(0, 1fr))` }}
+      >
+        {sortedPlayers.map((player) => {
+          const isLastCorrect = gameState.lastCorrectPlayer === player.id;
+          const isHighlighted = highlightPlayer === player.id || isLastCorrect;
+          return (
           <div
             key={player.id}
             className={`
-              p-4 rounded-lg border-2
-              ${highlightPlayer === player.id 
-                ? 'border-yellow-400 bg-yellow-100' 
-                : 'border-gray-300 bg-white'
+              p-4 rounded-lg
+              ${isLastCorrect 
+                ? 'border-4 border-yellow-500 bg-yellow-100' 
+                : isHighlighted
+                ? 'border-2 border-yellow-400 bg-yellow-100'
+                : 'border-2 border-gray-300 bg-white'
               }
             `}
           >
@@ -36,7 +44,8 @@ export default function Scoreboard({ gameState, highlightPlayer }: ScoreboardPro
               ${player.score.toLocaleString()}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

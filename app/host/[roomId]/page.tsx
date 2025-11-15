@@ -289,7 +289,7 @@ export default function HostPage() {
           <div className="mb-6">
             <ClueDisplay 
               gameState={gameState} 
-              showAnswer={showAnswer}
+              showAnswer={true}
               buzzerOrder={buzzerOrder}
               playersMap={playersMap}
             />
@@ -394,7 +394,7 @@ export default function HostPage() {
         <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
           <h2 className="text-2xl font-bold mb-4">Manual Score Adjustment</h2>
           <div className="grid grid-cols-2 gap-4">
-            {players.map((player) => (
+            {[...players].sort((a, b) => a.name.localeCompare(b.name)).map((player) => (
               <div key={player.id} className="flex items-center gap-2">
                 <span className="flex-1">{player.name}</span>
                 <input

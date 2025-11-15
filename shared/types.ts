@@ -67,6 +67,7 @@ export interface GameState {
   currentPlayer: string | null; // player who gets to answer (from tied buzzes only)
   judgedPlayers?: string[]; // player IDs that have been judged
   notPickedInTies?: string[]; // player IDs who haven't been picked in ties (for fairness)
+  lastCorrectPlayer?: string | null; // player ID who last answered correctly (has control of board)
   hostId: string;
 }
 

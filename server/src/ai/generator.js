@@ -73,7 +73,7 @@ function getUserInstructions(round, values) {
 * **Clue values:** ${values.join(', ')} (in order of increasing difficulty).
 * **JSON Format:** Use the exact JSON structure provided below.
 * **Clue/Answer Format:**
-    * The "clue" field is the *answer* (what contestants see).
+    * The "clue" field is the *answer* (what contestants see). Make sure that a clue is NOT part of a category name.
     * The "answer" field is the *question* (what contestants must respond with, e.g., "What is...", "Who is...").
 
 ---

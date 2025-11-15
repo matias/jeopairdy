@@ -16,6 +16,7 @@ class GameManager {
       currentPlayer: null,
       judgedPlayers: [], // Track which players have been judged
       notPickedInTies: [], // Players who haven't been picked in ties (for fairness)
+      lastCorrectPlayer: null, // Player who last answered correctly (has control of board)
       hostId,
     };
     this.games.set(roomId, gameState);
@@ -310,24 +311,32 @@ class GameManager {
     if (correct) {
       player.score += clue.value;
       clue.answered = true;
+      // Track who last answered correctly (they have control of the board)
+      game.lastCorrectPlayer = playerId;
+      console.log(`Last correct player: ${game.lastCorrectPlayer}`);
       // Correct answer - stay in judging state, don't auto-advance
       // Host can manually go back to board
     } else {
       player.score -= clue.value;
-      // Move to next player in buzzer order
+      // Move to next player in buzzer order who hasn't been judged
+      // Only consider players who were eligible (buzzed within tie window if there was a tie)
       const currentIndex = game.buzzerOrder.indexOf(playerId);
-      if (currentIndex < game.buzzerOrder.length - 1) {
-        const nextPlayerId = game.buzzerOrder[currentIndex + 1];
-        // Check if next player has already been judged
-        if (game.judgedPlayers.includes(nextPlayerId)) {
-          // All players judged, stay in judging state
-          game.currentPlayer = null;
-        } else {
-          game.currentPlayer = nextPlayerId;
-          game.status = "answering";
+      let nextPlayerId = null;
+      
+      // Find the next player in buzzer order who hasn't been judged
+      for (let i = currentIndex + 1; i < game.buzzerOrder.length; i++) {
+        const candidateId = game.buzzerOrder[i];
+        if (!game.judgedPlayers.includes(candidateId)) {
+          nextPlayerId = candidateId;
+          break;
         }
+      }
+      
+      if (nextPlayerId) {
+        game.currentPlayer = nextPlayerId;
+        game.status = "answering";
       } else {
-        // No more players, but don't auto-advance - stay in judging
+        // No more eligible players, stay in judging state
         game.currentPlayer = null;
       }
     }
@@ -356,6 +365,7 @@ class GameManager {
       game.selectedClue = null;
       game.buzzerOrder = [];
       game.currentPlayer = null;
+      game.lastCorrectPlayer = null; // Reset control for new round
     } else if (game.currentRound === "doubleJeopardy") {
       // Check if all clues are answered
       const allAnswered = this.allCluesAnswered(game);

@@ -28,6 +28,7 @@ function serializeGameState(gameState) {
     currentPlayer: gameState.currentPlayer,
     judgedPlayers: gameState.judgedPlayers,
     notPickedInTies: gameState.notPickedInTies,
+    lastCorrectPlayer: gameState.lastCorrectPlayer,
     hostId: gameState.hostId,
     // Exclude: buzzTimestamps (internal debugging data)
     // Exclude: buzzerProcessTimeout (Node.js Timeout object with circular refs)

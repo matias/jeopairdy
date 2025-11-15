@@ -102,7 +102,7 @@ export class WebSocketClient {
     }
   }
 
-  joinRoom(roomId: string | null, playerName: string | undefined, role: 'host' | 'player', playerId?: string) {
+  joinRoom(roomId: string | null, playerName: string | undefined, role: 'host' | 'player' | 'viewer', playerId?: string) {
     this.roomId = roomId;
     this.send({
       type: 'joinRoom',
