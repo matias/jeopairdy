@@ -22,6 +22,7 @@ export default function PlayerPage() {
   const [buzzed, setBuzzed] = useState(false);
   const [finalWager, setFinalWager] = useState('');
   const [finalAnswer, setFinalAnswer] = useState('');
+  const [isConnected, setIsConnected] = useState(true);
   const connectedRef = useRef(false);
   const playerIdRef = useRef<string | null>(null);
 
@@ -51,7 +52,23 @@ export default function PlayerPage() {
     }
 
     connectedRef.current = true;
-    const client = new WebSocketClient(WS_URL, false); // Disable auto-reconnect to prevent loops
+    const client = new WebSocketClient(WS_URL, false); // Start with auto-reconnect disabled
+    
+    // Listen for connection state changes
+    const unsubscribeConnectionState = client.onConnectionStateChange((connected) => {
+      setIsConnected(connected);
+      if (connected) {
+        // When reconnected, rejoin the room
+        const storedInfo = localStorage.getItem(`player_${roomId}`);
+        if (storedInfo) {
+          const { playerName, playerId: storedPlayerId } = JSON.parse(storedInfo);
+          client.joinRoom(roomId, playerName, 'player', storedPlayerId);
+        }
+      } else {
+        // Enable auto-reconnect when disconnected
+        client.enableAutoReconnect();
+      }
+    });
     
     client.connect().then(() => {
       const storedInfo = localStorage.getItem(`player_${roomId}`);
@@ -98,9 +115,13 @@ export default function PlayerPage() {
     }).catch((error) => {
       console.error('Connection error:', error);
       connectedRef.current = false;
+      setIsConnected(false);
+      // Enable auto-reconnect on initial connection failure
+      client.enableAutoReconnect();
     });
 
     return () => {
+      unsubscribeConnectionState();
       connectedRef.current = false;
       client.disconnect();
     };
@@ -156,6 +177,11 @@ export default function PlayerPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-100">
       <div className="w-full max-w-2xl">
+        {!isConnected && (
+          <div className="mb-4 p-4 bg-red-100 border-2 border-red-500 rounded-lg">
+            <p className="text-red-600 font-bold text-lg">⚠️ Disconnected from server. Attempting to reconnect...</p>
+          </div>
+        )}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-4">Room: {roomId}</h1>
           {player && (

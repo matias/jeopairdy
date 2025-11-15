@@ -3,15 +3,46 @@ import { ClientMessage, ServerMessage, GameState } from '@/shared/types';
 export class WebSocketClient {
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 1000;
+  private maxReconnectAttempts = 10;
+  private baseReconnectDelay = 1000; // Base delay in ms
+  private reconnectTimeout: NodeJS.Timeout | null = null;
   private listeners: Map<string, Set<(data: any) => void>> = new Map();
+  private connectionStateListeners: Set<(connected: boolean) => void> = new Set();
   private roomId: string | null = null;
   private playerId: string | null = null;
   private autoReconnect: boolean = true;
+  private isConnected: boolean = false;
 
   constructor(private url: string, autoReconnect: boolean = true) {
     this.autoReconnect = autoReconnect;
+  }
+
+  enableAutoReconnect() {
+    this.autoReconnect = true;
+  }
+
+  disableAutoReconnect() {
+    this.autoReconnect = false;
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+  }
+
+  onConnectionStateChange(callback: (connected: boolean) => void) {
+    this.connectionStateListeners.add(callback);
+    return () => {
+      this.connectionStateListeners.delete(callback);
+    };
+  }
+
+  private notifyConnectionState(connected: boolean) {
+    this.isConnected = connected;
+    this.connectionStateListeners.forEach(callback => callback(connected));
+  }
+
+  getConnected(): boolean {
+    return this.isConnected;
   }
 
   connect(): Promise<void> {
@@ -32,6 +63,7 @@ export class WebSocketClient {
         this.ws.onopen = () => {
           console.log('WebSocket connected');
           this.reconnectAttempts = 0;
+          this.notifyConnectionState(true);
           resolve();
         };
 
@@ -52,6 +84,7 @@ export class WebSocketClient {
         this.ws.onclose = () => {
           console.log('WebSocket closed');
           this.ws = null;
+          this.notifyConnectionState(false);
           this.attemptReconnect();
         };
       } catch (error) {
@@ -66,10 +99,22 @@ export class WebSocketClient {
     }
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
-      setTimeout(() => {
+      // Exponential backoff: 2^attempt * baseDelay, capped at 30 seconds
+      const delay = Math.min(
+        Math.pow(2, this.reconnectAttempts - 1) * this.baseReconnectDelay,
+        30000
+      );
+      console.log(`Reconnecting in ${delay}ms... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+      this.reconnectTimeout = setTimeout(() => {
+        this.reconnectTimeout = null;
         console.log(`Reconnecting... (attempt ${this.reconnectAttempts})`);
-        this.connect().catch(console.error);
-      }, this.reconnectDelay * this.reconnectAttempts);
+        this.connect().catch((error) => {
+          console.error('Reconnection failed:', error);
+          // Continue attempting to reconnect
+        });
+      }, delay);
+    } else {
+      console.log('Max reconnection attempts reached');
     }
   }
 
@@ -212,10 +257,12 @@ export class WebSocketClient {
   }
 
   disconnect() {
+    this.disableAutoReconnect();
     if (this.ws) {
       this.ws.close();
       this.ws = null;
     }
+    this.notifyConnectionState(false);
     this.listeners.clear();
   }
 
