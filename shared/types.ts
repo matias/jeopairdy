@@ -64,6 +64,8 @@ export interface GameState {
   selectedClue: { categoryId: string; clueId: string } | null;
   players: Map<string, Player>;
   buzzerOrder: string[]; // player IDs in order of buzz (all buzzes, including late ones)
+  resolvedBuzzerOrder?: string[]; // Buzzer order with tie resolution: currentPlayer first, then others (updated as judging progresses)
+  displayBuzzerOrder?: string[]; // Static display order: set once when tie is resolved, never changes (for UI)
   currentPlayer: string | null; // player who gets to answer (from tied buzzes only)
   judgedPlayers?: string[]; // player IDs that have been judged
   notPickedInTies?: string[]; // player IDs who haven't been picked in ties (for fairness)

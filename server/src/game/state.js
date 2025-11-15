@@ -12,6 +12,8 @@ class GameManager {
       selectedClue: null,
       players: new Map(),
       buzzerOrder: [],
+      resolvedBuzzerOrder: [], // Buzzer order with tie resolution: currentPlayer first, then others (updated as judging progresses)
+      displayBuzzerOrder: [], // Static display order: set once when tie is resolved, never changes (for UI)
       buzzTimestamps: [], // Array of {playerId, clientTimestamp, serverTimestamp}
       currentPlayer: null,
       judgedPlayers: [], // Track which players have been judged
@@ -76,6 +78,8 @@ class GameManager {
     game.selectedClue = { categoryId, clueId };
     game.status = "clueRevealed";
     game.buzzerOrder = [];
+    game.resolvedBuzzerOrder = [];
+    game.displayBuzzerOrder = [];
     game.buzzTimestamps = [];
     game.currentPlayer = null;
     game.judgedPlayers = []; // Reset judged players for new clue
@@ -132,9 +136,17 @@ class GameManager {
     // Always update buzzerOrder to include all buzzes (even late ones)
     game.buzzerOrder = game.buzzTimestamps.map(b => b.playerId);
 
-    // If current player already set, just update buzzerOrder and return
-    // (late buzzes won't change who gets to answer)
+    // If current player already set, update displayBuzzerOrder to include late buzzes
+    // (late buzzes won't change who gets to answer, but should be shown in UI)
     if (game.currentPlayer) {
+      // Add any new late buzzes to displayBuzzerOrder while preserving existing order
+      if (game.displayBuzzerOrder && game.displayBuzzerOrder.length > 0) {
+        game.buzzerOrder.forEach(playerId => {
+          if (!game.displayBuzzerOrder.includes(playerId)) {
+            game.displayBuzzerOrder.push(playerId);
+          }
+        });
+      }
       return;
     }
 
@@ -191,6 +203,19 @@ class GameManager {
           player.buzzedAt = allTiedBuzzes.find(b => b.playerId === selectedPlayerId)?.clientTimestamp || Date.now();
         }
 
+        // Compute resolved buzzer order: currentPlayer first, then others in original order
+        currentGame.resolvedBuzzerOrder = this.computeResolvedBuzzerOrder(currentGame);
+        // Set display order once - this stays static for UI display
+        // Use the original buzzerOrder but put the selected player first
+        if (!currentGame.displayBuzzerOrder || currentGame.displayBuzzerOrder.length === 0) {
+          currentGame.displayBuzzerOrder = [selectedPlayerId];
+          currentGame.buzzerOrder.forEach(playerId => {
+            if (playerId !== selectedPlayerId) {
+              currentGame.displayBuzzerOrder.push(playerId);
+            }
+          });
+        }
+
         // Trigger broadcast via callback if set
         if (currentGame.onBuzzerProcessed) {
           currentGame.onBuzzerProcessed(roomId);
@@ -230,6 +255,22 @@ class GameManager {
     });
 
     return selectedPlayerId;
+  }
+
+  computeResolvedBuzzerOrder(game) {
+    // Resolved order: currentPlayer first (if exists), then others in original buzzerOrder
+    if (!game.currentPlayer) {
+      return game.buzzerOrder;
+    }
+    
+    const resolved = [game.currentPlayer];
+    game.buzzerOrder.forEach(playerId => {
+      if (playerId !== game.currentPlayer) {
+        resolved.push(playerId);
+      }
+    });
+    
+    return resolved;
   }
 
   logBuzzerDebug(game, tiedBuzzes, selectedPlayerId) {
@@ -318,14 +359,19 @@ class GameManager {
       // Host can manually go back to board
     } else {
       player.score -= clue.value;
-      // Move to next player in buzzer order who hasn't been judged
-      // Only consider players who were eligible (buzzed within tie window if there was a tie)
-      const currentIndex = game.buzzerOrder.indexOf(playerId);
+      // Move to next player in display buzzer order who hasn't been judged
+      // Use displayBuzzerOrder (static order) to find next player, fallback to resolvedBuzzerOrder or buzzerOrder
+      const orderToUse = game.displayBuzzerOrder && game.displayBuzzerOrder.length > 0
+        ? game.displayBuzzerOrder
+        : (game.resolvedBuzzerOrder && game.resolvedBuzzerOrder.length > 0 
+          ? game.resolvedBuzzerOrder 
+          : game.buzzerOrder);
+      const currentIndex = orderToUse.indexOf(playerId);
       let nextPlayerId = null;
       
-      // Find the next player in buzzer order who hasn't been judged
-      for (let i = currentIndex + 1; i < game.buzzerOrder.length; i++) {
-        const candidateId = game.buzzerOrder[i];
+      // Find the next player in display order who hasn't been judged
+      for (let i = currentIndex + 1; i < orderToUse.length; i++) {
+        const candidateId = orderToUse[i];
         if (!game.judgedPlayers.includes(candidateId)) {
           nextPlayerId = candidateId;
           break;
@@ -335,9 +381,14 @@ class GameManager {
       if (nextPlayerId) {
         game.currentPlayer = nextPlayerId;
         game.status = "answering";
+        // Update resolved order with new current player (for logic)
+        game.resolvedBuzzerOrder = this.computeResolvedBuzzerOrder(game);
+        // Keep displayBuzzerOrder unchanged - it should never change after initial set
       } else {
         // No more eligible players, stay in judging state
         game.currentPlayer = null;
+        game.resolvedBuzzerOrder = game.buzzerOrder;
+        // Keep displayBuzzerOrder unchanged
       }
     }
 
@@ -474,6 +525,8 @@ class GameManager {
     game.selectedClue = null;
     game.currentPlayer = null;
     game.buzzerOrder = [];
+    game.resolvedBuzzerOrder = [];
+    game.displayBuzzerOrder = [];
     game.buzzTimestamps = [];
     game.judgedPlayers = [];
     // Note: We keep notPickedInTies across clues for fairness

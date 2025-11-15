@@ -1,15 +1,13 @@
 'use client';
 
-import { GameState, Player } from '@/shared/types';
+import { GameState } from '@/shared/types';
 
 interface ClueDisplayProps {
   gameState: GameState;
   showAnswer?: boolean;
-  buzzerOrder?: Player[];
-  playersMap?: Map<string, Player>;
 }
 
-export default function ClueDisplay({ gameState, showAnswer = false, buzzerOrder, playersMap }: ClueDisplayProps) {
+export default function ClueDisplay({ gameState, showAnswer = false }: ClueDisplayProps) {
   if (!gameState.config || !gameState.selectedClue) {
     return null;
   }
@@ -33,31 +31,9 @@ export default function ClueDisplay({ gameState, showAnswer = false, buzzerOrder
         {clue.clue}
       </div>
 
-      {/* Show who buzzed in (for host view) */}
-      {buzzerOrder && buzzerOrder.length > 0 && (
-        <div className="mt-4 pt-4 border-t-2 border-yellow-400">
-          <div className="text-xl font-bold mb-2 text-yellow-300 uppercase">Buzzed In:</div>
-          <div className="flex flex-wrap gap-2">
-            {buzzerOrder.map((player, index) => (
-              <span
-                key={player.id}
-                className={`px-3 py-1 rounded ${
-                  index === 0
-                    ? 'bg-yellow-400 text-blue-900 font-bold'
-                    : 'bg-yellow-300 text-blue-900'
-                }`}
-              >
-                {index + 1}. {player.name}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
       {showAnswer && (
         <div className="mt-8 pt-8 border-t-4 border-yellow-400">
-          <div className="text-3xl font-bold mb-4 text-yellow-300 uppercase">Answer:</div>
-          <div className="text-4xl font-bold text-yellow-300">
+          <div className="text-5xl font-bold text-yellow-300 flex items-center justify-center text-center">
             {clue.answer}
           </div>
         </div>

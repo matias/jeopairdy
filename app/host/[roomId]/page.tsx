@@ -121,7 +121,13 @@ export default function HostPage() {
   const currentPlayer = gameState.currentPlayer 
     ? playersMap.get(gameState.currentPlayer)
     : null;
-  const buzzerOrder = gameState.buzzerOrder.map(id => playersMap.get(id)).filter(Boolean) as Player[];
+  // Use displayBuzzerOrder if available (static order for UI), otherwise fall back to resolvedBuzzerOrder or buzzerOrder
+  const buzzerOrderToUse = gameState.displayBuzzerOrder && gameState.displayBuzzerOrder.length > 0
+    ? gameState.displayBuzzerOrder
+    : (gameState.resolvedBuzzerOrder && gameState.resolvedBuzzerOrder.length > 0
+      ? gameState.resolvedBuzzerOrder
+      : gameState.buzzerOrder);
+  const buzzerOrder = buzzerOrderToUse.map(id => playersMap.get(id)).filter(Boolean) as Player[];
   const judgedPlayers = gameState.judgedPlayers || [];
 
   if (!gameState.config) {
@@ -290,9 +296,81 @@ export default function HostPage() {
             <ClueDisplay 
               gameState={gameState} 
               showAnswer={true}
-              buzzerOrder={buzzerOrder}
-              playersMap={playersMap}
             />
+            
+            {/* Show resolved buzzer order and judging controls for host */}
+            {(gameState.status === 'answering' || gameState.status === 'judging') && (
+              <div className="mt-4 bg-white p-6 rounded-lg shadow-lg">
+                {buzzerOrder.length > 0 ? (
+                  <>
+                    <div className="text-xl font-bold mb-3 text-gray-800">Buzzed In (Resolved Order):</div>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {buzzerOrder.map((player, index) => {
+                        const isCurrentPlayer = currentPlayer?.id === player.id;
+                        const isJudged = judgedPlayers.includes(player.id);
+                        return (
+                          <span
+                            key={player.id}
+                            className={`px-3 py-1 rounded ${
+                              isCurrentPlayer
+                                ? 'bg-yellow-400 text-blue-900 font-bold border-2 border-blue-900'
+                                : isJudged
+                                ? 'bg-gray-300 text-gray-600 line-through'
+                                : 'bg-yellow-300 text-blue-900'
+                            }`}
+                          >
+                            {index + 1}. {player.name}
+                            {isCurrentPlayer && ' (Current)'}
+                            {isJudged && ' ✓'}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    
+                    {currentPlayer && (
+                      <div>
+                        <div className="flex gap-4">
+                          <button
+                            onClick={() => handleJudgeAnswer(currentPlayer.id, true)}
+                            disabled={judgedPlayers.includes(currentPlayer.id)}
+                            className={`px-6 py-3 rounded ${
+                              judgedPlayers.includes(currentPlayer.id)
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-700'
+                            } text-white font-bold`}
+                          >
+                            {judgedPlayers.includes(currentPlayer.id) ? 'Judged ✓' : 'Correct'}
+                          </button>
+                          <button
+                            onClick={() => handleJudgeAnswer(currentPlayer.id, false)}
+                            disabled={judgedPlayers.includes(currentPlayer.id)}
+                            className={`px-6 py-3 rounded ${
+                              judgedPlayers.includes(currentPlayer.id)
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-red-600 hover:bg-red-700'
+                            } text-white font-bold`}
+                          >
+                            {judgedPlayers.includes(currentPlayer.id) ? 'Judged ✓' : 'Incorrect'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!currentPlayer && (
+                      <div className="pt-4 border-t-2 border-gray-200">
+                        {judgedPlayers.length === buzzerOrder.length ? (
+                          <p className="text-gray-600">All players have been judged.</p>
+                        ) : (
+                          <p className="text-gray-600">No one buzzed in. The clue goes unanswered.</p>
+                        )}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-gray-600">No one buzzed in. The clue goes unanswered.</p>
+                )}
+              </div>
+            )}
             
             <div className="mt-4 flex gap-4">
               {!showAnswer && (
@@ -303,91 +381,7 @@ export default function HostPage() {
                   Reveal Answer
                 </button>
               )}
-              <button
-                onClick={handleReturnToBoard}
-                className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700"
-              >
-                Back to Board
-              </button>
             </div>
-          </div>
-        )}
-
-        {gameState.status === 'judging' && currentPlayer && (
-          <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
-            <h2 className="text-2xl font-bold mb-4">Judging Answer</h2>
-            <div className="mb-4">
-              <p className="text-lg">
-                <span className="font-bold">{currentPlayer.name}</span> answered
-              </p>
-              <p className="text-sm text-gray-600">
-                Buzzed in at: {new Date(currentPlayer.buzzedAt || 0).toLocaleTimeString()}
-              </p>
-            </div>
-            
-            <div className="flex gap-4 mb-4">
-              <button
-                onClick={() => handleJudgeAnswer(currentPlayer.id, true)}
-                disabled={judgedPlayers.includes(currentPlayer.id)}
-                className={`px-6 py-3 rounded ${
-                  judgedPlayers.includes(currentPlayer.id)
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-green-600 hover:bg-green-700'
-                } text-white`}
-              >
-                {judgedPlayers.includes(currentPlayer.id) ? 'Judged ✓' : 'Correct'}
-              </button>
-              <button
-                onClick={() => handleJudgeAnswer(currentPlayer.id, false)}
-                disabled={judgedPlayers.includes(currentPlayer.id)}
-                className={`px-6 py-3 rounded ${
-                  judgedPlayers.includes(currentPlayer.id)
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-red-600 hover:bg-red-700'
-                } text-white`}
-              >
-                {judgedPlayers.includes(currentPlayer.id) ? 'Judged ✓' : 'Incorrect'}
-              </button>
-            </div>
-
-            {buzzerOrder.length > 1 && (
-              <div className="mt-4">
-                <p className="text-sm text-gray-600 mb-2">Buzzer order:</p>
-                <ol className="list-decimal list-inside">
-                  {buzzerOrder.map((player, index) => (
-                    <li key={player.id} className={index === 0 ? 'font-bold' : ''}>
-                      {player.name}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            )}
-          </div>
-        )}
-
-        {gameState.status === 'judging' && !currentPlayer && (
-          <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
-            {buzzerOrder.length > 0 && judgedPlayers.length === buzzerOrder.length ? (
-              <>
-                <p className="mb-4">All players have been judged.</p>
-                <button
-                  onClick={handleReturnToBoard}
-                  className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Back to Board
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="mb-4">No one buzzed in. The clue goes unanswered.</p>
-                <button
-                  onClick={handleReturnToBoard}
-                  className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Back to Board
-                </button>
-              </>
-            )}
           </div>
         )}
 
@@ -429,15 +423,6 @@ export default function HostPage() {
         </div>
 
         <div className="flex gap-4">
-          {gameState.currentRound !== 'finalJeopardy' && (
-            <button
-              onClick={handleNextRound}
-              className="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-700"
-            >
-              Next Round
-            </button>
-          )}
-          
           {gameState.currentRound === 'doubleJeopardy' && gameState.status === 'selecting' && (
             <button
               onClick={handleStartFinalJeopardy}
@@ -456,6 +441,18 @@ export default function HostPage() {
             </button>
           )}
         </div>
+
+        {(gameState.status === 'clueRevealed' || gameState.status === 'buzzing' || 
+          gameState.status === 'answering' || gameState.status === 'judging') && (
+          <div className="mt-6">
+            <button
+              onClick={handleReturnToBoard}
+              className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700"
+            >
+              Back to Board
+            </button>
+          </div>
+        )}
 
         {gameState.status === 'finalJeopardyWagering' && (
           <div className="bg-white p-6 rounded-lg shadow-lg mt-6">

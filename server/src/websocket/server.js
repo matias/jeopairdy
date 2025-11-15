@@ -25,6 +25,8 @@ function serializeGameState(gameState) {
       ...player,
     })),
     buzzerOrder: gameState.buzzerOrder,
+    resolvedBuzzerOrder: gameState.resolvedBuzzerOrder || gameState.buzzerOrder, // Fallback to buzzerOrder if not set
+    displayBuzzerOrder: gameState.displayBuzzerOrder || gameState.resolvedBuzzerOrder || gameState.buzzerOrder, // Static display order for UI
     currentPlayer: gameState.currentPlayer,
     judgedPlayers: gameState.judgedPlayers,
     notPickedInTies: gameState.notPickedInTies,

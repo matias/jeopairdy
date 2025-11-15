@@ -175,7 +175,7 @@ export default function PlayerPage() {
   const hasAnswered = player?.finalJeopardyAnswer !== undefined;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-100">
+    <main className="flex min-h-screen flex-col items-center justify-top p-8 bg-gray-100">
       <div className="w-full max-w-2xl">
         {!isConnected && (
           <div className="mb-4 p-4 bg-red-100 border-2 border-red-500 rounded-lg">
