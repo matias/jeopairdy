@@ -74,6 +74,9 @@ export default function PlayerPage() {
 
       client.on('gameStateUpdate', (message: any) => {
         setGameState(message.gameState);
+        // Check if this player has buzzed (in buzzerOrder)
+        const hasBuzzed = message.gameState.buzzerOrder?.includes(playerIdRef.current) || false;
+        setBuzzed(hasBuzzed);
         // Reset buzzed state when new clue is selected
         if (message.gameState.status === 'clueRevealed' || message.gameState.status === 'selecting') {
           setBuzzed(false);
@@ -85,6 +88,7 @@ export default function PlayerPage() {
       });
 
       client.on('buzzReceived', (message: any) => {
+        // Mark as buzzed immediately when this player buzzes
         if (message.playerId === playerIdRef.current) {
           setBuzzed(true);
         }
@@ -103,7 +107,11 @@ export default function PlayerPage() {
   }, [roomId, router]);
 
   const handleBuzz = () => {
-    if (ws && !buzzerLocked && !buzzed) {
+    // Allow buzzing even if already buzzed (in case of network issues)
+    // Server will handle duplicate prevention
+    // Set buzzed state immediately for better UX (will be confirmed by server)
+    if (ws && !buzzerLocked) {
+      setBuzzed(true); // Optimistic update - show "BUZZED" immediately
       ws.buzz();
     }
   };

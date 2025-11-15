@@ -12,7 +12,9 @@ export default function Buzzer({ locked, onBuzz, buzzed = false }: BuzzerProps) 
   const [pressed, setPressed] = useState(false);
 
   const handlePress = () => {
-    if (!locked && !buzzed) {
+    // Allow pressing even if already buzzed (server handles duplicates)
+    // This ensures the button can be pressed and shows feedback
+    if (!locked) {
       setPressed(true);
       onBuzz();
     }
@@ -47,7 +49,7 @@ export default function Buzzer({ locked, onBuzz, buzzed = false }: BuzzerProps) 
         onMouseLeave={handleRelease}
         onTouchStart={handlePress}
         onTouchEnd={handleRelease}
-        disabled={locked || buzzed}
+        disabled={locked}
       >
         {locked ? 'LOCKED' : buzzed ? 'BUZZED' : 'BUZZ IN'}
       </button>

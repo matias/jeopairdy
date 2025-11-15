@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import QRCode from 'qrcode';
 import { WebSocketClient } from '@/lib/websocket';
 import { GameState, ServerMessage } from '@/shared/types';
 import GameBoard from '@/components/GameBoard/GameBoard';
@@ -18,6 +19,7 @@ export default function GameDisplayPage() {
   const [ws, setWs] = useState<WebSocketClient | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [showScores, setShowScores] = useState(true);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const client = new WebSocketClient(WS_URL);
@@ -26,10 +28,24 @@ export default function GameDisplayPage() {
       
       client.on('roomJoined', (message: any) => {
         setGameState(message.gameState);
+        // Generate QR code if game is ready
+        if (message.gameState.status === 'ready' && typeof window !== 'undefined') {
+          const joinUrl = `${window.location.origin}/join?room=${roomId}`;
+          QRCode.toDataURL(joinUrl).then(url => {
+            setQrCodeUrl(url);
+          });
+        }
       });
 
       client.on('gameStateUpdate', (message: any) => {
         setGameState(message.gameState);
+        // Update QR code if status changes to ready
+        if (message.gameState.status === 'ready' && typeof window !== 'undefined') {
+          const joinUrl = `${window.location.origin}/join?room=${roomId}`;
+          QRCode.toDataURL(joinUrl).then(url => {
+            setQrCodeUrl(url);
+          });
+        }
       });
 
       setWs(client);
@@ -44,6 +60,30 @@ export default function GameDisplayPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-blue-900">
         <div className="text-white text-2xl">Connecting...</div>
+      </main>
+    );
+  }
+
+  if (gameState.status === 'ready') {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-blue-900">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="jeopardy-title text-6xl font-bold mb-8 uppercase tracking-wider text-white">JEOPARDY!</h1>
+          <div className="bg-blue-800 p-8 rounded-lg">
+            <h2 className="text-4xl font-bold mb-6 text-white">Join the Game</h2>
+            {qrCodeUrl ? (
+              <div className="flex flex-col items-center gap-4">
+                <img src={qrCodeUrl} alt="QR Code" className="w-96 h-96 bg-white p-4 rounded" />
+                <p className="text-xl text-white">Scan to join Room {roomId}</p>
+                {typeof window !== 'undefined' && (
+                  <p className="text-lg text-blue-200">Or visit: {window.location.origin}/join?room={roomId}</p>
+                )}
+              </div>
+            ) : (
+              <div className="text-white">Generating QR code...</div>
+            )}
+          </div>
+        </div>
       </main>
     );
   }

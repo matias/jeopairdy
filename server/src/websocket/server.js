@@ -13,13 +13,27 @@ function generateRoomId() {
 }
 
 function serializeGameState(gameState) {
-  return {
-    ...gameState,
+  // Create a clean copy without internal server-only properties
+  const serialized = {
+    roomId: gameState.roomId,
+    config: gameState.config,
+    status: gameState.status,
+    currentRound: gameState.currentRound,
+    selectedClue: gameState.selectedClue,
     players: Array.from(gameState.players.entries()).map(([id, player]) => ({
       id,
       ...player,
     })),
+    buzzerOrder: gameState.buzzerOrder,
+    currentPlayer: gameState.currentPlayer,
+    judgedPlayers: gameState.judgedPlayers,
+    notPickedInTies: gameState.notPickedInTies,
+    hostId: gameState.hostId,
+    // Exclude: buzzTimestamps (internal debugging data)
+    // Exclude: buzzerProcessTimeout (Node.js Timeout object with circular refs)
+    // Exclude: onBuzzerProcessed (function callback)
   };
+  return serialized;
 }
 
 function handleWebSocket(ws, req) {
@@ -97,6 +111,9 @@ function handleMessage(ws, message, conn) {
       break;
     case 'returnToBoard':
       handleReturnToBoard(ws, message, conn);
+      break;
+    case 'startGame':
+      handleStartGame(ws, message, conn);
       break;
     default:
       ws.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
@@ -222,23 +239,41 @@ function handleBuzz(ws, message, conn) {
     return;
   }
 
-  const { timestamp } = message;
-  const success = gameManager.handleBuzz(conn.roomId, conn.playerId, timestamp);
+  const { timestamp: clientTimestamp } = message;
+  const serverTimestamp = Date.now();
+  
+  // Set up callback for when buzzer processing completes (after tie window)
+  const gameState = gameManager.getGame(conn.roomId);
+  if (gameState && !gameState.onBuzzerProcessed) {
+    gameState.onBuzzerProcessed = (roomId) => {
+      const updatedState = gameManager.getGame(roomId);
+      if (updatedState) {
+        broadcastToRoom(roomId, {
+          type: 'gameStateUpdate',
+          gameState: serializeGameState(updatedState),
+        });
+      }
+    };
+  }
+  
+  const success = gameManager.handleBuzz(conn.roomId, conn.playerId, clientTimestamp, serverTimestamp);
   
   if (success) {
-    const gameState = gameManager.getGame(conn.roomId);
-    if (gameState) {
-      // Broadcast buzz to all
+    const currentGameState = gameManager.getGame(conn.roomId);
+    if (currentGameState) {
+      // Always broadcast buzz received to all clients (so they can show "buzzed" state)
       broadcastToRoom(conn.roomId, {
         type: 'buzzReceived',
         playerId: conn.playerId,
-        timestamp,
+        timestamp: clientTimestamp,
+        serverTimestamp,
       });
 
-      // Update game state
+      // Always broadcast updated game state so all clients see who has buzzed
+      // This includes all buzzes, even late ones
       broadcastToRoom(conn.roomId, {
         type: 'gameStateUpdate',
-        gameState: serializeGameState(gameState),
+        gameState: serializeGameState(currentGameState),
       });
     }
   }
@@ -492,6 +527,27 @@ function handleReturnToBoard(ws, message, conn) {
         gameState: serializeGameState(gameState),
       });
     }
+  }
+}
+
+function handleStartGame(ws, message, conn) {
+  if (!conn.roomId || conn.role !== 'host') {
+    ws.send(JSON.stringify({ type: 'error', message: 'Only host can start the game' }));
+    return;
+  }
+
+  const success = gameManager.startGame(conn.roomId);
+  
+  if (success) {
+    const gameState = gameManager.getGame(conn.roomId);
+    if (gameState) {
+      broadcastToRoom(conn.roomId, {
+        type: 'gameStateUpdate',
+        gameState: serializeGameState(gameState),
+      });
+    }
+  } else {
+    ws.send(JSON.stringify({ type: 'error', message: 'Game cannot be started in current state' }));
   }
 }
 

@@ -12,8 +12,10 @@ class GameManager {
       selectedClue: null,
       players: new Map(),
       buzzerOrder: [],
+      buzzTimestamps: [], // Array of {playerId, clientTimestamp, serverTimestamp}
       currentPlayer: null,
       judgedPlayers: [], // Track which players have been judged
+      notPickedInTies: [], // Players who haven't been picked in ties (for fairness)
       hostId,
     };
     this.games.set(roomId, gameState);
@@ -51,7 +53,7 @@ class GameManager {
     if (!game) return false;
 
     game.config = config;
-    game.status = "selecting";
+    game.status = "ready";
     return true;
   }
 
@@ -73,8 +75,13 @@ class GameManager {
     game.selectedClue = { categoryId, clueId };
     game.status = "clueRevealed";
     game.buzzerOrder = [];
+    game.buzzTimestamps = [];
     game.currentPlayer = null;
     game.judgedPlayers = []; // Reset judged players for new clue
+    if (game.buzzerProcessTimeout) {
+      clearTimeout(game.buzzerProcessTimeout);
+      game.buzzerProcessTimeout = null;
+    }
 
     // Unlock buzzer after a delay (simulate reading time)
     setTimeout(() => {
@@ -87,30 +94,192 @@ class GameManager {
     return true;
   }
 
-  handleBuzz(roomId, playerId, timestamp) {
+  handleBuzz(roomId, playerId, clientTimestamp, serverTimestamp) {
     const game = this.games.get(roomId);
-    if (!game || game.status !== "buzzing") return false;
+    // Allow buzzes during "buzzing" or "answering" status (answering means someone was selected but others can still buzz late)
+    if (!game || (game.status !== "buzzing" && game.status !== "answering")) return false;
 
     // Check if player exists
     if (!game.players.has(playerId)) return false;
 
-    // Check if already buzzed
-    if (game.buzzerOrder.includes(playerId)) return false;
-
-    // Add to buzzer order
-    game.buzzerOrder.push(playerId);
-    
-    // If first to buzz, set as current player
-    if (game.buzzerOrder.length === 1) {
-      game.currentPlayer = playerId;
-      game.status = "answering";
-      const player = game.players.get(playerId);
-      if (player) {
-        player.buzzedAt = timestamp;
-      }
+    // Check if already buzzed (prevent duplicate buzzes from same player)
+    if (game.buzzTimestamps.some(b => b.playerId === playerId)) {
+      // Already buzzed, but return true so client knows it was received
+      return true;
     }
 
+    // Add to buzz timestamps with both client and server timestamps
+    game.buzzTimestamps.push({
+      playerId,
+      clientTimestamp,
+      serverTimestamp,
+    });
+
+    // Sort by server timestamp (most accurate for local network)
+    game.buzzTimestamps.sort((a, b) => a.serverTimestamp - b.serverTimestamp);
+
+    // Process buzzes with 250ms tie window (only processes if currentPlayer not set)
+    this.processBuzzerOrder(roomId);
+
     return true;
+  }
+
+  processBuzzerOrder(roomId) {
+    const game = this.games.get(roomId);
+    if (!game || game.buzzTimestamps.length === 0) return;
+
+    // Always update buzzerOrder to include all buzzes (even late ones)
+    game.buzzerOrder = game.buzzTimestamps.map(b => b.playerId);
+
+    // If current player already set, just update buzzerOrder and return
+    // (late buzzes won't change who gets to answer)
+    if (game.currentPlayer) {
+      return;
+    }
+
+    const TIE_WINDOW_MS = 250;
+    const firstServerTime = game.buzzTimestamps[0].serverTimestamp;
+    
+    // Find all buzzes within the tie window
+    const tiedBuzzes = game.buzzTimestamps.filter(
+      b => b.serverTimestamp - firstServerTime <= TIE_WINDOW_MS
+    );
+
+    // Always wait for the tie window to close, even if only one buzzer so far
+    // This ensures fairness - someone else might buzz within 250ms
+    // Set a timeout to process after the tie window closes
+    if (game.buzzerProcessTimeout) {
+      clearTimeout(game.buzzerProcessTimeout);
+    }
+
+    // Calculate how long to wait: tie window minus time already elapsed since first buzz
+    const now = Date.now();
+    const elapsed = now - firstServerTime;
+    const remainingWait = Math.max(0, TIE_WINDOW_MS - elapsed) + 50; // Add 50ms buffer
+
+    game.buzzerProcessTimeout = setTimeout(() => {
+      const currentGame = this.games.get(roomId);
+      if (!currentGame || currentGame.currentPlayer) return;
+
+      // Re-check tied buzzes after window closes
+      const allTiedBuzzes = currentGame.buzzTimestamps.filter(
+        b => b.serverTimestamp - firstServerTime <= TIE_WINDOW_MS
+      );
+
+      // Determine who should get to answer
+      let selectedPlayerId = null;
+
+      if (allTiedBuzzes.length === 1) {
+        // No tie, first buzzer wins
+        selectedPlayerId = allTiedBuzzes[0].playerId;
+      } else {
+        // Tie detected - use fair selection logic
+        selectedPlayerId = this.selectFromTie(currentGame, allTiedBuzzes);
+      }
+
+      // Update buzzer order (all buzzes, in order - includes late buzzes)
+      // This ensures all players who buzzed are shown in the UI
+      currentGame.buzzerOrder = currentGame.buzzTimestamps.map(b => b.playerId);
+
+      // Set current player
+      if (selectedPlayerId) {
+        currentGame.currentPlayer = selectedPlayerId;
+        currentGame.status = "answering";
+        const player = currentGame.players.get(selectedPlayerId);
+        if (player) {
+          player.buzzedAt = allTiedBuzzes.find(b => b.playerId === selectedPlayerId)?.clientTimestamp || Date.now();
+        }
+
+        // Trigger broadcast via callback if set
+        if (currentGame.onBuzzerProcessed) {
+          currentGame.onBuzzerProcessed(roomId);
+        }
+      }
+
+      // Log debugging info for host
+      this.logBuzzerDebug(currentGame, allTiedBuzzes, selectedPlayerId);
+      currentGame.buzzerProcessTimeout = null;
+    }, remainingWait);
+  }
+
+  selectFromTie(game, tiedBuzzes) {
+    const tiedPlayerIds = tiedBuzzes.map(b => b.playerId);
+    
+    // First, try to pick from "not picked" list
+    const notPickedInTies = game.notPickedInTies || [];
+    const notPickedInTie = tiedPlayerIds.filter(id => notPickedInTies.includes(id));
+
+    let selectedPlayerId = null;
+
+    if (notPickedInTie.length > 0) {
+      // Pick the first one from not-picked list (they get priority)
+      selectedPlayerId = notPickedInTie[0];
+      // Remove from not-picked list since they're being picked now
+      game.notPickedInTies = game.notPickedInTies.filter(id => id !== selectedPlayerId);
+    } else {
+      // No one in not-picked list, pick first in tie
+      selectedPlayerId = tiedPlayerIds[0];
+    }
+
+    // Add all other tied players to "not picked" list (if not already there)
+    tiedPlayerIds.forEach(playerId => {
+      if (playerId !== selectedPlayerId && !game.notPickedInTies.includes(playerId)) {
+        game.notPickedInTies.push(playerId);
+      }
+    });
+
+    return selectedPlayerId;
+  }
+
+  logBuzzerDebug(game, tiedBuzzes, selectedPlayerId) {
+    const playerNames = {};
+    game.players.forEach((player, id) => {
+      playerNames[id] = player.name;
+    });
+
+    const TIE_WINDOW_MS = 250;
+    const firstServerTime = game.buzzTimestamps[0]?.serverTimestamp || 0;
+
+    console.log('\n=== BUZZER DEBUG INFO ===');
+    console.log(`Total buzzes: ${game.buzzTimestamps.length}`);
+    
+    game.buzzTimestamps.forEach((buzz, index) => {
+      const latency = buzz.serverTimestamp - buzz.clientTimestamp;
+      const isTied = tiedBuzzes.some(tb => tb.playerId === buzz.playerId);
+      const isSelected = buzz.playerId === selectedPlayerId;
+      const timeFromFirst = buzz.serverTimestamp - firstServerTime;
+      const isLate = timeFromFirst > TIE_WINDOW_MS;
+      
+      console.log(
+        `${index + 1}. ${playerNames[buzz.playerId] || buzz.playerId} | ` +
+        `Client: ${buzz.clientTimestamp} | ` +
+        `Server: ${buzz.serverTimestamp} | ` +
+        `Latency: ${latency}ms | ` +
+        `Time from first: ${timeFromFirst}ms | ` +
+        `${isTied ? 'TIED' : isLate ? 'LATE (not counted)' : ''} ${isSelected ? '✓ SELECTED' : ''}`
+      );
+    });
+
+    if (tiedBuzzes.length > 1) {
+      console.log(`\nTIE DETECTED (${tiedBuzzes.length} players within 250ms):`);
+      tiedBuzzes.forEach(buzz => {
+        console.log(`  - ${playerNames[buzz.playerId] || buzz.playerId}`);
+      });
+      console.log(`Selected: ${playerNames[selectedPlayerId] || selectedPlayerId}`);
+    }
+
+    const lateBuzzes = game.buzzTimestamps.filter(
+      b => (b.serverTimestamp - firstServerTime) > TIE_WINDOW_MS
+    );
+    if (lateBuzzes.length > 0) {
+      console.log(`\nLATE BUZZES (outside 250ms window, shown but not counted):`);
+      lateBuzzes.forEach(buzz => {
+        console.log(`  - ${playerNames[buzz.playerId] || buzz.playerId}`);
+      });
+    }
+
+    console.log(`\nNot-picked list: ${(game.notPickedInTies || []).map(id => playerNames[id] || id).join(', ') || '(empty)'}`);
+    console.log('=== END BUZZER DEBUG ===\n');
   }
 
   judgeAnswer(roomId, playerId, correct) {
@@ -295,9 +464,23 @@ class GameManager {
     game.selectedClue = null;
     game.currentPlayer = null;
     game.buzzerOrder = [];
+    game.buzzTimestamps = [];
     game.judgedPlayers = [];
+    // Note: We keep notPickedInTies across clues for fairness
     
     return true;
+  }
+
+  startGame(roomId) {
+    const game = this.games.get(roomId);
+    if (!game || !game.config) return false;
+
+    if (game.status === "ready") {
+      game.status = "selecting";
+      return true;
+    }
+
+    return false;
   }
 }
 

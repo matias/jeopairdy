@@ -3,6 +3,7 @@ export type Round = "jeopardy" | "doubleJeopardy" | "finalJeopardy";
 
 export type GameStatus = 
   | "waiting" 
+  | "ready"
   | "selecting" 
   | "clueRevealed" 
   | "buzzing" 
@@ -62,9 +63,10 @@ export interface GameState {
   currentRound: Round;
   selectedClue: { categoryId: string; clueId: string } | null;
   players: Map<string, Player>;
-  buzzerOrder: string[]; // player IDs in order of buzz
-  currentPlayer: string | null; // player who buzzed first
+  buzzerOrder: string[]; // player IDs in order of buzz (all buzzes, including late ones)
+  currentPlayer: string | null; // player who gets to answer (from tied buzzes only)
   judgedPlayers?: string[]; // player IDs that have been judged
+  notPickedInTies?: string[]; // player IDs who haven't been picked in ties (for fairness)
   hostId: string;
 }
 
@@ -83,7 +85,8 @@ export type ClientMessage =
   | { type: "revealFinalAnswers" }
   | { type: "createGame"; prompt: string; difficulty?: string; sourceMaterial?: string }
   | { type: "loadGame"; gameConfig: GameConfig }
-  | { type: "returnToBoard" };
+  | { type: "returnToBoard" }
+  | { type: "startGame" };
 
 export type ServerMessage = 
   | { type: "roomJoined"; roomId: string; gameState: GameState; playerId: string }

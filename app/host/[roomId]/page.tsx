@@ -97,6 +97,12 @@ export default function HostPage() {
     }
   };
 
+  const handleStartGame = () => {
+    if (ws) {
+      ws.startGame();
+    }
+  };
+
   if (!gameState || !playerId) {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -148,6 +154,54 @@ export default function HostPage() {
                 Load Saved Game
               </button>
             </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (gameState.status === 'ready') {
+    return (
+      <main className="min-h-screen p-8 bg-gray-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-4xl font-bold mb-2">Host Control - Room {roomId}</h1>
+            <div className="text-lg text-gray-600">
+              Game is ready to start. Players can still join.
+            </div>
+          </div>
+
+          <div className="bg-white p-8 rounded-lg shadow-lg mb-6">
+            <h2 className="text-2xl font-bold mb-4">Players Joined</h2>
+            {players.length === 0 ? (
+              <p className="text-gray-600">No players have joined yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {players.map((player) => (
+                  <div key={player.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <span className="font-semibold">{player.name}</span>
+                    <span className="text-gray-600">Score: ${player.score}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={handleStartGame}
+              className="px-8 py-4 bg-green-600 text-white rounded hover:bg-green-700 text-xl font-bold"
+            >
+              Start Game
+            </button>
+            <button
+              onClick={() => {
+                window.open(`/game/${roomId}`, '_blank', 'width=1920,height=1080');
+              }}
+              className="px-6 py-4 bg-purple-600 text-white rounded hover:bg-purple-700 font-bold"
+            >
+              Open Game Display
+            </button>
           </div>
         </div>
       </main>

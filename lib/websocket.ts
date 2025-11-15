@@ -205,6 +205,12 @@ export class WebSocketClient {
     });
   }
 
+  startGame() {
+    this.send({
+      type: 'startGame',
+    });
+  }
+
   disconnect() {
     if (this.ws) {
       this.ws.close();

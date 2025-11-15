@@ -98,7 +98,7 @@ export default function CreateGamePage() {
             className="w-full px-4 py-2 border rounded"
           >
             <option value="easy">Easy (for kids or beginners)</option>
-            <option value="moderate">Moderate (general audience)</option>
+            <option value="medium">Medium (general audience)</option>
             <option value="hard">Hard (expert level)</option>
           </select>
         </div>
