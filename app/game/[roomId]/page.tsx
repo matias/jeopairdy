@@ -68,7 +68,7 @@ export default function GameDisplayPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-blue-900">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="jeopardy-title text-6xl font-bold mb-8 uppercase tracking-wider text-white">JEOPARDY!</h1>
+          <h1 className="jeopardy-title text-6xl font-bold mb-8 uppercase tracking-wider text-white">JEOPAIRDY!</h1>
           <div className="bg-blue-800 p-8 rounded-lg">
             <h2 className="text-4xl font-bold mb-6 text-white">Join the Game</h2>
             {qrCodeUrl ? (
@@ -92,7 +92,7 @@ export default function GameDisplayPage() {
     <main className="min-h-screen p-8 bg-blue-900">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 text-center">
-          <h1 className="jeopardy-title text-6xl font-bold mb-2 uppercase tracking-wider">JEOPARDY!</h1>
+          <h1 className="jeopardy-title text-6xl font-bold mb-2 uppercase tracking-wider">JEOPAIRDY!</h1>
           <div className="text-3xl text-white font-bold uppercase tracking-wide">
             {gameState.currentRound === 'jeopardy' ? 'JEOPARDY ROUND' : 
              gameState.currentRound === 'doubleJeopardy' ? 'DOUBLE JEOPARDY ROUND' : 
@@ -121,7 +121,7 @@ export default function GameDisplayPage() {
 
         {gameState.status === 'finalJeopardyWagering' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white text-center">
-            <h2 className="text-4xl font-bold mb-4">FINAL JEOPARDY!</h2>
+            <h2 className="text-4xl font-bold mb-4">FINAL JEOPAIRDY!</h2>
             <p className="text-2xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
             <p className="text-xl">Players are placing their wagers...</p>
           </div>
@@ -129,7 +129,7 @@ export default function GameDisplayPage() {
 
         {gameState.status === 'finalJeopardyAnswering' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white">
-            <h2 className="text-4xl font-bold mb-4 text-center">FINAL JEOPARDY!</h2>
+            <h2 className="text-4xl font-bold mb-4 text-center">FINAL JEOPAIRDY!</h2>
             <div className="text-center mb-6">
               <p className="text-2xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
               <p className="text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
@@ -140,7 +140,7 @@ export default function GameDisplayPage() {
 
         {gameState.status === 'finalJeopardyReveal' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white">
-            <h2 className="text-4xl font-bold mb-4 text-center">FINAL JEOPARDY!</h2>
+            <h2 className="text-4xl font-bold mb-4 text-center">FINAL JEOPAIRDY!</h2>
             <div className="text-center mb-6">
               <p className="text-2xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
               <p className="text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
