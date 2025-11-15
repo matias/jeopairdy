@@ -23,6 +23,7 @@ export default function PlayerPage() {
   const [finalWager, setFinalWager] = useState('');
   const [finalAnswer, setFinalAnswer] = useState('');
   const [isConnected, setIsConnected] = useState(true);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const connectedRef = useRef(false);
   const playerIdRef = useRef<string | null>(null);
 
@@ -154,6 +155,24 @@ export default function PlayerPage() {
     }
   };
 
+  // Update countdown timer (must be before early return to follow Rules of Hooks)
+  useEffect(() => {
+    if (!gameState?.finalJeopardyCountdownEnd) {
+      setCountdown(null);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const remaining = Math.max(0, Math.floor((gameState.finalJeopardyCountdownEnd! - Date.now()) / 1000));
+      setCountdown(remaining);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 100);
+
+    return () => clearInterval(interval);
+  }, [gameState?.finalJeopardyCountdownEnd]);
+
   if (!gameState || !playerId) {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -194,58 +213,127 @@ export default function PlayerPage() {
           )}
         </div>
 
-        {isFinalJeopardyWagering && (
+        {(gameState.status === 'finalJeopardyCategory' || isFinalJeopardyWagering) && (
           <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
             <h2 className="text-2xl font-bold mb-4">Final Jeopardy - Place Your Wager</h2>
-            <p className="mb-4">Your current score: ${player?.score || 0}</p>
-            <div className="flex gap-4">
-              <input
-                type="number"
-                value={finalWager}
-                onChange={(e) => setFinalWager(e.target.value)}
-                placeholder="Wager amount"
-                className="flex-1 px-4 py-2 border rounded"
-                disabled={hasWagered}
-                min="0"
-                max={player?.score || 0}
-              />
-              <button
-                onClick={handleSubmitWager}
-                disabled={hasWagered || !finalWager}
-                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
-              >
-                {hasWagered ? 'Wagered' : 'Submit Wager'}
-              </button>
-            </div>
-            {hasWagered && <p className="mt-2 text-green-600">Wager submitted: ${player?.finalJeopardyWager}</p>}
+            {player && player.score <= 0 ? (
+              <div className="text-center py-8">
+                <p className="text-xl text-gray-600 mb-2">Unfortunately, you cannot participate in Final Jeopardy</p>
+                <p className="text-lg text-gray-500">Your score is ${player.score}</p>
+                <p className="text-lg text-gray-500 mt-4">Thank you for playing!</p>
+              </div>
+            ) : (
+              <>
+                <p className="mb-4 text-lg">Your current score: <span className="font-bold text-2xl">${player?.score || 0}</span></p>
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <input
+                      type="number"
+                      value={finalWager}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Allow empty string for clearing
+                        if (value === '') {
+                          setFinalWager('');
+                          return;
+                        }
+                        // Only allow digits
+                        if (!/^\d+$/.test(value)) {
+                          return;
+                        }
+                        const numValue = parseInt(value, 10);
+                        const maxScore = player?.score || 0;
+                        // Clamp value between 0 and max score
+                        if (numValue >= 0 && numValue <= maxScore) {
+                          setFinalWager(value);
+                        } else if (numValue > maxScore) {
+                          // If user types a number greater than max, set to max
+                          setFinalWager(maxScore.toString());
+                        }
+                        // If negative, don't update (prevent negative values)
+                      }}
+                      placeholder="Wager amount (0 to your score)"
+                      className={`w-full px-6 py-4 text-2xl border-2 rounded-lg focus:outline-none ${
+                        finalWager && (parseInt(finalWager, 10) < 0 || parseInt(finalWager, 10) > (player?.score || 0))
+                          ? 'border-red-500 focus:border-red-500'
+                          : 'border-gray-300 focus:border-blue-500'
+                      }`}
+                      disabled={hasWagered}
+                      min="0"
+                      max={player?.score || 0}
+                    />
+                    {finalWager && (parseInt(finalWager, 10) < 0 || parseInt(finalWager, 10) > (player?.score || 0)) && (
+                      <p className="mt-2 text-sm text-red-600">
+                        Wager must be between $0 and ${player?.score || 0}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleSubmitWager}
+                    disabled={hasWagered || !finalWager || parseInt(finalWager, 10) < 0 || parseInt(finalWager, 10) > (player?.score || 0)}
+                    className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 text-xl font-bold"
+                  >
+                    {hasWagered ? 'Wager Submitted ✓' : 'Submit Wager'}
+                  </button>
+                </div>
+                {hasWagered && <p className="mt-4 text-green-600 text-lg font-bold">Wager submitted: ${player?.finalJeopardyWager}</p>}
+              </>
+            )}
           </div>
         )}
 
         {isFinalJeopardyAnswering && (
           <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
             <h2 className="text-2xl font-bold mb-4">Final Jeopardy - Your Answer</h2>
-            <div className="flex gap-4">
+            {countdown !== null && (
+              <div className="mb-4 p-4 bg-red-100 rounded-lg">
+                <p className="text-xl font-bold text-red-600">
+                  Time remaining: {countdown} seconds
+                </p>
+              </div>
+            )}
+            <div className="mb-4">
+              <p className="text-lg mb-2">Your wager: <span className="font-bold text-2xl">${player?.finalJeopardyWager || 0}</span></p>
+            </div>
+            <div className="flex flex-col gap-4">
               <input
                 type="text"
                 value={finalAnswer}
                 onChange={(e) => setFinalAnswer(e.target.value)}
                 placeholder="Your answer (in the form of a question)"
-                className="flex-1 px-4 py-2 border rounded"
-                disabled={hasAnswered}
+                className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                disabled={hasAnswered || (countdown !== null && countdown <= 0)}
               />
               <button
                 onClick={handleSubmitFinalAnswer}
-                disabled={hasAnswered || !finalAnswer}
-                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
+                disabled={hasAnswered || !finalAnswer || (countdown !== null && countdown <= 0)}
+                className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 text-xl font-bold"
               >
-                {hasAnswered ? 'Submitted' : 'Submit Answer'}
+                {hasAnswered ? 'Answer Submitted ✓' : (countdown !== null && countdown <= 0 ? 'Time Expired' : 'Submit Answer')}
               </button>
             </div>
-            {hasAnswered && <p className="mt-2 text-green-600">Answer submitted!</p>}
+            {hasAnswered && <p className="mt-4 text-green-600 text-lg font-bold">Answer submitted!</p>}
           </div>
         )}
 
-        {!isFinalJeopardyWagering && !isFinalJeopardyAnswering && (
+        {gameState.status === 'finalJeopardyJudging' && (
+          <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
+            <h2 className="text-2xl font-bold mb-4">Final Jeopardy - Judging</h2>
+            <p className="text-lg text-gray-600">Please wait while the host judges all players...</p>
+          </div>
+        )}
+
+        {gameState.status === 'finished' && (
+          <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
+            <h2 className="text-2xl font-bold mb-4">Game Over</h2>
+            <p className="text-lg mb-4">Your final score: <span className="font-bold text-2xl">${player?.score || 0}</span></p>
+          </div>
+        )}
+
+        {!isFinalJeopardyWagering && !isFinalJeopardyAnswering && 
+         gameState.status !== 'finalJeopardyCategory' && 
+         gameState.status !== 'finalJeopardyJudging' && 
+         gameState.status !== 'finished' && (
           <Buzzer
             locked={buzzerLocked}
             onBuzz={handleBuzz}

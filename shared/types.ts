@@ -9,8 +9,10 @@ export type GameStatus =
   | "buzzing" 
   | "answering" 
   | "judging" 
+  | "finalJeopardyCategory"
   | "finalJeopardyWagering"
   | "finalJeopardyAnswering"
+  | "finalJeopardyJudging"
   | "finalJeopardyReveal"
   | "finished";
 
@@ -71,6 +73,15 @@ export interface GameState {
   notPickedInTies?: string[]; // player IDs who haven't been picked in ties (for fairness)
   lastCorrectPlayer?: string | null; // player ID who last answered correctly (has control of board)
   hostId: string;
+  // Final Jeopardy state
+  finalJeopardyInitialScores?: Map<string, number> | Record<string, number>; // snapshot of scores at Final Jeopardy start (Map on server, object when serialized)
+  finalJeopardyJudgingOrder?: string[]; // player IDs sorted by initial scores (ascending)
+  finalJeopardyClueShown?: boolean;
+  finalJeopardyCountdownStart?: number;
+  finalJeopardyCountdownEnd?: number;
+  finalJeopardyJudgingPlayerIndex?: number;
+  finalJeopardyRevealedWager?: boolean;
+  finalJeopardyRevealedAnswer?: boolean;
 }
 
 // WebSocket message types
@@ -86,6 +97,11 @@ export type ClientMessage =
   | { type: "submitWager"; wager: number }
   | { type: "submitFinalAnswer"; answer: string }
   | { type: "revealFinalAnswers" }
+  | { type: "showFinalJeopardyClue" }
+  | { type: "startFinalJeopardyJudging" }
+  | { type: "revealFinalJeopardyWager" }
+  | { type: "revealFinalJeopardyAnswer" }
+  | { type: "judgeFinalJeopardyAnswer"; playerId: string; correct: boolean }
   | { type: "createGame"; prompt: string; difficulty?: string; sourceMaterial?: string }
   | { type: "loadGame"; gameConfig: GameConfig }
   | { type: "returnToBoard" }

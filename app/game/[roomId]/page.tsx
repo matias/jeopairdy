@@ -13,6 +13,38 @@ import { getWebSocketUrl } from '@/lib/websocket-url';
 
 const WS_URL = getWebSocketUrl();
 
+function CountdownTimer({ countdownEnd }: { countdownEnd: number | undefined }) {
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!countdownEnd) {
+      setTimeLeft(null);
+      return;
+    }
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const remaining = Math.max(0, Math.floor((countdownEnd - now) / 1000));
+      setTimeLeft(remaining);
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 100);
+
+    return () => clearInterval(interval);
+  }, [countdownEnd]);
+
+  if (timeLeft === null || timeLeft === 0) return null;
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  return (
+    <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg text-4xl font-bold z-50">
+      :{String(minutes).padStart(1, '0')}{String(seconds).padStart(2, '0')}
+    </div>
+  );
+}
+
 export default function GameDisplayPage() {
   const params = useParams();
   const roomId = params.roomId as string;
@@ -119,30 +151,65 @@ export default function GameDisplayPage() {
           </div>
         )}
 
+        {gameState.status === 'finalJeopardyCategory' && gameState.config && (
+          <div className="bg-blue-800 p-8 rounded-lg text-white text-center">
+            <p className="text-4xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
+            <p className="text-xl">Players are placing their wagers...</p>
+          </div>
+        )}
+
         {gameState.status === 'finalJeopardyWagering' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white text-center">
-            <h2 className="text-4xl font-bold mb-4">FINAL JEOPAIRDY!</h2>
-            <p className="text-2xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
+            <p className="text-4xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
             <p className="text-xl">Players are placing their wagers...</p>
           </div>
         )}
 
         {gameState.status === 'finalJeopardyAnswering' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white">
-            <h2 className="text-4xl font-bold mb-4 text-center">FINAL JEOPAIRDY!</h2>
             <div className="text-center mb-6">
-              <p className="text-2xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
+              <p className="text-4xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
               <p className="text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
             </div>
             <p className="text-xl text-center">Players are writing their answers...</p>
+            <CountdownTimer countdownEnd={gameState.finalJeopardyCountdownEnd} />
+          </div>
+        )}
+
+        {gameState.status === 'finalJeopardyJudging' && gameState.config && (
+          <div className="bg-blue-800 p-8 rounded-lg text-white">
+            <div className="text-center mb-6">
+              <p className="text-4xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
+              <p className="text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
+            </div>
+            {gameState.finalJeopardyJudgingOrder && gameState.finalJeopardyJudgingPlayerIndex !== undefined && (
+              <div className="text-center">
+                {(() => {
+                  const currentPlayerId = gameState.finalJeopardyJudgingOrder[gameState.finalJeopardyJudgingPlayerIndex];
+                  const currentPlayer = Array.from(gameState.players.values()).find(p => p.id === currentPlayerId);
+                  if (!currentPlayer) return null;
+                  
+                  return (
+                    <div className="bg-blue-900 p-6 rounded-lg">
+                      <p className="text-2xl font-bold mb-4">{currentPlayer.name}</p>
+                      {gameState.finalJeopardyRevealedWager && (
+                        <p className="text-xl mb-2">Wager: ${currentPlayer.finalJeopardyWager || 0}</p>
+                      )}
+                      {gameState.finalJeopardyRevealedAnswer && (
+                        <p className="text-xl">Answer: {currentPlayer.finalJeopardyAnswer || 'No answer'}</p>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
         )}
 
         {gameState.status === 'finalJeopardyReveal' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white">
-            <h2 className="text-4xl font-bold mb-4 text-center">FINAL JEOPAIRDY!</h2>
             <div className="text-center mb-6">
-              <p className="text-2xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
+              <p className="text-4xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
               <p className="text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
               {/* Answer is never shown on game display */}
             </div>
@@ -154,7 +221,7 @@ export default function GameDisplayPage() {
 
         {gameState.status === 'finished' && (
           <div className="bg-blue-800 p-8 rounded-lg text-white text-center">
-            <h2 className="text-4xl font-bold mb-4">GAME OVER</h2>
+            <h2 className="text-4xl font-bold mb-4">THANK YOU FOR PLAYING!</h2>
             <div className="mt-8">
               <Scoreboard gameState={gameState} />
             </div>

@@ -340,6 +340,38 @@ export class WebSocketClient {
     });
   }
 
+  showFinalJeopardyClue() {
+    this.send({
+      type: 'showFinalJeopardyClue',
+    });
+  }
+
+  startFinalJeopardyJudging() {
+    this.send({
+      type: 'startFinalJeopardyJudging',
+    });
+  }
+
+  revealFinalJeopardyWager() {
+    this.send({
+      type: 'revealFinalJeopardyWager',
+    });
+  }
+
+  revealFinalJeopardyAnswer() {
+    this.send({
+      type: 'revealFinalJeopardyAnswer',
+    });
+  }
+
+  judgeFinalJeopardyAnswer(playerId: string, correct: boolean) {
+    this.send({
+      type: 'judgeFinalJeopardyAnswer',
+      playerId,
+      correct,
+    });
+  }
+
   createGame(prompt: string, difficulty?: string, sourceMaterial?: string) {
     this.send({
       type: 'createGame',

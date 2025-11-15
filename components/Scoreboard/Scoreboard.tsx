@@ -14,6 +14,11 @@ export default function Scoreboard({ gameState, highlightPlayer }: ScoreboardPro
     : Array.from(gameState.players.values());
   const sortedPlayers = players.sort((a, b) => b.score - a.score);
 
+  // Find winner (highest score) when game is finished
+  const winnerId = gameState.status === 'finished' && sortedPlayers.length > 0
+    ? sortedPlayers[0].id
+    : null;
+
   return (
     <div className="w-full">
       <div 
@@ -23,12 +28,15 @@ export default function Scoreboard({ gameState, highlightPlayer }: ScoreboardPro
         {sortedPlayers.map((player) => {
           const isLastCorrect = gameState.lastCorrectPlayer === player.id;
           const isHighlighted = highlightPlayer === player.id || isLastCorrect;
+          const isWinner = winnerId === player.id;
           return (
           <div
             key={player.id}
             className={`
               p-4 rounded-lg
-              ${isLastCorrect 
+              ${isWinner
+                ? 'border-4 border-yellow-500 bg-yellow-200 shadow-lg'
+                : isLastCorrect 
                 ? 'border-4 border-yellow-500 bg-yellow-100' 
                 : isHighlighted
                 ? 'border-2 border-yellow-400 bg-yellow-100'
@@ -36,7 +44,10 @@ export default function Scoreboard({ gameState, highlightPlayer }: ScoreboardPro
               }
             `}
           >
-            <div className="text-lg font-bold">{player.name}</div>
+            <div className="text-lg font-bold text-gray-900">{player.name}</div>
+            {isWinner && gameState.status === 'finished' && (
+              <div className="text-sm font-bold text-yellow-700 mb-1">WINNER!</div>
+            )}
             <div className={`
               text-2xl font-bold mt-2
               ${player.score >= 0 ? 'text-green-600' : 'text-red-600'}

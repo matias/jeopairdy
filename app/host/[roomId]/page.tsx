@@ -91,6 +91,36 @@ export default function HostPage() {
     }
   };
 
+  const handleShowFinalJeopardyClue = () => {
+    if (ws) {
+      ws.showFinalJeopardyClue();
+    }
+  };
+
+  const handleStartFinalJeopardyJudging = () => {
+    if (ws) {
+      ws.startFinalJeopardyJudging();
+    }
+  };
+
+  const handleRevealFinalJeopardyWager = () => {
+    if (ws) {
+      ws.revealFinalJeopardyWager();
+    }
+  };
+
+  const handleRevealFinalJeopardyAnswer = () => {
+    if (ws) {
+      ws.revealFinalJeopardyAnswer();
+    }
+  };
+
+  const handleJudgeFinalJeopardyAnswer = (playerId: string, correct: boolean) => {
+    if (ws) {
+      ws.judgeFinalJeopardyAnswer(playerId, correct);
+    }
+  };
+
   const handleReturnToBoard = () => {
     if (ws) {
       ws.returnToBoard();
@@ -423,7 +453,7 @@ export default function HostPage() {
         </div>
 
         <div className="flex gap-4">
-          {gameState.status === 'selecting' && gameState.currentRound !== 'finalJeopardy' && (
+          {gameState.status === 'selecting' && gameState.currentRound === 'jeopardy' && (
             <button
               onClick={handleNextRound}
               className="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-700"
@@ -463,30 +493,62 @@ export default function HostPage() {
           </div>
         )}
 
-        {gameState.status === 'finalJeopardyWagering' && (
+        {(gameState.status === 'finalJeopardyCategory' || gameState.status === 'finalJeopardyWagering') && gameState.config && (
           <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
-            <h2 className="text-2xl font-bold mb-4">Final Jeopardy - Players Wagering</h2>
-            <div className="space-y-2">
-              {players.map((player) => (
-                <div key={player.id} className="flex items-center gap-4">
-                  <span className="font-bold">{player.name}</span>
-                  <span>Score: ${player.score}</span>
-                  {player.finalJeopardyWager !== undefined ? (
-                    <span className="text-green-600">Wagered: ${player.finalJeopardyWager}</span>
-                  ) : (
-                    <span className="text-gray-500">Waiting...</span>
-                  )}
-                </div>
-              ))}
+            <h2 className="text-2xl font-bold mb-4">Final Jeopardy</h2>
+            <div className="mb-4">
+              <p className="text-lg font-bold">Category: {gameState.config.finalJeopardy.category}</p>
             </div>
+            {gameState.status === 'finalJeopardyWagering' && (
+              <>
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold mb-2">Players Wagering</h3>
+                  <div className="space-y-2">
+                    {players.filter(p => p.score > 0).map((player) => (
+                      <div key={player.id} className="flex items-center gap-4">
+                        <span className="font-bold">{player.name}</span>
+                        <span>Score: ${player.score}</span>
+                        {player.finalJeopardyWager !== undefined ? (
+                          <span className="text-green-600">Wagered: ${player.finalJeopardyWager}</span>
+                        ) : (
+                          <span className="text-gray-500">Waiting...</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  onClick={handleShowFinalJeopardyClue}
+                  disabled={!players.filter(p => p.score > 0).every(p => p.finalJeopardyWager !== undefined)}
+                  className={`px-6 py-3 rounded ${
+                    players.filter(p => p.score > 0).every(p => p.finalJeopardyWager !== undefined)
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : 'bg-gray-400 cursor-not-allowed'
+                  } text-white font-bold`}
+                >
+                  Show Clue
+                </button>
+              </>
+            )}
           </div>
         )}
 
         {gameState.status === 'finalJeopardyAnswering' && (
           <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
             <h2 className="text-2xl font-bold mb-4">Final Jeopardy - Players Answering</h2>
-            <div className="space-y-2">
-              {players.map((player) => (
+            <div className="mb-4">
+              <p className="text-lg font-bold">Category: {gameState.config?.finalJeopardy.category}</p>
+              <p className="text-lg mb-2">Clue: {gameState.config?.finalJeopardy.clue}</p>
+            </div>
+            {gameState.finalJeopardyCountdownEnd && (
+              <div className="mb-4">
+                <p className="text-lg">
+                  Time remaining: {Math.max(0, Math.floor((gameState.finalJeopardyCountdownEnd - Date.now()) / 1000))} seconds
+                </p>
+              </div>
+            )}
+            <div className="space-y-2 mb-4">
+              {players.filter(p => p.score > 0).map((player) => (
                 <div key={player.id} className="flex items-center gap-4">
                   <span className="font-bold">{player.name}</span>
                   {player.finalJeopardyAnswer ? (
@@ -497,28 +559,93 @@ export default function HostPage() {
                 </div>
               ))}
             </div>
+            <button
+              onClick={handleStartFinalJeopardyJudging}
+              className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold"
+            >
+              Start Judging
+            </button>
           </div>
         )}
 
-        {gameState.status === 'finalJeopardyReveal' && gameState.config && (
+        {gameState.status === 'finalJeopardyJudging' && gameState.config && gameState.finalJeopardyJudgingOrder && gameState.finalJeopardyJudgingPlayerIndex !== undefined && (
           <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
-            <h2 className="text-2xl font-bold mb-4">Final Jeopardy Results</h2>
+            <h2 className="text-2xl font-bold mb-4">Final Jeopardy - Judging</h2>
             <div className="mb-4">
               <p className="text-lg font-bold">Category: {gameState.config.finalJeopardy.category}</p>
               <p className="text-lg mb-2">Clue: {gameState.config.finalJeopardy.clue}</p>
               <p className="text-lg font-bold text-green-600">Answer: {gameState.config.finalJeopardy.answer}</p>
             </div>
-            <div className="space-y-2">
-              {players.map((player) => (
-                <div key={player.id} className="flex items-center gap-4">
-                  <span className="font-bold">{player.name}</span>
-                  <span>Wager: ${player.finalJeopardyWager || 0}</span>
-                  <span>Answer: {player.finalJeopardyAnswer || 'No answer'}</span>
-                  <span className={`font-bold ${player.score >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    Final Score: ${player.score}
-                  </span>
+            {(() => {
+              const currentPlayerId = gameState.finalJeopardyJudgingOrder[gameState.finalJeopardyJudgingPlayerIndex];
+              const currentPlayer = players.find(p => p.id === currentPlayerId);
+              if (!currentPlayer) return null;
+              
+              const initialScore = gameState.finalJeopardyInitialScores 
+                ? (typeof gameState.finalJeopardyInitialScores === 'object' && !Array.isArray(gameState.finalJeopardyInitialScores) && !(gameState.finalJeopardyInitialScores instanceof Map)
+                    ? (gameState.finalJeopardyInitialScores as Record<string, number>)[currentPlayerId]
+                    : (gameState.finalJeopardyInitialScores instanceof Map
+                      ? gameState.finalJeopardyInitialScores.get(currentPlayerId)
+                      : undefined))
+                : undefined;
+              
+              return (
+                <div className="space-y-4">
+                  <div className="p-4 bg-gray-100 rounded">
+                    <p className="text-xl font-bold mb-2">{currentPlayer.name}</p>
+                    {initialScore !== undefined && (
+                      <p className="text-sm text-gray-600">Initial Score: ${initialScore}</p>
+                    )}
+                    {!gameState.finalJeopardyRevealedWager && (
+                      <button
+                        onClick={handleRevealFinalJeopardyWager}
+                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        Reveal Wager
+                      </button>
+                    )}
+                    {gameState.finalJeopardyRevealedWager && (
+                      <p className="text-lg mt-2">Wager: ${currentPlayer.finalJeopardyWager || 0}</p>
+                    )}
+                    {gameState.finalJeopardyRevealedWager && !gameState.finalJeopardyRevealedAnswer && (
+                      <button
+                        onClick={handleRevealFinalJeopardyAnswer}
+                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        Reveal Answer
+                      </button>
+                    )}
+                    {gameState.finalJeopardyRevealedAnswer && (
+                      <p className="text-lg mt-2">Answer: {currentPlayer.finalJeopardyAnswer || 'No answer'}</p>
+                    )}
+                    {gameState.finalJeopardyRevealedWager && gameState.finalJeopardyRevealedAnswer && (
+                      <div className="mt-4 flex gap-4">
+                        <button
+                          onClick={() => handleJudgeFinalJeopardyAnswer(currentPlayer.id, true)}
+                          className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-bold"
+                        >
+                          Correct
+                        </button>
+                        <button
+                          onClick={() => handleJudgeFinalJeopardyAnswer(currentPlayer.id, false)}
+                          className="px-6 py-3 bg-red-600 text-white rounded hover:bg-red-700 font-bold"
+                        >
+                          Incorrect
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ))}
+              );
+            })()}
+          </div>
+        )}
+
+        {gameState.status === 'finished' && (
+          <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
+            <h2 className="text-2xl font-bold mb-4">Game Over</h2>
+            <div className="mt-4">
+              <Scoreboard gameState={gameState} />
             </div>
           </div>
         )}

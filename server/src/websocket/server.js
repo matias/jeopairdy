@@ -32,6 +32,20 @@ function serializeGameState(gameState) {
     notPickedInTies: gameState.notPickedInTies,
     lastCorrectPlayer: gameState.lastCorrectPlayer,
     hostId: gameState.hostId,
+    // Final Jeopardy state
+    finalJeopardyInitialScores: gameState.finalJeopardyInitialScores 
+      ? Array.from(gameState.finalJeopardyInitialScores.entries()).reduce((obj, [id, score]) => {
+          obj[id] = score;
+          return obj;
+        }, {})
+      : undefined,
+    finalJeopardyJudgingOrder: gameState.finalJeopardyJudgingOrder,
+    finalJeopardyClueShown: gameState.finalJeopardyClueShown,
+    finalJeopardyCountdownStart: gameState.finalJeopardyCountdownStart,
+    finalJeopardyCountdownEnd: gameState.finalJeopardyCountdownEnd,
+    finalJeopardyJudgingPlayerIndex: gameState.finalJeopardyJudgingPlayerIndex,
+    finalJeopardyRevealedWager: gameState.finalJeopardyRevealedWager,
+    finalJeopardyRevealedAnswer: gameState.finalJeopardyRevealedAnswer,
     // Exclude: buzzTimestamps (internal debugging data)
     // Exclude: buzzerProcessTimeout (Node.js Timeout object with circular refs)
     // Exclude: onBuzzerProcessed (function callback)
@@ -106,6 +120,21 @@ function handleMessage(ws, message, conn) {
       break;
     case 'revealFinalAnswers':
       handleRevealFinalAnswers(ws, message, conn);
+      break;
+    case 'showFinalJeopardyClue':
+      handleShowFinalJeopardyClue(ws, message, conn);
+      break;
+    case 'startFinalJeopardyJudging':
+      handleStartFinalJeopardyJudging(ws, message, conn);
+      break;
+    case 'revealFinalJeopardyWager':
+      handleRevealFinalJeopardyWager(ws, message, conn);
+      break;
+    case 'revealFinalJeopardyAnswer':
+      handleRevealFinalJeopardyAnswer(ws, message, conn);
+      break;
+    case 'judgeFinalJeopardyAnswer':
+      handleJudgeFinalJeopardyAnswer(ws, message, conn);
       break;
     case 'createGame':
       handleCreateGame(ws, message, conn).catch(error => {
@@ -472,6 +501,104 @@ function handleRevealFinalAnswers(ws, message, conn) {
   }
 
   const success = gameManager.revealFinalAnswers(conn.roomId);
+  
+  if (success) {
+    const gameState = gameManager.getGame(conn.roomId);
+    if (gameState) {
+      broadcastToRoom(conn.roomId, {
+        type: 'gameStateUpdate',
+        gameState: serializeGameState(gameState),
+      });
+    }
+  }
+}
+
+function handleShowFinalJeopardyClue(ws, message, conn) {
+  if (!conn.roomId || conn.role !== 'host') {
+    ws.send(JSON.stringify({ type: 'error', message: 'Only host can show Final Jeopardy clue' }));
+    return;
+  }
+
+  const success = gameManager.showFinalJeopardyClue(conn.roomId);
+  
+  if (success) {
+    const gameState = gameManager.getGame(conn.roomId);
+    if (gameState) {
+      broadcastToRoom(conn.roomId, {
+        type: 'gameStateUpdate',
+        gameState: serializeGameState(gameState),
+      });
+    }
+  } else {
+    ws.send(JSON.stringify({ type: 'error', message: 'Cannot show clue yet - not all eligible players have wagered' }));
+  }
+}
+
+function handleStartFinalJeopardyJudging(ws, message, conn) {
+  if (!conn.roomId || conn.role !== 'host') {
+    ws.send(JSON.stringify({ type: 'error', message: 'Only host can start Final Jeopardy judging' }));
+    return;
+  }
+
+  const success = gameManager.startFinalJeopardyJudging(conn.roomId);
+  
+  if (success) {
+    const gameState = gameManager.getGame(conn.roomId);
+    if (gameState) {
+      broadcastToRoom(conn.roomId, {
+        type: 'gameStateUpdate',
+        gameState: serializeGameState(gameState),
+      });
+    }
+  }
+}
+
+function handleRevealFinalJeopardyWager(ws, message, conn) {
+  if (!conn.roomId || conn.role !== 'host') {
+    ws.send(JSON.stringify({ type: 'error', message: 'Only host can reveal Final Jeopardy wager' }));
+    return;
+  }
+
+  const success = gameManager.revealFinalJeopardyWager(conn.roomId);
+  
+  if (success) {
+    const gameState = gameManager.getGame(conn.roomId);
+    if (gameState) {
+      broadcastToRoom(conn.roomId, {
+        type: 'gameStateUpdate',
+        gameState: serializeGameState(gameState),
+      });
+    }
+  }
+}
+
+function handleRevealFinalJeopardyAnswer(ws, message, conn) {
+  if (!conn.roomId || conn.role !== 'host') {
+    ws.send(JSON.stringify({ type: 'error', message: 'Only host can reveal Final Jeopardy answer' }));
+    return;
+  }
+
+  const success = gameManager.revealFinalJeopardyAnswer(conn.roomId);
+  
+  if (success) {
+    const gameState = gameManager.getGame(conn.roomId);
+    if (gameState) {
+      broadcastToRoom(conn.roomId, {
+        type: 'gameStateUpdate',
+        gameState: serializeGameState(gameState),
+      });
+    }
+  }
+}
+
+function handleJudgeFinalJeopardyAnswer(ws, message, conn) {
+  if (!conn.roomId || conn.role !== 'host') {
+    ws.send(JSON.stringify({ type: 'error', message: 'Only host can judge Final Jeopardy answers' }));
+    return;
+  }
+
+  const { playerId, correct } = message;
+  const success = gameManager.judgeFinalJeopardyAnswer(conn.roomId, playerId, correct);
   
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);

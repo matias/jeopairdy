@@ -418,14 +418,52 @@ class GameManager {
       game.currentPlayer = null;
       game.lastCorrectPlayer = null; // Reset control for new round
     } else if (game.currentRound === "doubleJeopardy") {
-      // Check if all clues are answered
-      const allAnswered = this.allCluesAnswered(game);
-      if (allAnswered) {
-        game.currentRound = "finalJeopardy";
-        game.status = "finalJeopardyWagering";
-      }
+      // Allow advancing to Final Jeopardy (for testing, skip all clues answered check)
+      this.initializeFinalJeopardy(roomId);
     }
 
+    return true;
+  }
+
+  initializeFinalJeopardy(roomId) {
+    const game = this.games.get(roomId);
+    if (!game) return false;
+
+    game.currentRound = "finalJeopardy";
+    game.status = "finalJeopardyWagering";
+    
+    // Capture initial scores and create judging order (ascending by score)
+    game.finalJeopardyInitialScores = new Map();
+    game.finalJeopardyJudgingOrder = [];
+    
+    // Get all players with their scores, sort by score (ascending)
+    const playersWithScores = Array.from(game.players.entries()).map(([id, player]) => ({
+      id,
+      score: player.score
+    }));
+    
+    playersWithScores.sort((a, b) => a.score - b.score);
+    
+    // Store initial scores and create judging order
+    playersWithScores.forEach(({ id, score }) => {
+      game.finalJeopardyInitialScores.set(id, score);
+      game.finalJeopardyJudgingOrder.push(id);
+    });
+    
+    // Reset Final Jeopardy state
+    game.finalJeopardyClueShown = false;
+    game.finalJeopardyCountdownStart = null;
+    game.finalJeopardyCountdownEnd = null;
+    game.finalJeopardyJudgingPlayerIndex = null;
+    game.finalJeopardyRevealedWager = false;
+    game.finalJeopardyRevealedAnswer = false;
+    
+    // Clear any existing wagers/answers
+    game.players.forEach(player => {
+      player.finalJeopardyWager = undefined;
+      player.finalJeopardyAnswer = undefined;
+    });
+    
     return true;
   }
 
@@ -443,10 +481,18 @@ class GameManager {
 
   startFinalJeopardy(roomId) {
     const game = this.games.get(roomId);
-    if (!game || game.currentRound !== "finalJeopardy") return false;
+    if (!game) return false;
 
-    game.status = "finalJeopardyWagering";
-    return true;
+    // Allow starting Final Jeopardy from doubleJeopardy (for testing)
+    if (game.currentRound === "doubleJeopardy") {
+      this.initializeFinalJeopardy(roomId);
+      return true;
+    } else if (game.currentRound === "finalJeopardy") {
+      game.status = "finalJeopardyWagering";
+      return true;
+    }
+
+    return false;
   }
 
   submitWager(roomId, playerId, wager) {
@@ -456,38 +502,144 @@ class GameManager {
     const player = game.players.get(playerId);
     if (!player) return false;
 
+    // Only allow players with score > 0 to wager
+    if (player.score <= 0) return false;
+
     if (wager < 0 || wager > player.score) return false;
 
     player.finalJeopardyWager = wager;
 
-    // Check if all players have wagered
-    const allWagered = Array.from(game.players.values()).every(
-      p => p.finalJeopardyWager !== undefined
-    );
-
-    if (allWagered) {
-      game.status = "finalJeopardyAnswering";
-    }
-
+    // Don't auto-advance - host will manually show clue when ready
     return true;
+  }
+
+  showFinalJeopardyClue(roomId) {
+    const game = this.games.get(roomId);
+    if (!game || game.status !== "finalJeopardyWagering") return false;
+
+    // Check if all eligible players (score > 0) have wagered
+    const eligiblePlayers = Array.from(game.players.values()).filter(p => p.score > 0);
+    const allEligibleWagered = eligiblePlayers.every(p => p.finalJeopardyWager !== undefined);
+    
+    if (!allEligibleWagered) return false;
+
+    game.finalJeopardyClueShown = true;
+    game.status = "finalJeopardyAnswering";
+    
+    // Start countdown timer (30 seconds)
+    const now = Date.now();
+    game.finalJeopardyCountdownStart = now;
+    game.finalJeopardyCountdownEnd = now + 30000; // 30 seconds
+    
+    // Set timeout to lock answers after 30 seconds
+    setTimeout(() => {
+      this.lockFinalJeopardyAnswers(roomId);
+    }, 30000);
+    
+    return true;
+  }
+
+  lockFinalJeopardyAnswers(roomId) {
+    const game = this.games.get(roomId);
+    if (!game || game.status !== "finalJeopardyAnswering") return;
+    
+    // Answers are now locked - no more submissions allowed
+    // Status will change when host starts judging
   }
 
   submitFinalAnswer(roomId, playerId, answer) {
     const game = this.games.get(roomId);
     if (!game || game.status !== "finalJeopardyAnswering") return false;
 
+    // Check if countdown has expired
+    if (game.finalJeopardyCountdownEnd && Date.now() > game.finalJeopardyCountdownEnd) {
+      return false; // Countdown expired, answers are locked
+    }
+
     const player = game.players.get(playerId);
     if (!player) return false;
 
     player.finalJeopardyAnswer = answer;
 
-    // Check if all players have answered
-    const allAnswered = Array.from(game.players.values()).every(
-      p => p.finalJeopardyAnswer !== undefined
-    );
+    // Don't auto-advance - host will manually start judging when ready
+    return true;
+  }
 
-    if (allAnswered) {
-      game.status = "finalJeopardyReveal";
+  startFinalJeopardyJudging(roomId) {
+    const game = this.games.get(roomId);
+    if (!game || game.status !== "finalJeopardyAnswering") return false;
+
+    if (!game.finalJeopardyJudgingOrder || game.finalJeopardyJudgingOrder.length === 0) {
+      return false;
+    }
+
+    game.status = "finalJeopardyJudging";
+    game.finalJeopardyJudgingPlayerIndex = 0;
+    game.finalJeopardyRevealedWager = false;
+    game.finalJeopardyRevealedAnswer = false;
+
+    return true;
+  }
+
+  revealFinalJeopardyWager(roomId) {
+    const game = this.games.get(roomId);
+    if (!game || game.status !== "finalJeopardyJudging") return false;
+
+    if (game.finalJeopardyRevealedWager) return false; // Already revealed
+
+    game.finalJeopardyRevealedWager = true;
+    return true;
+  }
+
+  revealFinalJeopardyAnswer(roomId) {
+    const game = this.games.get(roomId);
+    if (!game || game.status !== "finalJeopardyJudging") return false;
+
+    if (!game.finalJeopardyRevealedWager) return false; // Must reveal wager first
+    if (game.finalJeopardyRevealedAnswer) return false; // Already revealed
+
+    game.finalJeopardyRevealedAnswer = true;
+    return true;
+  }
+
+  judgeFinalJeopardyAnswer(roomId, playerId, correct) {
+    const game = this.games.get(roomId);
+    if (!game || game.status !== "finalJeopardyJudging") return false;
+
+    if (!game.finalJeopardyJudgingOrder || game.finalJeopardyJudgingPlayerIndex === undefined) {
+      return false;
+    }
+
+    const currentPlayerId = game.finalJeopardyJudgingOrder[game.finalJeopardyJudgingPlayerIndex];
+    if (currentPlayerId !== playerId) return false; // Not the current player being judged
+
+    if (!game.finalJeopardyRevealedWager || !game.finalJeopardyRevealedAnswer) {
+      return false; // Must reveal both wager and answer before judging
+    }
+
+    const player = game.players.get(playerId);
+    if (!player || player.finalJeopardyWager === undefined) return false;
+
+    const clue = game.config?.finalJeopardy;
+    if (!clue) return false;
+
+    // Apply wager (add if correct, subtract if incorrect)
+    if (correct) {
+      player.score += player.finalJeopardyWager;
+    } else {
+      player.score -= player.finalJeopardyWager;
+    }
+
+    // Move to next player
+    game.finalJeopardyJudgingPlayerIndex++;
+    
+    if (game.finalJeopardyJudgingPlayerIndex >= game.finalJeopardyJudgingOrder.length) {
+      // All players judged, game is finished
+      game.status = "finished";
+    } else {
+      // Reset reveal flags for next player
+      game.finalJeopardyRevealedWager = false;
+      game.finalJeopardyRevealedAnswer = false;
     }
 
     return true;
