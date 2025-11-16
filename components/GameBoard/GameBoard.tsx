@@ -46,10 +46,10 @@ export default function GameBoard({ gameState, onSelectClue, showValues = true, 
             {round.categories.map((category) => (
               <th
                 key={category.id}
-                className="jeopardy-category p-4 text-center text-lg border-2 border-white"
+                className="jeopardy-category p-1 text-center text-lg border-2 border-white"
                 style={{ width: `${100 / round.categories.length}%` }}
               >
-                <div className="h-20 flex items-center justify-center px-2">
+                <div className="min-h-[6.5rem] flex items-center justify-center">
                   <span className="category-text uppercase leading-tight">{category.name}</span>
                 </div>
               </th>
