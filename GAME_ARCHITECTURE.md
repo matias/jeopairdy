@@ -15,11 +15,27 @@ Jeopairdy is a Jeopardy!-style trivia game built with Next.js (React) frontend a
 - **`app/create-game/page.tsx`** - Game creation interface
 - **`app/load-game/page.tsx`** - Load saved game
 
+#### Interactive Game Creation Flow
+
+The create-game page now orchestrates an iterative chat-driven workflow with GPT-5.1:
+
+1. **Parameter entry:** Host supplies topics, difficulty, and optional source text.
+2. **Sample iteration:** Client-side calls to `/api/generate` (which proxies to OpenAI) request sparse sample categories using prompt builders in `lib/prompts.ts`. The host can review rendered categories/clues plus the model's commentary, then submit feedback for additional iterations.
+3. **Finalization:** When satisfied, the host requests full rounds. The client sequentially generates Jeopardy, Double Jeopardy (excluding prior answers), and Final Jeopardy JSON payloads, then converts them into a `GameConfig`.
+4. **Deployment:** The completed config is sent to the game server via `WebSocketClient.loadGame()`, after which the host UI redirects to `/host/[roomId]`.
+
+Only the final `GameConfig` touches the server; iterative samples remain client-side for rapid experimentation.
+
+##### Conversation state
+
+- `/api/generate` now creates and manages an OpenAI **Conversation** (via the Responses + Conversations APIs). The first sample request spins up a conversation with the system instructions from `lib/prompts.ts`; every subsequent regeneration, round build, or Final Jeopardy request sends only the incremental user message while reusing that conversation ID.
+- Because the model retains state, feedback supplied during the sample loop directly influences the final Jeopardy rounds without manually restating previous prompts. Developers can reset the flow by issuing a new "Generate Samples" request, which starts a fresh conversation ID in the client state.
+
 ### Server Components
 
 - **`server/src/game/state.js`** - Game state management (GameManager class)
 - **`server/src/websocket/server.js`** - WebSocket message handling
-- **`server/src/ai/generator.js`** - AI game generation
+- **`server/src/ai/generator.js`** - AI game generation (unused after the interactive game creation flow)
 
 ### Shared Types
 

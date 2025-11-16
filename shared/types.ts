@@ -1,6 +1,22 @@
 // Game state types
 export type Round = "jeopardy" | "doubleJeopardy" | "finalJeopardy";
 
+export interface ConversationMessage {
+  role: "user" | "developer" | "assistant";
+  content: string;
+}
+
+export interface SampleClue {
+  value: number;
+  clue: string;
+  answer: string;
+}
+
+export interface SampleCategory {
+  name: string;
+  clues: SampleClue[];
+}
+
 export type GameStatus = 
   | "waiting" 
   | "ready"

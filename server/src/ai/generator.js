@@ -161,7 +161,7 @@ async function generateRound(topics, difficulty, sourceMaterial, round = 'jeopar
     console.log(`[Generator] Making OpenAI API call for ${roundName} round...`);
     console.log(`[Generator] Model: gpt-5, Topics: ${topicsText}, Difficulty: ${difficultyText}`);
     const response = await openai.responses.create({
-      model: 'gpt-5',
+      model: 'gpt-5.1',
       instructions: systemInstructions,
       input: [
         { type: 'message', role: 'user', content: prompt },
@@ -247,7 +247,7 @@ Generate the Final Jeopardy clue now:`;
     console.log('[Generator] Making OpenAI API call for Final Jeopardy...');
     console.log(`[Generator] Model: gpt-5, Topics: ${topicsText}, Difficulty: ${difficultyText}`);
     const response = await openai.responses.create({
-      model: 'gpt-5',
+      model: 'gpt-5.1',
       instructions: systemInstructions,
       input: [
         { type: 'message', role: 'user', content: prompt },
