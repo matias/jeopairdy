@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import QRCode from 'qrcode';
 import { WebSocketClient } from '@/lib/websocket';
@@ -10,9 +10,10 @@ import ClueDisplay from '@/components/ClueDisplay/ClueDisplay';
 import Scoreboard from '@/components/Scoreboard/Scoreboard';
 
 import { getWebSocketUrl } from '@/lib/websocket-url';
-import { playBoardFill } from '@/lib/audio';
+import { playBoardFill, playIntroMusic, stopIntroMusic, fadeOutIntroMusic, playTimesUp } from '@/lib/audio';
 
 const WS_URL = getWebSocketUrl();
+const ANSWER_TIMEOUT = 20000; // 20 seconds
 
 function CountdownTimer({ countdownEnd }: { countdownEnd: number | undefined }) {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -55,6 +56,15 @@ export default function GameDisplayPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [visibleClues, setVisibleClues] = useState<Set<string> | null>(null); // null = animation complete, show all
   const [prevStatus, setPrevStatus] = useState<GameState['status'] | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false); // Track transition from ready to selecting
+  const gameStateRef = useRef<GameState | null>(null);
+  const lastSelectedClueRef = useRef<{ categoryId: string; clueId: string } | null>(null);
+  const answerTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Keep ref in sync with gameState
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
 
   useEffect(() => {
     const client = new WebSocketClient(WS_URL);
@@ -94,65 +104,157 @@ export default function GameDisplayPage() {
     };
   }, [roomId]);
 
-  // Board fill animation when transitioning from 'ready' to 'selecting'
+  // Handle transition from 'ready' to 'selecting' with fade out and delay
   useEffect(() => {
     if (!gameState || !gameState.config) return;
 
-    // Only trigger animation when transitioning from 'ready' to 'selecting'
+    // Only trigger transition when moving from 'ready' to 'selecting'
     if (prevStatus === 'ready' && gameState.status === 'selecting') {
-      const runBoardFillAnimation = async () => {
-        const round = gameState.currentRound === 'jeopardy' 
-          ? gameState.config!.jeopardy 
-          : gameState.config!.doubleJeopardy;
+      // Immediately hide all clues to prevent flash
+      setVisibleClues(new Set());
+      setIsTransitioning(true);
+      
+      const handleTransition = async () => {
+        // Fade out intro music (2 seconds)
+        await fadeOutIntroMusic(2000);
+        
+        // Wait remaining time to reach 5 seconds total
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        
+        // Transition complete, proceed with board fill animation
+        setIsTransitioning(false);
+        
+        const runBoardFillAnimation = async () => {
+          const round = gameState.currentRound === 'jeopardy' 
+            ? gameState.config!.jeopardy 
+            : gameState.config!.doubleJeopardy;
 
-        // Build list of all clue keys
-        const clueMaskOrder: string[] = [];
-        round.categories.forEach((category) => {
-          category.clues.forEach((clue) => {
-            clueMaskOrder.push(`${category.id}_${clue.id}`);
+          // Build list of all clue keys
+          const clueMaskOrder: string[] = [];
+          round.categories.forEach((category) => {
+            category.clues.forEach((clue) => {
+              clueMaskOrder.push(`${category.id}_${clue.id}`);
+            });
           });
-        });
 
-        // Start with all clues hidden
-        setVisibleClues(new Set());
+          // Clues are already hidden from transition start
 
-        // Play the board fill sound
-        playBoardFill();
+          // Play the board fill sound
+          playBoardFill();
 
-        // Shuffle the clue order for random fill-in effect
-        const shuffled = [...clueMaskOrder];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
+          // Shuffle the clue order for random fill-in effect
+          const shuffled = [...clueMaskOrder];
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
 
-        // Split into sets of 5 clues
-        const clueSets: string[][] = [];
-        for (let i = 0; i < shuffled.length; i += 5) {
-          clueSets.push(shuffled.slice(i, i + 5));
-        }
+          // Split into sets of 5 clues
+          const clueSets: string[][] = [];
+          for (let i = 0; i < shuffled.length; i += 5) {
+            clueSets.push(shuffled.slice(i, i + 5));
+          }
 
-        // Reveal clues in sets, with 400ms delay between sets
-        for (let i = 0; i < clueSets.length; i++) {
-          await new Promise((resolve) => setTimeout(resolve, 400));
-          setVisibleClues((prev) => {
-            const newSet = new Set(prev || []);
-            clueSets[i].forEach((clueKey) => newSet.add(clueKey));
-            return newSet;
-          });
-        }
+          // Reveal clues in sets, with 400ms delay between sets
+          for (let i = 0; i < clueSets.length; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 400));
+            setVisibleClues((prev) => {
+              const newSet = new Set(prev || []);
+              clueSets[i].forEach((clueKey) => newSet.add(clueKey));
+              return newSet;
+            });
+          }
 
-        // Animation complete - show all clues
-        await new Promise((resolve) => setTimeout(resolve, 200));
-        setVisibleClues(null);
+          // Animation complete - show all clues
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          setVisibleClues(null);
+        };
+
+        runBoardFillAnimation();
       };
 
-      runBoardFillAnimation();
+      handleTransition();
     } else if (gameState.status !== 'selecting') {
       // Reset animation state when not in selecting mode
       setVisibleClues(null);
+      setIsTransitioning(false);
     }
   }, [gameState?.status, prevStatus, gameState?.config, gameState?.currentRound]);
+
+  // Play intro music based on game state (don't stop on transition, let fadeOut handle it)
+  useEffect(() => {
+    if (!gameState) return;
+
+    if (gameState.status === 'ready' && !isTransitioning) {
+      // Play intro music when in ready state (and not transitioning)
+      playIntroMusic();
+    }
+
+    // Cleanup on unmount
+    return () => {
+      stopIntroMusic();
+    };
+  }, [gameState?.status, isTransitioning]);
+
+  // Handle 20-second timeout for answering clues
+  useEffect(() => {
+    if (!gameState) return;
+
+    const currentClue = gameState.selectedClue;
+    const clueChanged = currentClue && (
+      !lastSelectedClueRef.current ||
+      lastSelectedClueRef.current.categoryId !== currentClue.categoryId ||
+      lastSelectedClueRef.current.clueId !== currentClue.clueId
+    );
+
+    // Clear any existing timeout when clue changes or state moves away
+    if (clueChanged || 
+        gameState.status === 'selecting' || 
+        gameState.status === 'ready' || 
+        gameState.status === 'finished') {
+      if (answerTimeoutIdRef.current) {
+        clearTimeout(answerTimeoutIdRef.current);
+        answerTimeoutIdRef.current = null;
+      }
+    }
+
+    // Start timer when a new clue is revealed (status is clueRevealed or buzzing)
+    // Timer starts from when clue is first revealed, not when buzzer unlocks
+    if (clueChanged && currentClue && 
+        (gameState.status === 'clueRevealed' || gameState.status === 'buzzing')) {
+      lastSelectedClueRef.current = currentClue;
+      
+      const timeoutId = setTimeout(() => {
+        // Check current state (not closure) - only play if no one has buzzed
+        // Play times-up only if status is still 'clueRevealed' or 'buzzing' (no buzzes)
+        // Do NOT play if status is 'answering' or 'judging' (someone already buzzed)
+        const currentState = gameStateRef.current;
+        if (currentState && currentState.selectedClue &&
+            currentState.selectedClue.categoryId === currentClue.categoryId &&
+            currentState.selectedClue.clueId === currentClue.clueId &&
+            (currentState.status === 'clueRevealed' || 
+             currentState.status === 'buzzing')) {
+          playTimesUp();
+        }
+        answerTimeoutIdRef.current = null;
+      }, ANSWER_TIMEOUT);
+
+      answerTimeoutIdRef.current = timeoutId;
+    } else if (currentClue) {
+      // Update ref even if we didn't start a new timer
+      lastSelectedClueRef.current = currentClue;
+    } else {
+      // No clue selected, reset ref
+      lastSelectedClueRef.current = null;
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (answerTimeoutIdRef.current) {
+        clearTimeout(answerTimeoutIdRef.current);
+      }
+    };
+  }, [gameState?.status, gameState?.selectedClue]);
 
   if (!gameState) {
     return (
@@ -162,10 +264,10 @@ export default function GameDisplayPage() {
     );
   }
 
-  if (gameState.status === 'ready') {
+  if (gameState.status === 'ready' || isTransitioning) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-blue-900">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className={`max-w-4xl mx-auto text-center transition-opacity duration-[2000ms] ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
           <h1 className="jeopardy-title text-6xl font-bold mb-8 uppercase tracking-wider text-white">JEOPAIRDY!</h1>
           <div className="bg-blue-800 p-8 rounded-lg">
             <h2 className="text-4xl font-bold mb-6 text-white">Join the Game</h2>
@@ -204,7 +306,7 @@ export default function GameDisplayPage() {
           </div>
         )}
 
-        {gameState.status === 'selecting' && (
+        {gameState.status === 'selecting' && !isTransitioning && (
           <div className="mb-6">
             <GameBoard 
               gameState={gameState} 
