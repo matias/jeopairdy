@@ -10,6 +10,7 @@ import ClueDisplay from '@/components/ClueDisplay/ClueDisplay';
 import Scoreboard from '@/components/Scoreboard/Scoreboard';
 
 import { getWebSocketUrl } from '@/lib/websocket-url';
+import { playBoardFill } from '@/lib/audio';
 
 const WS_URL = getWebSocketUrl();
 
@@ -52,6 +53,8 @@ export default function GameDisplayPage() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [showScores, setShowScores] = useState(true);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [visibleClues, setVisibleClues] = useState<Set<string> | null>(null); // null = animation complete, show all
+  const [prevStatus, setPrevStatus] = useState<GameState['status'] | null>(null);
 
   useEffect(() => {
     const client = new WebSocketClient(WS_URL);
@@ -70,7 +73,10 @@ export default function GameDisplayPage() {
       });
 
       client.on('gameStateUpdate', (message: any) => {
-        setGameState(message.gameState);
+        setGameState((prev) => {
+          setPrevStatus(prev?.status || null);
+          return message.gameState;
+        });
         // Update QR code if status changes to ready
         if (message.gameState.status === 'ready' && typeof window !== 'undefined') {
           const joinUrl = `${window.location.origin}/join?room=${roomId}`;
@@ -87,6 +93,66 @@ export default function GameDisplayPage() {
       client.disconnect();
     };
   }, [roomId]);
+
+  // Board fill animation when transitioning from 'ready' to 'selecting'
+  useEffect(() => {
+    if (!gameState || !gameState.config) return;
+
+    // Only trigger animation when transitioning from 'ready' to 'selecting'
+    if (prevStatus === 'ready' && gameState.status === 'selecting') {
+      const runBoardFillAnimation = async () => {
+        const round = gameState.currentRound === 'jeopardy' 
+          ? gameState.config!.jeopardy 
+          : gameState.config!.doubleJeopardy;
+
+        // Build list of all clue keys
+        const clueMaskOrder: string[] = [];
+        round.categories.forEach((category) => {
+          category.clues.forEach((clue) => {
+            clueMaskOrder.push(`${category.id}_${clue.id}`);
+          });
+        });
+
+        // Start with all clues hidden
+        setVisibleClues(new Set());
+
+        // Play the board fill sound
+        playBoardFill();
+
+        // Shuffle the clue order for random fill-in effect
+        const shuffled = [...clueMaskOrder];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        // Split into sets of 5 clues
+        const clueSets: string[][] = [];
+        for (let i = 0; i < shuffled.length; i += 5) {
+          clueSets.push(shuffled.slice(i, i + 5));
+        }
+
+        // Reveal clues in sets, with 400ms delay between sets
+        for (let i = 0; i < clueSets.length; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 400));
+          setVisibleClues((prev) => {
+            const newSet = new Set(prev || []);
+            clueSets[i].forEach((clueKey) => newSet.add(clueKey));
+            return newSet;
+          });
+        }
+
+        // Animation complete - show all clues
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        setVisibleClues(null);
+      };
+
+      runBoardFillAnimation();
+    } else if (gameState.status !== 'selecting') {
+      // Reset animation state when not in selecting mode
+      setVisibleClues(null);
+    }
+  }, [gameState?.status, prevStatus, gameState?.config, gameState?.currentRound]);
 
   if (!gameState) {
     return (
@@ -140,7 +206,12 @@ export default function GameDisplayPage() {
 
         {gameState.status === 'selecting' && (
           <div className="mb-6">
-            <GameBoard gameState={gameState} showValues={true} readOnly={true} />
+            <GameBoard 
+              gameState={gameState} 
+              showValues={true} 
+              readOnly={true} 
+              visibleClues={visibleClues || undefined}
+            />
           </div>
         )}
 

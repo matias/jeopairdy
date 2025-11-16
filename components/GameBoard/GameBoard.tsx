@@ -7,12 +7,13 @@ interface GameBoardProps {
   onSelectClue?: (categoryId: string, clueId: string) => void;
   showValues?: boolean;
   readOnly?: boolean;
+  visibleClues?: Set<string>; // Set of clue keys (categoryId_clueId) that should be visible during animation
 }
 
 const VALUES = [200, 400, 600, 800, 1000];
 const DOUBLE_VALUES = [400, 800, 1200, 1600, 2000];
 
-export default function GameBoard({ gameState, onSelectClue, showValues = true, readOnly = false }: GameBoardProps) {
+export default function GameBoard({ gameState, onSelectClue, showValues = true, readOnly = false, visibleClues }: GameBoardProps) {
   if (!gameState.config) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -63,6 +64,10 @@ export default function GameBoard({ gameState, onSelectClue, showValues = true, 
                 const isRevealed = clue?.revealed || false;
                 const isSelected = gameState.selectedClue?.categoryId === category.id &&
                   gameState.selectedClue?.clueId === clue?.id;
+                
+                // During animation, only show clues that are in visibleClues set
+                const clueKey = `${category.id}_${clue?.id}`;
+                const isVisible = visibleClues === undefined || visibleClues.has(clueKey);
 
                 return (
                   <td
@@ -76,11 +81,12 @@ export default function GameBoard({ gameState, onSelectClue, showValues = true, 
                           : 'cursor-pointer hover:bg-blue-800'
                         }
                         ${isSelected ? 'ring-4 ring-yellow-400 ring-offset-2' : ''}
+                        ${!isVisible ? 'opacity-0' : ''}
                       `}
                       onClick={() => !readOnly && clue && !isRevealed && handleClueClick(category.id, clue.id)}
                   >
                     <div className="h-20 flex items-center justify-center font-bold text-2xl">
-                      {isRevealed ? '' : showValues ? `$${value.toLocaleString()}` : ''}
+                      {isRevealed ? '' : showValues && isVisible ? `$${value.toLocaleString()}` : ''}
                     </div>
                   </td>
                 );

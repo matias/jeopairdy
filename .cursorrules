@@ -1,0 +1,24 @@
+# Workspace Structure
+
+This workspace contains two root folders with similar names but different purposes:
+
+## Main Project: `jeopairdy` (/Users/matias/src/jeopairdy)
+- **This is the active project I'm building and making changes to**
+- All code edits, file modifications, and commits should be made to files in this folder
+- This is my own implementation of a Jeopardy!-style game
+- When suggesting file paths or making changes, default to this repo
+- **Use the file GAME_ARCHITECTURE.md** to understand how the game works, and **update it** as needed if the game mechanics change (e.g. new features, changes to game state logic, etc).
+
+## Reference Repo: `jeopardy` (/Users/matias/src/jeopardy)
+- **This is a reference-only repository from another developer**
+- This is a cloned GitHub repo from a different developer's project
+- **DO NOT make any changes, edits, or commits to files in this folder**
+- You may read and reference files from this repo for inspiration, understanding patterns, or copying specific code
+- When referencing this repo, explicitly mention it's from the `jeopardy` reference repo
+
+## Rules for AI Assistant
+- Always make changes to files in `jeopairdy` (the main project)
+- You may read files from `jeopardy` for reference, but never edit them
+- When suggesting file paths, use paths relative to `jeopairdy` unless explicitly referencing the other repo
+- If copying code from `jeopardy`, adapt it to fit the `jeopairdy` project structure and style
+- Be explicit when referencing code from the `jeopardy` repo vs the `jeopairdy` repo

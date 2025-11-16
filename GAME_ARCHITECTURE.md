@@ -1,0 +1,353 @@
+# Jeopairdy Game Architecture
+
+## Overview
+
+Jeopairdy is a Jeopardy!-style trivia game built with Next.js (React) frontend and Node.js WebSocket backend. The game supports multiple players competing in real-time with a host controlling the game flow.
+
+## Core Components
+
+### Client-Side Pages
+
+- **`app/host/[roomId]/page.tsx`** - Host control interface
+- **`app/player/[roomId]/page.tsx`** - Player interface with buzzer
+- **`app/game/[roomId]/page.tsx`** - Public game display (viewer mode)
+- **`app/join/page.tsx`** - Player join page
+- **`app/create-game/page.tsx`** - Game creation interface
+- **`app/load-game/page.tsx`** - Load saved game
+
+### Server Components
+
+- **`server/src/game/state.js`** - Game state management (GameManager class)
+- **`server/src/websocket/server.js`** - WebSocket message handling
+- **`server/src/ai/generator.js`** - AI game generation
+
+### Shared Types
+
+- **`shared/types.ts`** - TypeScript types for game state and messages
+
+## Game State Structure
+
+### GameStatus Enum
+
+The game progresses through these states:
+
+1. **`waiting`** - Room created, no game loaded
+2. **`ready`** - Game loaded, waiting to start
+3. **`selecting`** - Host selecting clues from board
+4. **`clueRevealed`** - Clue displayed, buzzer locked (3 second delay)
+5. **`buzzing`** - Buzzer unlocked, players can buzz
+6. **`answering`** - Player selected (after tie resolution), waiting for answer
+7. **`judging`** - Host can judge answer (after revealing answer to players)
+8. **`finalJeopardyWagering`** - Final Jeopardy: players placing wagers
+9. **`finalJeopardyAnswering`** - Final Jeopardy: players writing answers (30s countdown)
+10. **`finalJeopardyJudging`** - Final Jeopardy: host judging players sequentially
+11. **`finished`** - Game complete
+
+### GameState Object
+
+```typescript
+interface GameState {
+  roomId: string;
+  config: GameConfig | null;  // Game questions/categories
+  status: GameStatus;
+  currentRound: "jeopardy" | "doubleJeopardy" | "finalJeopardy";
+  selectedClue: { categoryId: string; clueId: string } | null;
+  players: Map<string, Player>;
+  
+  // Buzzer management
+  buzzerOrder: string[];  // Raw chronological order of all buzzes
+  resolvedBuzzerOrder?: string[];  // Order with tie resolution (currentPlayer first)
+  displayBuzzerOrder?: string[];  // Static display order (never changes after tie resolution)
+  currentPlayer: string | null;  // Player currently answering
+  judgedPlayers?: string[];  // Players who have been judged for current clue
+  
+  // Final Jeopardy state
+  finalJeopardyInitialScores?: Map<string, number> | Record<string, number>;
+  finalJeopardyJudgingOrder?: string[];  // Player IDs sorted by initial score (ascending)
+  finalJeopardyClueShown?: boolean;
+  finalJeopardyCountdownStart?: number;
+  finalJeopardyCountdownEnd?: number;  // Server timestamp when countdown expires
+  finalJeopardyJudgingPlayerIndex?: number;
+  finalJeopardyRevealedWager?: boolean;
+  finalJeopardyRevealedAnswer?: boolean;
+  
+  // Game control
+  lastCorrectPlayer?: string | null;  // Player with board control
+  notPickedInTies?: string[];  // Fairness tracking for tie resolution
+  hostId: string;
+}
+```
+
+## Game Flow
+
+### Regular Rounds (Jeopardy & Double Jeopardy)
+
+1. **Host selects clue** → `selectClue(categoryId, clueId)`
+   - Status: `clueRevealed`
+   - Buzzer locked for 3 seconds
+   - Clue displayed on all screens
+
+2. **Buzzer unlocks** → Status: `buzzing`
+   - Players can buzz in
+   - Server tracks all buzzes with timestamps
+
+3. **Tie resolution** (250ms window)
+   - All buzzes within 250ms are considered "tied"
+   - Server selects one player using fairness algorithm
+   - `currentPlayer` set, `displayBuzzerOrder` created (static)
+   - Status: `answering`
+
+4. **Host judges** (can happen immediately, no need to reveal answer first)
+   - Host sees judging controls for `currentPlayer`
+   - Can mark Correct/Incorrect
+   - If incorrect and other players buzzed, next player becomes `currentPlayer`
+   - If correct or no more players, host returns to board
+
+5. **Return to board** → `returnToBoard()`
+   - Status: `selecting`
+   - Clears buzzer state, resets for next clue
+
+### Buzzer Logic Details
+
+**Tie Resolution:**
+- 250ms window: all buzzes within 250ms of first buzz are "tied"
+- Fairness algorithm: prioritizes players who haven't been picked in previous ties
+- `displayBuzzerOrder`: set once when tie resolved, never changes (for UI consistency)
+- `resolvedBuzzerOrder`: updated as judging progresses (for logic)
+
+**Late Buzzes:**
+- Buzzes after 250ms window are "late" but still shown in UI
+- Added to `displayBuzzerOrder` when they arrive
+- Not eligible to answer (only tied players can answer)
+
+**Judging Multiple Players:**
+- When first player judged incorrect, server finds next unjudged player in `displayBuzzerOrder`
+- Sets that player as `currentPlayer`
+- Host can judge them, repeat until all judged or someone correct
+
+### Final Jeopardy Flow
+
+1. **Initialize Final Jeopardy** → `initializeFinalJeopardy(roomId)`
+   - Captures snapshot of player scores → `finalJeopardyInitialScores`
+   - Creates judging order (ascending by score) → `finalJeopardyJudgingOrder`
+   - Status: `finalJeopardyWagering`
+   - Only players with score > 0 can participate
+
+2. **Players wager** → `submitWager(wager)`
+   - Client validates: 0 ≤ wager ≤ player.score
+   - Server validates: player.score > 0 required
+   - No auto-advance (host manually shows clue)
+
+3. **Host shows clue** → `showFinalJeopardyClue()`
+   - Requires all eligible players to have wagered
+   - Status: `finalJeopardyAnswering`
+   - Starts 30-second countdown (server-authoritative)
+   - Sets `finalJeopardyCountdownEnd` timestamp
+
+4. **Players answer** → `submitFinalAnswer(answer)`
+   - Server checks if countdown expired
+   - Rejects submissions after `finalJeopardyCountdownEnd`
+   - No auto-advance (host manually starts judging)
+
+5. **Host starts judging** → `startFinalJeopardyJudging()`
+   - Status: `finalJeopardyJudging`
+   - Sets `finalJeopardyJudgingPlayerIndex = 0` (lowest score first)
+
+6. **Sequential judging** (for each player in order):
+   - `revealFinalJeopardyWager()` - Shows player's wager on game display
+   - `revealFinalJeopardyAnswer()` - Shows player's answer on game display
+   - `judgeFinalJeopardyAnswer(playerId, correct)` - Applies wager, moves to next player
+   - When last player judged, status: `finished`
+
+## Host Controls
+
+### Main Game Controls
+
+- **Select Clue** - Click on game board clue
+- **Reveal Answer** - Show answer to players (optional, doesn't block judging)
+- **Judge Answer** - Mark current player Correct/Incorrect
+- **Back to Board** - Return to clue selection
+- **Next Round** - Advance from Jeopardy → Double Jeopardy
+- **Start Final Jeopardy** - Advance from Double Jeopardy → Final Jeopardy
+- **Manual Score Adjustment** - Adjust any player's score manually
+
+### Final Jeopardy Controls
+
+- **Show Clue** - Reveal clue and start 30s countdown (requires all eligible players wagered)
+- **Start Judging** - Begin sequential judging process
+- **Reveal Wager** - Show current player's wager on game display
+- **Reveal Answer** - Show current player's answer on game display
+- **Correct/Incorrect** - Judge current player, auto-advance to next
+
+## Server-Side Game State Management
+
+### GameManager Class (`server/src/game/state.js`)
+
+**Key Methods:**
+
+- `createRoom(roomId, hostId)` - Initialize new game room
+- `selectClue(roomId, categoryId, clueId)` - Select and reveal clue
+- `handleBuzz(roomId, playerId, clientTimestamp, serverTimestamp)` - Process player buzz
+- `processBuzzerOrder(roomId)` - Resolve ties, set current player
+- `judgeAnswer(roomId, playerId, correct)` - Judge player, move to next if incorrect
+- `returnToBoard(roomId)` - Reset to clue selection
+- `nextRound(roomId)` - Advance round
+- `initializeFinalJeopardy(roomId)` - Start Final Jeopardy
+- `showFinalJeopardyClue(roomId)` - Show clue, start countdown
+- `startFinalJeopardyJudging(roomId)` - Begin judging
+- `judgeFinalJeopardyAnswer(roomId, playerId, correct)` - Judge and advance
+
+**State Persistence:**
+- Game state stored in memory (`games` Map)
+- No database (ephemeral)
+- Game config can be saved/loaded as JSON files
+
+## WebSocket Communication
+
+### Message Types
+
+**Client → Server:**
+- `joinRoom` - Join as host/player/viewer
+- `selectClue` - Host selects clue
+- `buzz` - Player buzzes in
+- `revealAnswer` - Host reveals answer to players
+- `judgeAnswer` - Host judges player
+- `showFinalJeopardyClue` - Host shows Final Jeopardy clue
+- `startFinalJeopardyJudging` - Host starts judging
+- `revealFinalJeopardyWager` - Host reveals wager
+- `revealFinalJeopardyAnswer` - Host reveals answer
+- `judgeFinalJeopardyAnswer` - Host judges Final Jeopardy answer
+- `submitWager` - Player submits Final Jeopardy wager
+- `submitFinalAnswer` - Player submits Final Jeopardy answer
+- `returnToBoard` - Host returns to board
+- `updateScore` - Host manually adjusts score
+
+**Server → Client:**
+- `roomJoined` - Confirmation of room join
+- `gameStateUpdate` - Broadcast of game state changes
+- `buzzerLocked` - Buzzer lock/unlock status
+- `buzzReceived` - Notification of buzz (for UI feedback)
+- `error` - Error messages
+
+### State Serialization
+
+`serializeGameState()` in `server.js` converts server game state to JSON:
+- Maps converted to arrays
+- Internal server-only fields excluded (timeouts, callbacks)
+- `finalJeopardyInitialScores` Map → plain object
+
+## Key Technical Details
+
+### Buzzer Timing
+
+- **Client timestamp**: When player's browser detected buzz
+- **Server timestamp**: When server received buzz
+- **Tie window**: 250ms from first server timestamp
+- **Selection**: Uses server timestamps for accuracy (accounts for network latency)
+
+### Tie Fairness
+
+- `notPickedInTies`: Tracks players who were in ties but not selected
+- Next tie: Prioritizes players from `notPickedInTies`
+- Ensures fair distribution over multiple ties
+
+### Display Order vs Logic Order
+
+- **`displayBuzzerOrder`**: Static, set once when tie resolved, used for UI
+- **`resolvedBuzzerOrder`**: Dynamic, updated as judging progresses, used for finding next player
+- UI always shows `displayBuzzerOrder` to avoid confusion from reordering
+
+### Countdown Timer
+
+- **Server-authoritative**: Server sets `finalJeopardyCountdownEnd` timestamp
+- **Client calculation**: Clients calculate remaining time: `countdownEnd - Date.now()`
+- **Locking**: Server rejects submissions after countdown expires
+- **Display**: Updates every 100ms on client
+
+### Final Jeopardy Judging Order
+
+- **Fixed at start**: `finalJeopardyJudgingOrder` set when Final Jeopardy initializes
+- **Based on initial scores**: Ascending order (lowest score first)
+- **Never changes**: Order remains fixed even as scores change during judging
+- **Sequential**: Host reveals wager → reveals answer → judges → next player
+
+## File Structure
+
+```
+jeopairdy/
+├── app/                    # Next.js pages
+│   ├── host/[roomId]/     # Host control page
+│   ├── player/[roomId]/   # Player page
+│   ├── game/[roomId]/     # Game display page
+│   ├── join/              # Join page
+│   └── create-game/       # Game creation
+├── components/            # React components
+│   ├── Buzzer/           # Player buzzer component
+│   ├── ClueDisplay/      # Clue/question display
+│   ├── GameBoard/        # Jeopardy board
+│   └── Scoreboard/       # Player scores
+├── server/               # Node.js backend
+│   ├── src/
+│   │   ├── game/         # Game state management
+│   │   ├── websocket/    # WebSocket server
+│   │   └── ai/           # Game generation
+│   └── test-data/        # Saved game configs
+├── lib/                  # Client utilities
+│   ├── websocket.ts      # WebSocket client
+│   └── websocket-url.ts  # WebSocket URL config
+└── shared/               # Shared types
+    └── types.ts          # TypeScript definitions
+```
+
+## Important Patterns
+
+### State Updates
+
+- All state changes happen server-side
+- Server broadcasts `gameStateUpdate` to all clients
+- Clients update local state from broadcasts
+- No client-side state mutations (except UI-only state like form inputs)
+
+### Role-Based Access
+
+- **Host**: Can control game flow, judge answers, adjust scores
+- **Player**: Can buzz, submit wagers/answers
+- **Viewer**: Read-only, sees game display
+
+### Error Handling
+
+- Server validates all actions (role, game state, permissions)
+- Returns `error` messages via WebSocket
+- Client shows errors to user
+
+### Reconnection
+
+- Players can reconnect with stored `playerId`
+- Server recognizes reconnection and restores player state
+- WebSocket client has auto-reconnect logic
+
+## Common Operations
+
+### Adding a New Game Action
+
+1. Add message type to `ClientMessage` in `shared/types.ts`
+2. Add handler in `server/src/websocket/server.js` `handleMessage()`
+3. Implement handler function (e.g., `handleNewAction()`)
+4. Add method to `GameManager` class if state change needed
+5. Add client method to `lib/websocket.ts`
+6. Update UI components to call new method
+
+### Modifying Game Flow
+
+- Check `server/src/game/state.js` for state transition logic
+- Update status checks in relevant methods
+- Ensure WebSocket broadcasts state updates
+- Update client UI to handle new states
+
+### Debugging
+
+- Server logs buzzer debug info (tie resolution, timestamps)
+- Game state can be dumped to console via "Dump Game Config" button
+- Check browser console for WebSocket messages
+- Server console shows all game state changes
+
