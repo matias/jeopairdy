@@ -540,13 +540,6 @@ export default function HostPage() {
               <p className="text-lg font-bold">Category: {gameState.config?.finalJeopardy.category}</p>
               <p className="text-lg mb-2">Clue: {gameState.config?.finalJeopardy.clue}</p>
             </div>
-            {gameState.finalJeopardyCountdownEnd && (
-              <div className="mb-4">
-                <p className="text-lg">
-                  Time remaining: {Math.max(0, Math.floor((gameState.finalJeopardyCountdownEnd - Date.now()) / 1000))} seconds
-                </p>
-              </div>
-            )}
             <div className="space-y-2 mb-4">
               {players.filter(p => p.score > 0).map((player) => (
                 <div key={player.id} className="flex items-center gap-4">

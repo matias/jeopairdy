@@ -10,7 +10,7 @@ import ClueDisplay from '@/components/ClueDisplay/ClueDisplay';
 import Scoreboard from '@/components/Scoreboard/Scoreboard';
 
 import { getWebSocketUrl } from '@/lib/websocket-url';
-import { playBoardFill, playIntroMusic, stopIntroMusic, fadeOutIntroMusic, playTimesUp } from '@/lib/audio';
+import { playBoardFill, playIntroMusic, stopIntroMusic, fadeOutIntroMusic, playTimesUp, playThinkMusic, stopThinkMusic } from '@/lib/audio';
 
 const WS_URL = getWebSocketUrl();
 const ANSWER_TIMEOUT = 20000; // 20 seconds
@@ -42,7 +42,11 @@ function CountdownTimer({ countdownEnd }: { countdownEnd: number | undefined }) 
   const seconds = timeLeft % 60;
   return (
     <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg text-4xl font-bold z-50">
-      :{String(minutes).padStart(1, '0')}{String(seconds).padStart(2, '0')}
+      {minutes > 0 ? (
+        <>{minutes}:{String(seconds).padStart(2, '0')}</>
+      ) : (
+        <>:{String(seconds).padStart(2, '0')}</>
+      )}
     </div>
   );
 }
@@ -195,6 +199,24 @@ export default function GameDisplayPage() {
       stopIntroMusic();
     };
   }, [gameState?.status, isTransitioning]);
+
+  // Play think music during Final Jeopardy answering
+  useEffect(() => {
+    if (!gameState) return;
+
+    if (gameState.status === 'finalJeopardyAnswering') {
+      // Play think music when Final Jeopardy answering starts
+      playThinkMusic();
+    } else {
+      // Stop think music when state changes away from Final Jeopardy answering
+      stopThinkMusic();
+    }
+
+    // Cleanup on unmount
+    return () => {
+      stopThinkMusic();
+    };
+  }, [gameState?.status]);
 
   // Handle 20-second timeout for answering clues
   useEffect(() => {

@@ -155,4 +155,6 @@ export const playIntroMusic = () => audioManager.playLooping('/jeopardy/jeopardy
 export const stopIntroMusic = () => audioManager.stop('/jeopardy/jeopardy-intro-full.ogg');
 export const fadeOutIntroMusic = (duration?: number) => audioManager.fadeOut('/jeopardy/jeopardy-intro-full.ogg', duration);
 export const playTimesUp = () => audioManager.play('/jeopardy/jeopardy-times-up.mp3');
+export const playThinkMusic = () => audioManager.play('/jeopardy/jeopardy-think.mp3');
+export const stopThinkMusic = () => audioManager.stop('/jeopardy/jeopardy-think.mp3');
 
