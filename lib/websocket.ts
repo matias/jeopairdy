@@ -381,6 +381,13 @@ export class WebSocketClient {
     });
   }
 
+  saveGame(gameConfig: any) {
+    this.send({
+      type: 'saveGame',
+      gameConfig,
+    });
+  }
+
   loadGame(gameConfig: any) {
     this.send({
       type: 'loadGame',

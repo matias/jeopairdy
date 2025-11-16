@@ -119,6 +119,7 @@ export type ClientMessage =
   | { type: "revealFinalJeopardyAnswer" }
   | { type: "judgeFinalJeopardyAnswer"; playerId: string; correct: boolean }
   | { type: "createGame"; prompt: string; difficulty?: string; sourceMaterial?: string }
+  | { type: "saveGame"; gameConfig: GameConfig }
   | { type: "loadGame"; gameConfig: GameConfig }
   | { type: "returnToBoard" }
   | { type: "startGame" }
@@ -131,5 +132,6 @@ export type ServerMessage =
   | { type: "buzzReceived"; playerId: string; timestamp: number }
   | { type: "error"; message: string }
   | { type: "gameCreated"; gameState: GameState }
+  | { type: "gameSaved"; gameId: string }
   | { type: "pong"; timestamp: number };
 

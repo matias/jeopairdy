@@ -26,6 +26,14 @@ interface FinalJeopardyPromptOptions extends BasePromptOptions {
   excludedAnswers?: string[];
 }
 
+interface SingleClueRegenerationPromptOptions extends BasePromptOptions {
+  categoryName: string;
+  round: Round;
+  value: number;
+  currentClue: string;
+  currentAnswer: string;
+}
+
 const DEFAULT_SAMPLE_VALUES = [200, 600, 1000];
 const DEFAULT_SAMPLE_CATEGORY_COUNT = 4;
 const DEFAULT_SAMPLE_CLUE_COUNT = 6;
@@ -44,6 +52,7 @@ const BOARD_GUIDELINES = `Board composition:
 
 const CLUE_GUIDELINES = `Clue writing expectations:
 * Phrase clues as answers; responses must be in question form (\"What/who is...?\" etc.).
+* Clues should be at MOST 40 tokens (about 100 characters) long.
 * Provide exactly one unambiguous correct response—avoid multi-answer ambiguity.
 * Escalate difficulty with each value and keep clues concise but information-rich.
 * Verify every fact; give enough context for contestants to reason to the response.
@@ -213,5 +222,42 @@ Final Jeopardy guardrails:
 - Provide a single definitive response in question form ("What/who is...?").
 
 Ensure the clue ties to the topics and meets Final Jeopardy gravitas.`;
+}
+
+export function getSingleClueRegenerationPrompt(options: SingleClueRegenerationPromptOptions): string {
+  const { topics, difficulty, sourceMaterial, categoryName, round, value, currentClue, currentAnswer } = options;
+  const roundName =
+    round === 'doubleJeopardy'
+      ? 'Double Jeopardy'
+      : round === 'finalJeopardy'
+        ? 'Final Jeopardy'
+        : 'Jeopardy';
+
+  return `Generate a new clue to replace an existing one in the game.
+
+Context:
+- Round: ${roundName}
+- Category: ${categoryName}
+- Value: ${value}
+- Current clue being replaced: "${currentClue}"
+- Current answer being replaced: "${currentAnswer}"
+
+Requirements:
+- Generate a NEW clue for the same category, round, and value
+- The new clue must fit the same difficulty level (${value} points)
+- Maintain consistency with the category theme
+- Follow all clue-writing guidelines (Jeopardy format, single unambiguous answer, etc.)
+
+Topics / themes: ${topics}
+Requested difficulty: ${difficulty}
+${formatSourceMaterial(sourceMaterial)}
+
+Output JSON:
+{
+  "clue": "New answer text for the clue",
+  "answer": "What/who is ... ?"
+}
+
+Generate a fresh, high-quality clue that matches the category and difficulty level.`;
 }
 

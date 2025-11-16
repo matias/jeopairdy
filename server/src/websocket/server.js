@@ -142,6 +142,12 @@ function handleMessage(ws, message, conn) {
         ws.send(JSON.stringify({ type: 'error', message: `Error creating game: ${error.message}` }));
       });
       break;
+    case 'saveGame':
+      handleSaveGame(ws, message, conn).catch(error => {
+        console.error('Error in handleSaveGame:', error);
+        ws.send(JSON.stringify({ type: 'error', message: `Error saving game: ${error.message}` }));
+      });
+      break;
     case 'loadGame':
       handleLoadGame(ws, message, conn);
       break;
@@ -608,6 +614,35 @@ function handleJudgeFinalJeopardyAnswer(ws, message, conn) {
         gameState: serializeGameState(gameState),
       });
     }
+  }
+}
+
+async function handleSaveGame(ws, message, conn) {
+  if (!conn.roomId || conn.role !== 'host') {
+    ws.send(JSON.stringify({ type: 'error', message: 'Only host can save games' }));
+    return;
+  }
+
+  const { gameConfig } = message;
+  
+  if (!gameConfig) {
+    ws.send(JSON.stringify({ type: 'error', message: 'No game config provided' }));
+    return;
+  }
+
+  // Save to file for testing/replay
+  const fs = require('fs').promises;
+  const path = require('path');
+  const testDataDir = path.join(__dirname, '../../test-data');
+  
+  try {
+    await fs.mkdir(testDataDir, { recursive: true });
+    const filePath = path.join(testDataDir, `${gameConfig.id}.json`);
+    await fs.writeFile(filePath, JSON.stringify(gameConfig, null, 2));
+    ws.send(JSON.stringify({ type: 'gameSaved', gameId: gameConfig.id }));
+  } catch (error) {
+    console.error('Error saving game config:', error);
+    ws.send(JSON.stringify({ type: 'error', message: `Error saving game: ${error.message}` }));
   }
 }
 

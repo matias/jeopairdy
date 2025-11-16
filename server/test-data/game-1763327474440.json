@@ -1,0 +1,631 @@
+{
+  "id": "game-1763327474440",
+  "jeopardy": {
+    "round": "jeopardy",
+    "categories": [
+      {
+        "id": "cat-jeopardy-0-52cfadf0-9a3c-4468-a781-b6fc9f7ff112",
+        "name": "SPACE OPERA AT THE MOVIES",
+        "clues": [
+          {
+            "id": "clue-jeopardy-0-0-6629f402-a775-43d0-ad3a-c7f11083f969",
+            "category": "SPACE OPERA AT THE MOVIES",
+            "value": 200,
+            "clue": "George Lucas launched this saga in 1977 with a film later subtitled \"A New Hope.\"",
+            "answer": "What is Star Wars?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-1-e1a138f5-fdfe-4333-82e6-a54edc0eb178",
+            "category": "SPACE OPERA AT THE MOVIES",
+            "value": 400,
+            "clue": "In a 1979 film, this long-running \"final frontier\" TV franchise got its first big-screen voyage with the subtitle \"The Motion Picture.\"",
+            "answer": "What is Star Trek?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-2-e854ac70-3859-4c65-8201-6f8d4d9f3aa0",
+            "category": "SPACE OPERA AT THE MOVIES",
+            "value": 600,
+            "clue": "In 1986 Sigourney Weaver’s Ellen Ripley returns to battle Xenomorphs in this James Cameron sequel that added Colonial Marines to the mix.",
+            "answer": "What is Aliens?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-3-3b179a27-0e6e-4ec1-b425-2eb2d33c40dd",
+            "category": "SPACE OPERA AT THE MOVIES",
+            "value": 800,
+            "clue": "This 1982 Steven Spielberg film about a stranded extraterrestrial and a boy named Elliott became the highest-grossing film of the 1980s worldwide.",
+            "answer": "What is E.T. the Extra-Terrestrial?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-4-2ac0b0c1-87cd-4519-a8bb-3e85fe617dbd",
+            "category": "SPACE OPERA AT THE MOVIES",
+            "value": 1000,
+            "clue": "Released in 1984, this David Lynch adaptation of a Frank Herbert novel features Paul Atreides and the line \"the spice must flow.\"",
+            "answer": "What is Dune?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-1-c170e6b4-d616-4c2c-9c60-9cbd0d5ae54f",
+        "name": "SYNTHS, HAIRSPRAY & THE 1980s",
+        "clues": [
+          {
+            "id": "clue-jeopardy-1-0-3c5162d6-6ec8-44ed-a37b-58fc83be702b",
+            "category": "SYNTHS, HAIRSPRAY & THE 1980s",
+            "value": 200,
+            "clue": "In 1983 this King of Pop moonwalked his way into history with the hit single and album \"Thriller.\"",
+            "answer": "Who is Michael Jackson?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-1-e1f2708a-8144-45f6-8858-eca36a953c65",
+            "category": "SYNTHS, HAIRSPRAY & THE 1980s",
+            "value": 400,
+            "clue": "This British duo with Neil Tennant and Chris Lowe sang \"West End Girls\" and \"It’s a Sin\" over lush synth-pop beats.",
+            "answer": "Who are Pet Shop Boys?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-2-039563df-41be-4fe8-936c-20023376b8e2",
+            "category": "SYNTHS, HAIRSPRAY & THE 1980s",
+            "value": 600,
+            "clue": "In 1984, this band led by Annie Lennox and Dave Stewart asked \"Sweet dreams are made of this\" on a breakthrough hit single.",
+            "answer": "Who are Eurythmics?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-3-a2fa6835-8cdb-411d-9afe-54bb7c961f58",
+            "category": "SYNTHS, HAIRSPRAY & THE 1980s",
+            "value": 800,
+            "clue": "This singer’s 1984 album \"Like a Virgin\" helped cement her as the \"Material Girl\" of 80s pop culture.",
+            "answer": "Who is Madonna?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-4-3836d1aa-810c-4c12-b1e5-5d64598e55b8",
+            "category": "SYNTHS, HAIRSPRAY & THE 1980s",
+            "value": 1000,
+            "clue": "Fronted by Debbie Harry, this New York band blended punk and disco on the 1980 hit \"Call Me,\" co-written with Giorgio Moroder.",
+            "answer": "What is Blondie?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-2-564bbee8-c8f2-48b5-b9f9-f245e70982da",
+        "name": "QUEER HISTORY CHANNEL",
+        "clues": [
+          {
+            "id": "clue-jeopardy-2-0-90526ddf-f2cc-42ec-96cd-20a44a197276",
+            "category": "QUEER HISTORY CHANNEL",
+            "value": 200,
+            "clue": "Each June, many countries mark this month-long celebration of LGBTQ+ communities, inspired by the 1969 Stonewall uprising.",
+            "answer": "What is Pride Month?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-1-d9276bde-eb8b-43d8-ab42-f399059b8a8d",
+            "category": "QUEER HISTORY CHANNEL",
+            "value": 400,
+            "clue": "This term, often abbreviated LGBTQ+, refers to people whose sexual or gender identities differ from cisgender heterosexual norms.",
+            "answer": "What is queer?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-2-23fdf5af-22a4-43a8-9a39-930c14a7b637",
+            "category": "QUEER HISTORY CHANNEL",
+            "value": 600,
+            "clue": "Formed in 1987, this direct-action AIDS activist group used the pink triangle and the slogan \"SILENCE = DEATH\" to protest government inaction.",
+            "answer": "What is ACT UP?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-3-bc545722-0fed-43f2-97c7-6115e3392ad6",
+            "category": "QUEER HISTORY CHANNEL",
+            "value": 800,
+            "clue": "In 2015, the U.S. Supreme Court’s Obergefell v. Hodges decision legalized this right for same-sex couples nationwide.",
+            "answer": "What is same-sex marriage?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-4-e01ae1fb-2ec9-47b6-9dd4-36370412f09c",
+            "category": "QUEER HISTORY CHANNEL",
+            "value": 1000,
+            "clue": "This American writer’s 1989 book \"Gender Trouble\" introduced the idea of gender performativity and became foundational to queer theory.",
+            "answer": "Who is Judith Butler?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-3-5f9df07e-e097-47fb-90ba-0d17606d7876",
+        "name": "NICKELODEON NOSTALGIA TRIP",
+        "clues": [
+          {
+            "id": "clue-jeopardy-3-0-f9106025-d15b-4d58-811e-dbdb12f46f93",
+            "category": "NICKELODEON NOSTALGIA TRIP",
+            "value": 200,
+            "clue": "Miranda Cosgrove played the title web-show host on this Nickelodeon sitcom whose name starts with a lowercase \"i.\"",
+            "answer": "What is iCarly?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-1-b3393a0f-573a-4390-b77d-e7964154aca1",
+            "category": "NICKELODEON NOSTALGIA TRIP",
+            "value": 400,
+            "clue": "Jamie Lynn Spears starred as the title character at Pacific Coast Academy in this boarding-school series.",
+            "answer": "What is Zoey 101?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-2-d3f652e2-0cf2-4b65-9c86-59be15358060",
+            "category": "NICKELODEON NOSTALGIA TRIP",
+            "value": 600,
+            "clue": "On \"iCarly,\" this eccentric older brother creates sculptures out of random junk and acts as Carly’s guardian.",
+            "answer": "Who is Spencer Shay?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-3-4641fc44-fdb2-480a-85f3-a944d6866e97",
+            "category": "NICKELODEON NOSTALGIA TRIP",
+            "value": 800,
+            "clue": "This Nickelodeon sketch show launched in 1994 and later spun off stars like Kenan Thompson to prime-time careers.",
+            "answer": "What is All That?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-4-43a734c1-c5b5-44ea-9c49-a119afbcf21c",
+            "category": "NICKELODEON NOSTALGIA TRIP",
+            "value": 1000,
+            "clue": "Dan Schneider co-created this series where Victoria Justice’s character Tori Vega attends a performing arts high school called Hollywood Arts.",
+            "answer": "What is Victorious?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-4-474a67c8-368d-465d-81e6-b04f3a3ce073",
+        "name": "INTERNET MEME MACHINE",
+        "clues": [
+          {
+            "id": "clue-jeopardy-4-0-7ca0e2e2-e44a-49a5-ba8a-ef0cb0054257",
+            "category": "INTERNET MEME MACHINE",
+            "value": 200,
+            "clue": "Rickrolling tricks you into watching the music video for this Rick Astley hit from 1987.",
+            "answer": "What is \"Never Gonna Give You Up\"?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-1-24e8eba5-b27b-484b-ad99-24fe40f87760",
+            "category": "INTERNET MEME MACHINE",
+            "value": 400,
+            "clue": "This short looping video format, pronounced like \"jiff\" by its creator, became a staple of reaction memes online.",
+            "answer": "What is a GIF?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-2-dcdb52c0-5067-458d-bc01-1e35a00cd436",
+            "category": "INTERNET MEME MACHINE",
+            "value": 600,
+            "clue": "A 2021 viral meme used a still of Leonardo DiCaprio raising a glass from this Baz Luhrmann film set in the 1920s.",
+            "answer": "What is The Great Gatsby?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-3-1f45386f-37d5-474d-8a81-951d6d930e47",
+            "category": "INTERNET MEME MACHINE",
+            "value": 800,
+            "clue": "In 2019, people joked about \"storming\" this secretive U.S. Air Force facility in Nevada to \"see them aliens.\"",
+            "answer": "What is Area 51?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-4-b2eca7e2-d3f5-405c-aafc-9362d2d52120",
+            "category": "INTERNET MEME MACHINE",
+            "value": 1000,
+            "clue": "The \"woman yelling at a cat\" meme pairs a \"Real Housewives\" cast member shouting with a confused white cat sitting in front of this dinner item.",
+            "answer": "What is a salad?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-5-dcfae3f6-c3a1-4cf7-a49c-d97825ccff5d",
+        "name": "MIXING POP & THE FINAL FRONTIER",
+        "clues": [
+          {
+            "id": "clue-jeopardy-5-0-0db6cb5f-2c34-4012-a9f9-f914f3481db9",
+            "category": "MIXING POP & THE FINAL FRONTIER",
+            "value": 200,
+            "clue": "Kate Bush’s 1985 single \"Running Up That Hill\" surged again after being featured in season 4 of this Netflix sci-fi horror series.",
+            "answer": "What is Stranger Things?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-1-bf982b66-89e1-4816-adce-eb0e71f7fcd3",
+            "category": "MIXING POP & THE FINAL FRONTIER",
+            "value": 400,
+            "clue": "The 1984 film \"Ghostbusters\" inspired a hit theme song by this singer, who asked, \"Who you gonna call?\"",
+            "answer": "Who is Ray Parker Jr.?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-2-91467d7c-8a6c-423f-8773-f6a43629accf",
+            "category": "MIXING POP & THE FINAL FRONTIER",
+            "value": 600,
+            "clue": "In 1983, this band fronted by Simon Le Bon sang \"Is there something I should know?\" while also scoring the James Bond theme \"A View to a Kill.\"",
+            "answer": "What is Duran Duran?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-3-c7cdd5d5-de41-4757-9b33-0f274064ffcd",
+            "category": "MIXING POP & THE FINAL FRONTIER",
+            "value": 800,
+            "clue": "The 1982 film \"Tron,\" about a programmer pulled into a digital world, complements the era’s fascination with this new household device that brought arcade-style games home.",
+            "answer": "What is a video game console?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-4-33242c6c-5ad4-419f-a1b7-a172fc55517f",
+            "category": "MIXING POP & THE FINAL FRONTIER",
+            "value": 1000,
+            "clue": "This German band’s 1984 antiwar song \"99 Luftballons\" imagines toy balloons triggering a nuclear scare, echoing the Cold War paranoia seen in films like \"WarGames.\"",
+            "answer": "What is Nena?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      }
+    ]
+  },
+  "doubleJeopardy": {
+    "round": "doubleJeopardy",
+    "categories": [
+      {
+        "id": "cat-doubleJeopardy-0-0ddafbdb-9ce0-4be8-a726-d6186927918e",
+        "name": "DEEP SPACE CINEMA",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-0-0-db3ae48b-fd87-456c-b4da-65b0e076724c",
+            "category": "DEEP SPACE CINEMA",
+            "value": 400,
+            "clue": "This 1979 Ridley Scott film first introduced audiences to the Xenomorph and the crew of the Nostromo.",
+            "answer": "What is Alien?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-1-5241921d-e20e-41b2-bb2b-37926f85e5a2",
+            "category": "DEEP SPACE CINEMA",
+            "value": 800,
+            "clue": "In this 1999 space comedy, Tim Allen and Sigourney Weaver play actors from a canceled sci-fi TV show mistaken for real heroes by aliens.",
+            "answer": "What is Galaxy Quest?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-2-04370ba2-f46f-424f-8ed0-5dbbea051709",
+            "category": "DEEP SPACE CINEMA",
+            "value": 1200,
+            "clue": "Directed by Robert Zemeckis and based on a Carl Sagan novel, this 1997 film stars Jodie Foster as radio astronomer Ellie Arroway.",
+            "answer": "What is Contact?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-3-4cc2dbc0-317f-4c0d-9efb-8f2e82f3194e",
+            "category": "DEEP SPACE CINEMA",
+            "value": 1600,
+            "clue": "In this 2016 film, linguist Louise Banks works to communicate with heptapod aliens using their circular written language.",
+            "answer": "What is Arrival?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-4-93c35ed7-a4bb-4be8-b3ef-2edb5285e69a",
+            "category": "DEEP SPACE CINEMA",
+            "value": 2000,
+            "clue": "This 1971 Soviet sci-fi film, directed by Andrei Tarkovsky, adapts a Stanisław Lem novel about a sentient planet haunting a space station crew.",
+            "answer": "What is Solaris?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-1-d897e3dd-1409-42fd-b10d-8d63410dfe4c",
+        "name": "’80s POP: REMIX EDITION",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-1-0-e2e25e73-e68b-4fbc-946d-459ba3b6c892",
+            "category": "’80s POP: REMIX EDITION",
+            "value": 400,
+            "clue": "This Norwegian band climbed the charts with the synth-pop hit \"Take On Me\" and its rotoscope-animated video.",
+            "answer": "What is A-ha?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-1-110802a0-b28e-4c71-a0e7-4a3c353ced8a",
+            "category": "’80s POP: REMIX EDITION",
+            "value": 800,
+            "clue": "Cyndi Lauper insisted that these three words \"just wanna have fun\" on her 1983 breakthrough single.",
+            "answer": "What are girls?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-2-c001b629-f936-4316-8145-ae60b2ddfb80",
+            "category": "’80s POP: REMIX EDITION",
+            "value": 1200,
+            "clue": "This British band fronted by George Michael told you to \"Wake Me Up Before You Go-Go\" on a 1984 hit.",
+            "answer": "What is Wham!?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-3-c270b7a9-ecca-489e-a53a-4accb1a82f22",
+            "category": "’80s POP: REMIX EDITION",
+            "value": 1600,
+            "clue": "This band fronted by Roland Orzabal and Curt Smith released the 1985 hits \"Everybody Wants to Rule the World\" and \"Shout.\"",
+            "answer": "What is Tears for Fears?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-4-9567276e-3302-4e73-b9f6-220dafb15a3b",
+            "category": "’80s POP: REMIX EDITION",
+            "value": 2000,
+            "clue": "Fronted by Boy George, this British group scored an international hit with \"Karma Chameleon\" in 1983.",
+            "answer": "What is Culture Club?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-2-0041aca6-9f37-4ff8-a39e-94bf8afc3595",
+        "name": "QUEER HISTORY: PEOPLE & PLACES",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-2-0-83c74674-5b4e-4b72-b16c-b512d53ca60d",
+            "category": "QUEER HISTORY: PEOPLE & PLACES",
+            "value": 400,
+            "clue": "In 1982 this Midwestern U.S. city became home to the country’s first known gay and lesbian community center owned and operated by LGBTQ+ people themselves, the Pride Center of this city.",
+            "answer": "What is Indianapolis?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-1-5eda2243-9dc7-4e76-80b1-7cafa731c932",
+            "category": "QUEER HISTORY: PEOPLE & PLACES",
+            "value": 800,
+            "clue": "This New York City neighborhood, home to the Stonewall Inn, became synonymous with LGBTQ+ activism after 1969.",
+            "answer": "What is Greenwich Village?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-2-a7c19f0e-b8db-46ca-a212-92b414b3525b",
+            "category": "QUEER HISTORY: PEOPLE & PLACES",
+            "value": 1200,
+            "clue": "This U.S. Department of Health and Human Services agency first reported unusual cases of what became known as AIDS in 1981.",
+            "answer": "What is the CDC?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-3-dfb8c3e3-4852-4b52-b794-0deefb8ca87a",
+            "category": "QUEER HISTORY: PEOPLE & PLACES",
+            "value": 1600,
+            "clue": "This 1920s German physician and sex researcher founded the Institute for Sexual Science in Berlin, later destroyed by the Nazis.",
+            "answer": "Who is Magnus Hirschfeld?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-4-5aee8209-daa7-471a-9ee6-f69c166dbdc9",
+            "category": "QUEER HISTORY: PEOPLE & PLACES",
+            "value": 2000,
+            "clue": "This 1953 book by Evelyn Hooker compared psychological tests of gay and straight men, challenging the idea that homosexuality was a mental illness.",
+            "answer": "What is \"The Adjustment of the Male Overt Homosexual\"?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-3-3668648e-9284-42ae-bb33-7c6251d90e7d",
+        "name": "NICKELODEON UNIVERSE",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-3-0-7e637c7e-8248-4c68-85a1-7749644c3f01",
+            "category": "NICKELODEON UNIVERSE",
+            "value": 400,
+            "clue": "Drake Bell and Josh Peck played mismatched stepbrothers in this live-action Nickelodeon sitcom that premiered in 2004.",
+            "answer": "What is Drake & Josh?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-1-efc12358-e4dc-4c95-9368-6c85605251f0",
+            "category": "NICKELODEON UNIVERSE",
+            "value": 800,
+            "clue": "This animated series stars a boy with fairy godparents named Cosmo and Wanda who grant his wishes—with chaotic results.",
+            "answer": "What is The Fairly OddParents?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-2-fc6ddc9e-7e80-432b-937e-17c677271ab1",
+            "category": "NICKELODEON UNIVERSE",
+            "value": 1200,
+            "clue": "Set in the fictional town of Amity Park, this ghostly Nickelodeon cartoon features half-ghost teen Danny Fenton.",
+            "answer": "What is Danny Phantom?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-3-1c294f22-4741-4776-95aa-7fe6901f6832",
+            "category": "NICKELODEON UNIVERSE",
+            "value": 1600,
+            "clue": "This animated series follows the title character, a \"last\" elemental warrior, and friends like Katara and Sokka of the Southern Water Tribe.",
+            "answer": "What is Avatar: The Last Airbender?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-4-dba9470f-5307-4fc2-afc9-112b3c40dbe3",
+            "category": "NICKELODEON UNIVERSE",
+            "value": 2000,
+            "clue": "This 1990s Nick series featured an orange VHS-tape-loving teen who narrated his life directly to the audience while crushing on Patty Mayonnaise.",
+            "answer": "What is Doug?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-4-be5b4e71-5eec-4fad-b6f4-423e8bf13f97",
+        "name": "MEMES THROUGH THE YEARS",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-4-0-feb9cc94-db06-4680-9f47-2ced5334b4b5",
+            "category": "MEMES THROUGH THE YEARS",
+            "value": 400,
+            "clue": "In a 2015 meme GIF, this Marvel hero played by Paul Rudd declares, \"I know, it’s crazy, right?\" after shrinking to insect size.",
+            "answer": "Who is Ant-Man?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-1-5db825e2-210f-4cc3-b51c-f93b19688832",
+            "category": "MEMES THROUGH THE YEARS",
+            "value": 800,
+            "clue": "This social media platform, launched in 2016 and known for short vertical videos, popularized countless memes via its For You page.",
+            "answer": "What is TikTok?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-2-a9be3175-62be-4ba6-86fe-35db590db3d0",
+            "category": "MEMES THROUGH THE YEARS",
+            "value": 1200,
+            "clue": "A viral image macro shows this amphibious Kermit the Frog looking into a mirror at his hooded, sinister self, labeled \"me\" and \"me to me.\"",
+            "answer": "Who is Kermit?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-3-2bbb6dbf-6367-41e2-985d-41199c82ec0a",
+            "category": "MEMES THROUGH THE YEARS",
+            "value": 1600,
+            "clue": "The \"this is fine\" meme comes from the webcomic series \"Gunshow\" by this cartoonist, whose pen name sounds like a punctuation mark.",
+            "answer": "Who is KC Green?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-4-45889802-2aa8-4124-ac61-25deea9f6471",
+            "category": "MEMES THROUGH THE YEARS",
+            "value": 2000,
+            "clue": "Named for a 2013 post about a dog in a Shiba Inu forum, this term describes a speculative cryptocurrency that became a meme-based token in 2013.",
+            "answer": "What is Dogecoin?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-5-282a9d54-824a-4cb8-a5c2-235b7eeb763b",
+        "name": "WHEN POP MEETS SCI-FI",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-5-0-d31d7fc9-3fc0-454a-94b0-865d96f13dfc",
+            "category": "WHEN POP MEETS SCI-FI",
+            "value": 400,
+            "clue": "Huey Lewis and the News supplied \"The Power of Love\" to this 1985 time-travel film starring Michael J. Fox as Marty McFly.",
+            "answer": "What is Back to the Future?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-1-80bf2870-a088-47cd-a44b-929af4e49e8f",
+            "category": "WHEN POP MEETS SCI-FI",
+            "value": 800,
+            "clue": "This Queen song with the line \"thunderbolt and lightning\" resurged thanks to its use in the 1992 film \"Wayne’s World\"—it also fit right in with headbanging metal fans.",
+            "answer": "What is \"Bohemian Rhapsody\"?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-2-051c2daf-ae8a-4a7e-afb6-e90a9ad5d63d",
+            "category": "WHEN POP MEETS SCI-FI",
+            "value": 1200,
+            "clue": "This English band’s 1982 track \"Blue Monday\" helped define electronic dance music, echoing the futuristic vibes of the era’s sci-fi films.",
+            "answer": "What is New Order?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-3-f9a68c76-e29e-4012-a246-dd1889ced402",
+            "category": "WHEN POP MEETS SCI-FI",
+            "value": 1600,
+            "clue": "In a 1983 hit, this band warned you to \"Don’t Stop Believin’\" as you held on to that feeling—a power-ballad optimism that showed up in many 80s movie soundtracks.",
+            "answer": "What is Journey?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-4-41d4a83e-6437-4e89-8c59-66bae8928827",
+            "category": "WHEN POP MEETS SCI-FI",
+            "value": 2000,
+            "clue": "This German electronic pioneers’ 1978 song \"The Robots\" imagined a mechanized future, influencing the synth-heavy soundtracks of later sci-fi cinema.",
+            "answer": "What is Kraftwerk?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      }
+    ]
+  },
+  "finalJeopardy": {
+    "category": "QUEER HISTORY ON SCREEN",
+    "clue": "Released in 2005 and based on an Annie Proulx short story, this Ang Lee film about two Wyoming ranch hands was hailed as a landmark in mainstream queer cinema.",
+    "answer": "What is Brokeback Mountain?"
+  },
+  "createdAt": "2025-11-16T21:11:14.440Z"
+}
