@@ -252,6 +252,7 @@ export default function HostPage() {
             <h1 className="text-4xl font-bold">Host Control - Room {roomId}</h1>
             <div className="flex gap-2">
               <button
+                style={{ display: 'none' }}
                 onClick={() => {
                   if (!gameState.config) {
                     alert('No game loaded');

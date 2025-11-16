@@ -344,7 +344,9 @@ function handleSelectClue(ws, message, conn) {
         locked: true,
       });
 
-      // Unlock after delay (handled in game state)
+      // Unlock after calculated delay (based on clue syllable count)
+      // Use the speaking time calculated in game state
+      const speakingTime = gameState.buzzerUnlockTime || 3000; // Fallback to 3s if not set
       setTimeout(() => {
         const currentGame = gameManager.getGame(conn.roomId);
         if (currentGame && currentGame.status === 'buzzing') {
@@ -353,7 +355,7 @@ function handleSelectClue(ws, message, conn) {
             locked: false,
           });
         }
-      }, 3000);
+      }, speakingTime);
     }
   }
 }
