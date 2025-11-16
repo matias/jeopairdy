@@ -46,11 +46,11 @@ export default function GameBoard({ gameState, onSelectClue, showValues = true, 
             {round.categories.map((category) => (
               <th
                 key={category.id}
-                className="jeopardy-category p-4 text-center font-bold text-lg border-2 border-white"
+                className="jeopardy-category p-4 text-center text-lg border-2 border-white"
                 style={{ width: `${100 / round.categories.length}%` }}
               >
                 <div className="h-20 flex items-center justify-center px-2">
-                  <span className="uppercase leading-tight">{category.name}</span>
+                  <span className="category-text uppercase leading-tight">{category.name}</span>
                 </div>
               </th>
             ))}
@@ -85,8 +85,8 @@ export default function GameBoard({ gameState, onSelectClue, showValues = true, 
                       `}
                       onClick={() => !readOnly && clue && !isRevealed && handleClueClick(category.id, clue.id)}
                   >
-                    <div className="h-20 flex items-center justify-center font-bold text-2xl">
-                      {isRevealed ? '' : showValues && isVisible ? `$${value.toLocaleString()}` : ''}
+                    <div className="h-20 flex items-center justify-center font-bold">
+                      {isRevealed ? '' : showValues && isVisible ? <span className="value-text">${value.toLocaleString()}</span> : ''}
                     </div>
                   </td>
                 );

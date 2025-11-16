@@ -49,7 +49,7 @@ export default function Scoreboard({ gameState, highlightPlayer }: ScoreboardPro
               <div className="text-sm font-bold text-yellow-700 mb-1">WINNER!</div>
             )}
             <div className={`
-              text-2xl font-bold mt-2
+              scoreboard-points text-2xl font-bold mt-2
               ${player.score >= 0 ? 'text-green-600' : 'text-red-600'}
             `}>
               ${player.score.toLocaleString()}

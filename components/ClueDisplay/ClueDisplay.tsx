@@ -23,17 +23,17 @@ export default function ClueDisplay({ gameState, showAnswer = false }: ClueDispl
 
   return (
     <div className="w-full max-w-4xl mx-auto p-8 bg-blue-900 text-white rounded-lg border-4 border-white">
-      <div className="mb-6 text-3xl font-bold text-yellow-300 uppercase tracking-wide">
-        {category?.name} - ${clue.value.toLocaleString()}
-      </div>
+      {/* <div className="mb-6 text-3xl font-bold text-yellow-300 uppercase tracking-wide">
+        <span className="category-text">{category?.name}</span> - <span className="value-text" style={{ fontSize: '1.5em' }}>${clue.value.toLocaleString()}</span>
+      </div> */}
       
-      <div className="text-5xl font-bold mb-8 min-h-[300px] flex items-center justify-center text-center leading-tight px-4">
+      <div className="clue-text text-5xl font-bold mb-8 min-h-[300px] flex items-center justify-center text-center leading-tight px-4">
         {clue.clue}
       </div>
 
       {showAnswer && (
         <div className="mt-8 pt-8 border-t-4 border-yellow-400">
-          <div className="text-5xl font-bold text-yellow-300 flex items-center justify-center text-center">
+          <div className="clue-text text-5xl font-bold text-yellow-300 flex items-center justify-center text-center">
             {clue.answer}
           </div>
         </div>

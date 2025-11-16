@@ -316,7 +316,7 @@ export default function GameDisplayPage() {
         <div className="mb-6 text-center">
           <h1 className="jeopardy-title text-6xl font-bold mb-2 uppercase tracking-wider">JEOPAIRDY!</h1>
           <div className="text-3xl text-white font-bold uppercase tracking-wide">
-            {gameState.currentRound === 'jeopardy' ? 'JEOPARDY ROUND' : 
+            {gameState.currentRound === 'jeopardy' ? 'FIRST ROUND' : 
              gameState.currentRound === 'doubleJeopardy' ? 'DOUBLE JEOPARDY ROUND' : 
              'FINAL JEOPARDY'}
           </div>
@@ -348,14 +348,14 @@ export default function GameDisplayPage() {
 
         {gameState.status === 'finalJeopardyCategory' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white text-center">
-            <p className="text-4xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
+            <p className="text-4xl mb-4">Category: <span className="category-text">{gameState.config.finalJeopardy.category}</span></p>
             <p className="text-xl">Players are placing their wagers...</p>
           </div>
         )}
 
         {gameState.status === 'finalJeopardyWagering' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white text-center">
-            <p className="text-4xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
+            <p className="text-4xl mb-4">Category: <span className="category-text">{gameState.config.finalJeopardy.category}</span></p>
             <p className="text-xl">Players are placing their wagers...</p>
           </div>
         )}
@@ -363,8 +363,8 @@ export default function GameDisplayPage() {
         {gameState.status === 'finalJeopardyAnswering' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white">
             <div className="text-center mb-6">
-              <p className="text-4xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
-              <p className="text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
+              <p className="text-4xl mb-4">Category: <span className="category-text">{gameState.config.finalJeopardy.category}</span></p>
+              <p className="clue-text text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
             </div>
             <p className="text-xl text-center">Players are writing their answers...</p>
             <CountdownTimer countdownEnd={gameState.finalJeopardyCountdownEnd} />
@@ -374,8 +374,8 @@ export default function GameDisplayPage() {
         {gameState.status === 'finalJeopardyJudging' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white">
             <div className="text-center mb-6">
-              <p className="text-4xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
-              <p className="text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
+              <p className="text-4xl mb-4">Category: <span className="category-text">{gameState.config.finalJeopardy.category}</span></p>
+              <p className="clue-text text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
             </div>
             {gameState.finalJeopardyJudgingOrder && gameState.finalJeopardyJudgingPlayerIndex !== undefined && (
               <div className="text-center">
@@ -388,7 +388,7 @@ export default function GameDisplayPage() {
                     <div className="bg-blue-900 p-6 rounded-lg">
                       <p className="text-2xl font-bold mb-4">{currentPlayer.name}</p>
                       {gameState.finalJeopardyRevealedWager && (
-                        <p className="text-xl mb-2">Wager: ${currentPlayer.finalJeopardyWager || 0}</p>
+                        <p className="text-xl mb-2">Wager: <span className="scoreboard-points">${currentPlayer.finalJeopardyWager || 0}</span></p>
                       )}
                       {gameState.finalJeopardyRevealedAnswer && (
                         <p className="text-xl">Answer: {currentPlayer.finalJeopardyAnswer || 'No answer'}</p>
@@ -404,8 +404,8 @@ export default function GameDisplayPage() {
         {gameState.status === 'finalJeopardyReveal' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white">
             <div className="text-center mb-6">
-              <p className="text-4xl mb-4">Category: {gameState.config.finalJeopardy.category}</p>
-              <p className="text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
+              <p className="text-4xl mb-4">Category: <span className="category-text">{gameState.config.finalJeopardy.category}</span></p>
+              <p className="clue-text text-3xl font-bold mb-4">{gameState.config.finalJeopardy.clue}</p>
               {/* Answer is never shown on game display */}
             </div>
             <div className="mt-8">
