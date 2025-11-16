@@ -1,3 +1,41 @@
+// Count syllables in a word (adapted from reference implementation)
+function syllableCount(word) {
+  word = word.toLowerCase();
+  if (word.length <= 3) {
+    return 1;
+  }
+  word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+  word = word.replace(/^y/, '');
+  const vowels = word.match(/[aeiouy]{1,2}/g);
+  // Use 3 as the default if no letters, it's probably a year
+  return vowels ? vowels.length : 3;
+}
+
+// Calculate speaking time based on clue text (in milliseconds)
+function calculateSpeakingTime(clueText) {
+  if (!clueText) {
+    return 1000; // Default 1 second minimum
+  }
+  
+  // Remove parenthetical starts and blanks (like reference implementation)
+  const processedText = clueText
+    .replace(/^\(.*\)/, '')
+    .replace(/_+/g, ' blank ')
+    .split(' ')
+    .map(word => syllableCount(word));
+  
+  const totalSyllables = processedText.reduce((a, b) => a + b, 0);
+  // Assume speaking rate of 4.5 syllables/second, minimum 2 seconds
+  let speakingTime = Math.max((totalSyllables / 4.5) * 1000, 2000);
+
+  // Clamp the speaking time to 10 seconds max.
+  speakingTime = Math.min(speakingTime, 10000);
+  
+  console.log('[calculateSpeakingTime]', clueText, 'syllables:', totalSyllables, 'speakingTime:', speakingTime + 'ms');
+  
+  return speakingTime;
+}
+
 class GameManager {
   constructor() {
     this.games = new Map();
@@ -88,13 +126,17 @@ class GameManager {
       game.buzzerProcessTimeout = null;
     }
 
-    // Unlock buzzer after a delay (simulate reading time)
+    // Calculate speaking time based on clue text (syllable count)
+    const speakingTime = calculateSpeakingTime(clue.clue);
+    game.buzzerUnlockTime = speakingTime; // Store for use in server.js timeout
+
+    // Unlock buzzer after calculated delay (allows host time to read clue)
     setTimeout(() => {
       const currentGame = this.games.get(roomId);
       if (currentGame && currentGame.status === "clueRevealed") {
         currentGame.status = "buzzing";
       }
-    }, 3000); // 3 second delay
+    }, speakingTime);
 
     return true;
   }

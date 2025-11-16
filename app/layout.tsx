@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Jeopairdy - Live Jeopardy Game",
-  description: "Play Jeopardy! live with friends",
+  title: "Jeopairdy!",
+  description: "Play a fun game of clues and answerslive with friends",
 };
 
 export default function RootLayout({
