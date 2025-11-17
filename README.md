@@ -2,7 +2,7 @@
 
 ![Status](https://img.shields.io/badge/status-active%20development-yellow)
 
-A live, web-based Jeopardy!-style trivia game with AI-generated questions. A host controls the game and judges answers. Meant to be played either together (in a room) or over a video call, with the host presenting the "game view".
+A live, web-based Jeopardy!-style trivia game with AI-generated questions based on themes/prompt chosen by the host. The host creates and controls the game and judges answers. Meant to be played either together (in a room) or over a video call, with the host presenting the "game view".
 
 Because the clues and answers are AI-generated, they can be made to be about any topic(s) of your choice!
 
@@ -10,7 +10,9 @@ Currently implements the basic game flow of an initial round, a double Jeopardy 
 
 > **⚠️ Status**: This project is in active development and may contain bugs. Use at your own risk.
 
-> This project was inspired by [howardchung/jeopardy](https://github.com/howardchung/jeopardy), a web-based Jeopardy! game for playing with friends online, and borrows fonts and sound files from that repo.
+> Vibe-coded on Cursor using a mix of Composer 1, Claude Sonnet 4.5, ChatGPT 5.1 Codex, and good ol' human ingenuity.
+
+> This project was also inspired by [howardchung/jeopardy](https://github.com/howardchung/jeopardy), a web-based Jeopardy! game for playing with friends online, and borrows fonts and sound files from that repo.
 
 ## Features
 
