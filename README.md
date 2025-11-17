@@ -18,7 +18,7 @@ Currently implements the basic game flow of an initial round, a double Jeopardy 
 - **AI-Generated Questions**: Uses OpenAI GPT-5.1 (bring your own API key) to generate custom games through an interactive co-creation flow
 - **Three Rounds**: Jeopardy, Double Jeopardy, and Final Jeopardy
 - **Real-time Buzzer System**: Client-side timestamping for accurate buzzer order, with a fair(ish) tie-breaking mechanism.
-- **Multiple Views**: 
+- **Multiple Views**:
   - Host control view for managing the game
   - Game display view for TV/screen projection
   - Player buzzer view for mobile devices
@@ -44,22 +44,26 @@ Currently implements the basic game flow of an initial round, a double Jeopardy 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd jeopairdy
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env
 ```
 
 Add your OpenAI API key:
+
 ```
 OPENAI_API_KEY=your_key_here
 ```
@@ -67,11 +71,13 @@ OPENAI_API_KEY=your_key_here
 ### Running Locally
 
 1. Start the development server (in one terminal):
+
 ```bash
 npm run dev
 ```
 
 2. Start the backend server (in a separate terminal):
+
 ```bash
 npm run server
 ```
@@ -108,7 +114,7 @@ Note: The app is designed to work on Render's free tier, which supports WebSocke
 
 ### Hosting a Game
 
-1. **Create a Game Room**: 
+1. **Create a Game Room**:
    - Go to `/create` (or click "Host Game" on the home page)
    - You'll be automatically redirected to `/host/[roomId]` with a 4-character room code
    - Share the room code or QR code with players
@@ -120,7 +126,7 @@ Note: The app is designed to work on Render's free tier, which supports WebSocke
      - Difficulty: Easy, Medium, or Hard
      - Source Material (optional): Paste reference text or context
    - **Generate samples**: Click "Generate Samples" to see sample categories and clues
-   - **Iterate with feedback**: 
+   - **Iterate with feedback**:
      - Review the AI's commentary and sample categories
      - Provide feedback in the feedback box (e.g., "make it harder", "add more science questions")
      - Click "Regenerate with Feedback" to refine
@@ -154,11 +160,13 @@ Note: The app is designed to work on Render's free tier, which supports WebSocke
 ## Game Flow
 
 ### Setup Phase
+
 1. Host creates a room and generates/loads a game
 2. Players join the room using the room code
 3. Host opens the game display view on a separate screen/TV
 
 ### Regular Rounds (Jeopardy & Double Jeopardy)
+
 1. Host selects a clue from the board
 2. Clue is revealed with a 3-second buzzer lock
 3. Buzzer unlocks and players can buzz in
@@ -170,6 +178,7 @@ Note: The app is designed to work on Render's free tier, which supports WebSocke
 9. Host advances to next round when ready
 
 ### Final Jeopardy
+
 1. Host initializes Final Jeopardy (only players with score > 0 participate)
 2. Players submit wagers (0 to their current score)
 3. Host shows the clue and starts 30-second countdown
@@ -239,6 +248,7 @@ All iterative samples remain client-side for rapid experimentation; only the fin
 ## Deployment
 
 The app is designed to be deployed on Render:
+
 - Frontend and backend can run on the same Render web service
 - WebSocket support is available on Render's free tier
 - Set environment variables in Render dashboard
@@ -248,4 +258,3 @@ The app is designed to be deployed on Render:
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
-

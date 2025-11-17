@@ -7,7 +7,8 @@ export class WebSocketClient {
   private baseReconnectDelay = 1000; // Base delay in ms
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private listeners: Map<string, Set<(data: any) => void>> = new Map();
-  private connectionStateListeners: Set<(connected: boolean) => void> = new Set();
+  private connectionStateListeners: Set<(connected: boolean) => void> =
+    new Set();
   private roomId: string | null = null;
   private playerId: string | null = null;
   private autoReconnect: boolean = true;
@@ -18,7 +19,10 @@ export class WebSocketClient {
   private pongTimeout = 3000; // Consider dead if no pong in 3 seconds
   private isHandlingDeadConnection: boolean = false;
 
-  constructor(private url: string, autoReconnect: boolean = true) {
+  constructor(
+    private url: string,
+    autoReconnect: boolean = true,
+  ) {
     this.autoReconnect = autoReconnect;
   }
 
@@ -43,7 +47,7 @@ export class WebSocketClient {
 
   private notifyConnectionState(connected: boolean) {
     this.isConnected = connected;
-    this.connectionStateListeners.forEach(callback => callback(connected));
+    this.connectionStateListeners.forEach((callback) => callback(connected));
   }
 
   getConnected(): boolean {
@@ -99,7 +103,7 @@ export class WebSocketClient {
           this.stopKeepAlive();
           const wasConnected = this.isConnected;
           this.ws = null;
-          
+
           // If this was a connection attempt that failed (never opened), reject the promise
           // (This handles the case where connect() was called but failed immediately)
           // The .catch() handler in attemptReconnect() will handle reconnection
@@ -107,10 +111,10 @@ export class WebSocketClient {
             reject(new Error('WebSocket connection failed'));
             return; // Don't attempt reconnect here - let the .catch() handler do it
           }
-          
+
           // Connection was open and then closed - update state and reconnect
           this.notifyConnectionState(false);
-          
+
           // Only attempt reconnect if we're not already handling a dead connection
           // (to avoid duplicate reconnection attempts)
           if (!this.isHandlingDeadConnection) {
@@ -166,7 +170,9 @@ export class WebSocketClient {
     // If we haven't received a pong in the timeout period, consider connection dead
     // This catches cases where the network is offline but the socket hasn't closed yet
     if (timeSinceLastPong > this.pongTimeout) {
-      console.log(`Connection health check failed: no pong received in ${timeSinceLastPong}ms`);
+      console.log(
+        `Connection health check failed: no pong received in ${timeSinceLastPong}ms`,
+      );
       this.handleConnectionDead();
       return;
     }
@@ -179,9 +185,11 @@ export class WebSocketClient {
     }
     this.isHandlingDeadConnection = true;
 
-    console.log('Handling dead connection - closing and triggering reconnection');
+    console.log(
+      'Handling dead connection - closing and triggering reconnection',
+    );
     this.stopKeepAlive();
-    
+
     // Manually close the connection
     if (this.ws) {
       try {
@@ -207,22 +215,26 @@ export class WebSocketClient {
       // Exponential backoff: 2^attempt * baseDelay, capped at 30 seconds
       const delay = Math.min(
         Math.pow(2, this.reconnectAttempts - 1) * this.baseReconnectDelay,
-        30000
+        30000,
       );
-      console.log(`Reconnecting in ${delay}ms... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+      console.log(
+        `Reconnecting in ${delay}ms... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`,
+      );
       this.reconnectTimeout = setTimeout(() => {
         this.reconnectTimeout = null;
         console.log(`Reconnecting... (attempt ${this.reconnectAttempts})`);
-        this.connect().then(() => {
-          // Connection successful - reset attempts counter will happen in onopen
-          console.log('Reconnection successful');
-        }).catch((error) => {
-          console.error('Reconnection failed:', error);
-          // Continue attempting to reconnect by calling attemptReconnect again
-          // Reset the flag so we can try again
-          this.isHandlingDeadConnection = false;
-          this.attemptReconnect();
-        });
+        this.connect()
+          .then(() => {
+            // Connection successful - reset attempts counter will happen in onopen
+            console.log('Reconnection successful');
+          })
+          .catch((error) => {
+            console.error('Reconnection failed:', error);
+            // Continue attempting to reconnect by calling attemptReconnect again
+            // Reset the flag so we can try again
+            this.isHandlingDeadConnection = false;
+            this.attemptReconnect();
+          });
       }, delay);
     } else {
       console.log('Max reconnection attempts reached');
@@ -233,7 +245,7 @@ export class WebSocketClient {
   private handleMessage(message: ServerMessage) {
     const listeners = this.listeners.get(message.type);
     if (listeners) {
-      listeners.forEach(listener => listener(message));
+      listeners.forEach((listener) => listener(message));
     }
   }
 
@@ -244,7 +256,10 @@ export class WebSocketClient {
     this.listeners.get(type)!.add(callback);
   }
 
-  off<T extends ServerMessage>(type: T['type'], callback: (message: T) => void) {
+  off<T extends ServerMessage>(
+    type: T['type'],
+    callback: (message: T) => void,
+  ) {
     const listeners = this.listeners.get(type);
     if (listeners) {
       listeners.delete(callback);
@@ -259,7 +274,12 @@ export class WebSocketClient {
     }
   }
 
-  joinRoom(roomId: string | null, playerName: string | undefined, role: 'host' | 'player' | 'viewer', playerId?: string) {
+  joinRoom(
+    roomId: string | null,
+    playerName: string | undefined,
+    role: 'host' | 'player' | 'viewer',
+    playerId?: string,
+  ) {
     this.roomId = roomId;
     this.send({
       type: 'joinRoom',
@@ -430,4 +450,3 @@ export class WebSocketClient {
     this.playerId = playerId;
   }
 }
-

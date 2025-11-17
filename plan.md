@@ -155,7 +155,7 @@ jeopairdy/
 Key files:
 
 - `frontend/app/host/[roomId]/page.tsx` - Host control view
-- `frontend/app/game/[roomId]/page.tsx` - Game display view  
+- `frontend/app/game/[roomId]/page.tsx` - Game display view
 - `frontend/app/player/[roomId]/page.tsx` - Player buzzer view
 - `server/src/websocket/server.ts` - WebSocket server
 - `server/src/ai/generator.ts` - OpenAI question generation

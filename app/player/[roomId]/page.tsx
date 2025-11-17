@@ -32,7 +32,8 @@ export default function PlayerPage() {
     const storedPlayerInfo = localStorage.getItem(`player_${roomId}`);
     if (storedPlayerInfo) {
       try {
-        const { playerId: storedPlayerId, playerName } = JSON.parse(storedPlayerInfo);
+        const { playerId: storedPlayerId, playerName } =
+          JSON.parse(storedPlayerInfo);
         playerIdRef.current = storedPlayerId;
         setPlayerId(storedPlayerId);
       } catch (e) {
@@ -54,72 +55,84 @@ export default function PlayerPage() {
 
     connectedRef.current = true;
     const client = new WebSocketClient(WS_URL, false); // Start with auto-reconnect disabled
-    
+
     // Listen for connection state changes
-    const unsubscribeConnectionState = client.onConnectionStateChange((connected) => {
-      setIsConnected(connected);
-      if (connected) {
-        // When reconnected, rejoin the room
+    const unsubscribeConnectionState = client.onConnectionStateChange(
+      (connected) => {
+        setIsConnected(connected);
+        if (connected) {
+          // When reconnected, rejoin the room
+          const storedInfo = localStorage.getItem(`player_${roomId}`);
+          if (storedInfo) {
+            const { playerName, playerId: storedPlayerId } =
+              JSON.parse(storedInfo);
+            client.joinRoom(roomId, playerName, 'player', storedPlayerId);
+          }
+        } else {
+          // Enable auto-reconnect when disconnected
+          client.enableAutoReconnect();
+        }
+      },
+    );
+
+    client
+      .connect()
+      .then(() => {
         const storedInfo = localStorage.getItem(`player_${roomId}`);
         if (storedInfo) {
-          const { playerName, playerId: storedPlayerId } = JSON.parse(storedInfo);
+          const { playerName, playerId: storedPlayerId } =
+            JSON.parse(storedInfo);
+          // Pass stored playerId to joinRoom so server knows this is a reconnect
           client.joinRoom(roomId, playerName, 'player', storedPlayerId);
+        } else {
+          // No stored info, redirect to join
+          router.push(`/join?room=${roomId}`);
+          return;
         }
-      } else {
-        // Enable auto-reconnect when disconnected
+
+        client.on('roomJoined', (message: any) => {
+          setGameState(message.gameState);
+          setPlayerId(message.playerId);
+          playerIdRef.current = message.playerId;
+          client.setPlayerId(message.playerId);
+        });
+
+        client.on('gameStateUpdate', (message: any) => {
+          setGameState(message.gameState);
+          // Check if this player has buzzed (in buzzerOrder)
+          const hasBuzzed =
+            message.gameState.buzzerOrder?.includes(playerIdRef.current) ||
+            false;
+          setBuzzed(hasBuzzed);
+          // Reset buzzed state when new clue is selected
+          if (
+            message.gameState.status === 'clueRevealed' ||
+            message.gameState.status === 'selecting'
+          ) {
+            setBuzzed(false);
+          }
+        });
+
+        client.on('buzzerLocked', (message: any) => {
+          setBuzzerLocked(message.locked);
+        });
+
+        client.on('buzzReceived', (message: any) => {
+          // Mark as buzzed immediately when this player buzzes
+          if (message.playerId === playerIdRef.current) {
+            setBuzzed(true);
+          }
+        });
+
+        setWs(client);
+      })
+      .catch((error) => {
+        console.warn('Connection error:', error);
+        connectedRef.current = false;
+        setIsConnected(false);
+        // Enable auto-reconnect on initial connection failure
         client.enableAutoReconnect();
-      }
-    });
-    
-    client.connect().then(() => {
-      const storedInfo = localStorage.getItem(`player_${roomId}`);
-      if (storedInfo) {
-        const { playerName, playerId: storedPlayerId } = JSON.parse(storedInfo);
-        // Pass stored playerId to joinRoom so server knows this is a reconnect
-        client.joinRoom(roomId, playerName, 'player', storedPlayerId);
-      } else {
-        // No stored info, redirect to join
-        router.push(`/join?room=${roomId}`);
-        return;
-      }
-      
-      client.on('roomJoined', (message: any) => {
-        setGameState(message.gameState);
-        setPlayerId(message.playerId);
-        playerIdRef.current = message.playerId;
-        client.setPlayerId(message.playerId);
       });
-
-      client.on('gameStateUpdate', (message: any) => {
-        setGameState(message.gameState);
-        // Check if this player has buzzed (in buzzerOrder)
-        const hasBuzzed = message.gameState.buzzerOrder?.includes(playerIdRef.current) || false;
-        setBuzzed(hasBuzzed);
-        // Reset buzzed state when new clue is selected
-        if (message.gameState.status === 'clueRevealed' || message.gameState.status === 'selecting') {
-          setBuzzed(false);
-        }
-      });
-
-      client.on('buzzerLocked', (message: any) => {
-        setBuzzerLocked(message.locked);
-      });
-
-      client.on('buzzReceived', (message: any) => {
-        // Mark as buzzed immediately when this player buzzes
-        if (message.playerId === playerIdRef.current) {
-          setBuzzed(true);
-        }
-      });
-
-      setWs(client);
-    }).catch((error) => {
-      console.warn('Connection error:', error);
-      connectedRef.current = false;
-      setIsConnected(false);
-      // Enable auto-reconnect on initial connection failure
-      client.enableAutoReconnect();
-    });
 
     return () => {
       unsubscribeConnectionState();
@@ -163,7 +176,10 @@ export default function PlayerPage() {
     }
 
     const updateCountdown = () => {
-      const remaining = Math.max(0, Math.floor((gameState.finalJeopardyCountdownEnd! - Date.now()) / 1000));
+      const remaining = Math.max(
+        0,
+        Math.floor((gameState.finalJeopardyCountdownEnd! - Date.now()) / 1000),
+      );
       setCountdown(remaining);
     };
 
@@ -183,13 +199,14 @@ export default function PlayerPage() {
 
   // Convert players array to Map for easier access
   const playersMap = new Map(
-    Array.isArray(gameState.players) 
+    Array.isArray(gameState.players)
       ? gameState.players.map((p: any) => [p.id, p])
-      : Array.from(gameState.players.entries?.() || [])
+      : Array.from(gameState.players.entries?.() || []),
   );
   const player = playersMap.get(playerId);
   const isFinalJeopardyWagering = gameState.status === 'finalJeopardyWagering';
-  const isFinalJeopardyAnswering = gameState.status === 'finalJeopardyAnswering';
+  const isFinalJeopardyAnswering =
+    gameState.status === 'finalJeopardyAnswering';
   const hasWagered = player?.finalJeopardyWager !== undefined;
   const hasAnswered = player?.finalJeopardyAnswer !== undefined;
 
@@ -198,7 +215,9 @@ export default function PlayerPage() {
       <div className="w-full max-w-2xl">
         {!isConnected && (
           <div className="mb-4 p-4 bg-red-100 border-2 border-red-500 rounded-lg">
-            <p className="text-red-600 font-bold text-lg">⚠️ Disconnected from server. Attempting to reconnect...</p>
+            <p className="text-red-600 font-bold text-lg">
+              ⚠️ Disconnected from server. Attempting to reconnect...
+            </p>
           </div>
         )}
         <div className="mb-8">
@@ -206,25 +225,41 @@ export default function PlayerPage() {
           {player && (
             <div className="text-2xl">
               <span className="font-bold">{player.name}</span>
-              <span className={`ml-4 ${player.score >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <span
+                className={`ml-4 ${player.score >= 0 ? 'text-green-600' : 'text-red-600'}`}
+              >
                 ${player.score.toLocaleString()}
               </span>
             </div>
           )}
         </div>
 
-        {(gameState.status === 'finalJeopardyCategory' || isFinalJeopardyWagering) && (
+        {(gameState.status === 'finalJeopardyCategory' ||
+          isFinalJeopardyWagering) && (
           <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 className="text-2xl font-bold mb-4">Final Jeopardy - Place Your Wager</h2>
+            <h2 className="text-2xl font-bold mb-4">
+              Final Jeopardy - Place Your Wager
+            </h2>
             {player && player.score <= 0 ? (
               <div className="text-center py-8">
-                <p className="text-xl text-gray-600 mb-2">Unfortunately, you cannot participate in Final Jeopardy</p>
-                <p className="text-lg text-gray-500">Your score is ${player.score}</p>
-                <p className="text-lg text-gray-500 mt-4">Thank you for playing!</p>
+                <p className="text-xl text-gray-600 mb-2">
+                  Unfortunately, you cannot participate in Final Jeopardy
+                </p>
+                <p className="text-lg text-gray-500">
+                  Your score is ${player.score}
+                </p>
+                <p className="text-lg text-gray-500 mt-4">
+                  Thank you for playing!
+                </p>
               </div>
             ) : (
               <>
-                <p className="mb-4 text-lg">Your current score: <span className="font-bold text-2xl">${player?.score || 0}</span></p>
+                <p className="mb-4 text-lg">
+                  Your current score:{' '}
+                  <span className="font-bold text-2xl">
+                    ${player?.score || 0}
+                  </span>
+                </p>
                 <div className="flex flex-col gap-4">
                   <div>
                     <input
@@ -254,7 +289,9 @@ export default function PlayerPage() {
                       }}
                       placeholder="Wager amount (0 to your score)"
                       className={`w-full px-6 py-4 text-2xl border-2 rounded-lg focus:outline-none ${
-                        finalWager && (parseInt(finalWager, 10) < 0 || parseInt(finalWager, 10) > (player?.score || 0))
+                        finalWager &&
+                        (parseInt(finalWager, 10) < 0 ||
+                          parseInt(finalWager, 10) > (player?.score || 0))
                           ? 'border-red-500 focus:border-red-500'
                           : 'border-gray-300 focus:border-blue-500'
                       }`}
@@ -262,21 +299,32 @@ export default function PlayerPage() {
                       min="0"
                       max={player?.score || 0}
                     />
-                    {finalWager && (parseInt(finalWager, 10) < 0 || parseInt(finalWager, 10) > (player?.score || 0)) && (
-                      <p className="mt-2 text-sm text-red-600">
-                        Wager must be between $0 and ${player?.score || 0}
-                      </p>
-                    )}
+                    {finalWager &&
+                      (parseInt(finalWager, 10) < 0 ||
+                        parseInt(finalWager, 10) > (player?.score || 0)) && (
+                        <p className="mt-2 text-sm text-red-600">
+                          Wager must be between $0 and ${player?.score || 0}
+                        </p>
+                      )}
                   </div>
                   <button
                     onClick={handleSubmitWager}
-                    disabled={hasWagered || !finalWager || parseInt(finalWager, 10) < 0 || parseInt(finalWager, 10) > (player?.score || 0)}
+                    disabled={
+                      hasWagered ||
+                      !finalWager ||
+                      parseInt(finalWager, 10) < 0 ||
+                      parseInt(finalWager, 10) > (player?.score || 0)
+                    }
                     className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 text-xl font-bold"
                   >
                     {hasWagered ? 'Wager Submitted ✓' : 'Submit Wager'}
                   </button>
                 </div>
-                {hasWagered && <p className="mt-4 text-green-600 text-lg font-bold">Wager submitted: ${player?.finalJeopardyWager}</p>}
+                {hasWagered && (
+                  <p className="mt-4 text-green-600 text-lg font-bold">
+                    Wager submitted: ${player?.finalJeopardyWager}
+                  </p>
+                )}
               </>
             )}
           </div>
@@ -284,7 +332,9 @@ export default function PlayerPage() {
 
         {isFinalJeopardyAnswering && (
           <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 className="text-2xl font-bold mb-4">Final Jeopardy - Your Answer</h2>
+            <h2 className="text-2xl font-bold mb-4">
+              Final Jeopardy - Your Answer
+            </h2>
             {countdown !== null && (
               <div className="mb-4 p-4 bg-red-100 rounded-lg">
                 <p className="text-xl font-bold text-red-600">
@@ -293,7 +343,12 @@ export default function PlayerPage() {
               </div>
             )}
             <div className="mb-4">
-              <p className="text-lg mb-2">Your wager: <span className="font-bold text-2xl">${player?.finalJeopardyWager || 0}</span></p>
+              <p className="text-lg mb-2">
+                Your wager:{' '}
+                <span className="font-bold text-2xl">
+                  ${player?.finalJeopardyWager || 0}
+                </span>
+              </p>
             </div>
             <div className="flex flex-col gap-4">
               <input
@@ -306,40 +361,56 @@ export default function PlayerPage() {
               />
               <button
                 onClick={handleSubmitFinalAnswer}
-                disabled={hasAnswered || !finalAnswer || (countdown !== null && countdown <= 0)}
+                disabled={
+                  hasAnswered ||
+                  !finalAnswer ||
+                  (countdown !== null && countdown <= 0)
+                }
                 className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 text-xl font-bold"
               >
-                {hasAnswered ? 'Answer Submitted ✓' : (countdown !== null && countdown <= 0 ? 'Time Expired' : 'Submit Answer')}
+                {hasAnswered
+                  ? 'Answer Submitted ✓'
+                  : countdown !== null && countdown <= 0
+                    ? 'Time Expired'
+                    : 'Submit Answer'}
               </button>
             </div>
-            {hasAnswered && <p className="mt-4 text-green-600 text-lg font-bold">Answer submitted!</p>}
+            {hasAnswered && (
+              <p className="mt-4 text-green-600 text-lg font-bold">
+                Answer submitted!
+              </p>
+            )}
           </div>
         )}
 
         {gameState.status === 'finalJeopardyJudging' && (
           <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 className="text-2xl font-bold mb-4">Final Jeopardy - Judging</h2>
-            <p className="text-lg text-gray-600">Please wait while the host judges all players...</p>
+            <h2 className="text-2xl font-bold mb-4">
+              Final Jeopardy - Judging
+            </h2>
+            <p className="text-lg text-gray-600">
+              Please wait while the host judges all players...
+            </p>
           </div>
         )}
 
         {gameState.status === 'finished' && (
           <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
             <h2 className="text-2xl font-bold mb-4">Game Over</h2>
-            <p className="text-lg mb-4">Your final score: <span className="font-bold text-2xl">${player?.score || 0}</span></p>
+            <p className="text-lg mb-4">
+              Your final score:{' '}
+              <span className="font-bold text-2xl">${player?.score || 0}</span>
+            </p>
           </div>
         )}
 
-        {!isFinalJeopardyWagering && !isFinalJeopardyAnswering && 
-         gameState.status !== 'finalJeopardyCategory' && 
-         gameState.status !== 'finalJeopardyJudging' && 
-         gameState.status !== 'finished' && (
-          <Buzzer
-            locked={buzzerLocked}
-            onBuzz={handleBuzz}
-            buzzed={buzzed}
-          />
-        )}
+        {!isFinalJeopardyWagering &&
+          !isFinalJeopardyAnswering &&
+          gameState.status !== 'finalJeopardyCategory' &&
+          gameState.status !== 'finalJeopardyJudging' &&
+          gameState.status !== 'finished' && (
+            <Buzzer locked={buzzerLocked} onBuzz={handleBuzz} buzzed={buzzed} />
+          )}
 
         {/* <div className="mt-8">
           <Scoreboard gameState={gameState} highlightPlayer={playerId} />
@@ -348,4 +419,3 @@ export default function PlayerPage() {
     </main>
   );
 }
-

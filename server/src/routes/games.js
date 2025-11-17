@@ -8,8 +8,8 @@ router.get('/list', async (req, res) => {
   try {
     const testDataDir = path.join(__dirname, '../../test-data');
     const files = await fs.readdir(testDataDir);
-    const gameFiles = files.filter(f => f.endsWith('.json'));
-    
+    const gameFiles = files.filter((f) => f.endsWith('.json'));
+
     const games = await Promise.all(
       gameFiles.map(async (file) => {
         const filePath = path.join(testDataDir, file);
@@ -20,7 +20,7 @@ router.get('/list', async (req, res) => {
           createdAt: game.createdAt,
           filename: file,
         };
-      })
+      }),
     );
 
     res.json(games);
@@ -45,4 +45,3 @@ router.get('/:gameId', async (req, res) => {
 });
 
 module.exports = router;
-

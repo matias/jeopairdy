@@ -19,28 +19,33 @@ export default function HostPage() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [scoreDelta, setScoreDelta] = useState<{ [playerId: string]: string }>({});
+  const [scoreDelta, setScoreDelta] = useState<{ [playerId: string]: string }>(
+    {},
+  );
 
   useEffect(() => {
     const client = new WebSocketClient(WS_URL);
-    client.connect().then(() => {
-      client.joinRoom(roomId, undefined, 'host');
-      
-      client.on('roomJoined', (message: any) => {
-        setGameState(message.gameState);
-        setPlayerId(message.playerId);
-        client.setPlayerId(message.playerId);
-      });
+    client
+      .connect()
+      .then(() => {
+        client.joinRoom(roomId, undefined, 'host');
 
-      client.on('gameStateUpdate', (message: any) => {
-        setGameState(message.gameState);
-        if (message.gameState.status === 'selecting') {
-          setShowAnswer(false);
-        }
-      });
+        client.on('roomJoined', (message: any) => {
+          setGameState(message.gameState);
+          setPlayerId(message.playerId);
+          client.setPlayerId(message.playerId);
+        });
 
-      setWs(client);
-    }).catch(console.error);
+        client.on('gameStateUpdate', (message: any) => {
+          setGameState(message.gameState);
+          if (message.gameState.status === 'selecting') {
+            setShowAnswer(false);
+          }
+        });
+
+        setWs(client);
+      })
+      .catch(console.error);
 
     return () => {
       client.disconnect();
@@ -69,7 +74,7 @@ export default function HostPage() {
   const handleUpdateScore = (playerId: string, delta: number) => {
     if (ws) {
       ws.updateScore(playerId, delta);
-      setScoreDelta(prev => ({ ...prev, [playerId]: '' }));
+      setScoreDelta((prev) => ({ ...prev, [playerId]: '' }));
     }
   };
 
@@ -115,7 +120,10 @@ export default function HostPage() {
     }
   };
 
-  const handleJudgeFinalJeopardyAnswer = (playerId: string, correct: boolean) => {
+  const handleJudgeFinalJeopardyAnswer = (
+    playerId: string,
+    correct: boolean,
+  ) => {
     if (ws) {
       ws.judgeFinalJeopardyAnswer(playerId, correct);
     }
@@ -143,21 +151,27 @@ export default function HostPage() {
 
   // Convert players array to Map for easier access
   const playersMap = new Map(
-    Array.isArray(gameState.players) 
+    Array.isArray(gameState.players)
       ? gameState.players.map((p: any) => [p.id, p])
-      : Array.from(gameState.players.entries?.() || [])
+      : Array.from(gameState.players.entries?.() || []),
   );
-  const players = Array.from(playersMap.values()).sort((a, b) => b.score - a.score);
-  const currentPlayer = gameState.currentPlayer 
+  const players = Array.from(playersMap.values()).sort(
+    (a, b) => b.score - a.score,
+  );
+  const currentPlayer = gameState.currentPlayer
     ? playersMap.get(gameState.currentPlayer)
     : null;
   // Use displayBuzzerOrder if available (static order for UI), otherwise fall back to resolvedBuzzerOrder or buzzerOrder
-  const buzzerOrderToUse = gameState.displayBuzzerOrder && gameState.displayBuzzerOrder.length > 0
-    ? gameState.displayBuzzerOrder
-    : (gameState.resolvedBuzzerOrder && gameState.resolvedBuzzerOrder.length > 0
-      ? gameState.resolvedBuzzerOrder
-      : gameState.buzzerOrder);
-  const buzzerOrder = buzzerOrderToUse.map(id => playersMap.get(id)).filter(Boolean) as Player[];
+  const buzzerOrderToUse =
+    gameState.displayBuzzerOrder && gameState.displayBuzzerOrder.length > 0
+      ? gameState.displayBuzzerOrder
+      : gameState.resolvedBuzzerOrder &&
+          gameState.resolvedBuzzerOrder.length > 0
+        ? gameState.resolvedBuzzerOrder
+        : gameState.buzzerOrder;
+  const buzzerOrder = buzzerOrderToUse
+    .map((id) => playersMap.get(id))
+    .filter(Boolean) as Player[];
   const judgedPlayers = gameState.judgedPlayers || [];
 
   if (!gameState.config) {
@@ -165,7 +179,9 @@ export default function HostPage() {
       <main className="min-h-screen p-8 bg-gray-100">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-4xl font-bold mb-2">Host Control - Room {roomId}</h1>
+            <h1 className="text-4xl font-bold mb-2">
+              Host Control - Room {roomId}
+            </h1>
           </div>
           <div className="bg-white p-8 rounded-lg shadow-lg text-center">
             <h2 className="text-2xl font-bold mb-4">No Game Loaded</h2>
@@ -201,7 +217,9 @@ export default function HostPage() {
       <main className="min-h-screen p-8 bg-gray-100">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-4xl font-bold mb-2">Host Control - Room {roomId}</h1>
+            <h1 className="text-4xl font-bold mb-2">
+              Host Control - Room {roomId}
+            </h1>
             <div className="text-lg text-gray-600">
               Game is ready to start. Players can still join.
             </div>
@@ -214,9 +232,14 @@ export default function HostPage() {
             ) : (
               <div className="space-y-2">
                 {players.map((player) => (
-                  <div key={player.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                  <div
+                    key={player.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded"
+                  >
                     <span className="font-semibold">{player.name}</span>
-                    <span className="text-gray-600">Score: ${player.score}</span>
+                    <span className="text-gray-600">
+                      Score: ${player.score}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -232,7 +255,11 @@ export default function HostPage() {
             </button>
             <button
               onClick={() => {
-                window.open(`/game/${roomId}`, '_blank', 'width=1920,height=1080');
+                window.open(
+                  `/game/${roomId}`,
+                  '_blank',
+                  'width=1920,height=1080',
+                );
               }}
               className="px-6 py-4 bg-purple-600 text-white rounded hover:bg-purple-700 font-bold"
             >
@@ -258,34 +285,45 @@ export default function HostPage() {
                     alert('No game loaded');
                     return;
                   }
-                  
+
                   // Extract just the config (not the game state)
-                  const gameConfig = JSON.parse(JSON.stringify(gameState.config));
-                  
+                  const gameConfig = JSON.parse(
+                    JSON.stringify(gameState.config),
+                  );
+
                   // Reset revealed/answered flags so game can be replayed
-                  [gameConfig.jeopardy, gameConfig.doubleJeopardy].forEach((round: any) => {
-                    round.categories.forEach((category: any) => {
-                      category.clues.forEach((clue: any) => {
-                        clue.revealed = false;
-                        clue.answered = false;
+                  [gameConfig.jeopardy, gameConfig.doubleJeopardy].forEach(
+                    (round: any) => {
+                      round.categories.forEach((category: any) => {
+                        category.clues.forEach((clue: any) => {
+                          clue.revealed = false;
+                          clue.answered = false;
+                        });
                       });
-                    });
-                  });
-                  
+                    },
+                  );
+
                   // Format as JSON string
                   const jsonString = JSON.stringify(gameConfig, null, 2);
-                  
+
                   // Log to console
                   console.log('=== GAME CONFIG JSON ===');
                   console.log(jsonString);
                   console.log('=== END GAME CONFIG ===');
-                  
+
                   // Copy to clipboard
-                  navigator.clipboard.writeText(jsonString).then(() => {
-                    alert('Game config copied to clipboard and logged to console!');
-                  }).catch(() => {
-                    alert('Game config logged to console. Open DevTools to copy it.');
-                  });
+                  navigator.clipboard
+                    .writeText(jsonString)
+                    .then(() => {
+                      alert(
+                        'Game config copied to clipboard and logged to console!',
+                      );
+                    })
+                    .catch(() => {
+                      alert(
+                        'Game config logged to console. Open DevTools to copy it.',
+                      );
+                    });
                 }}
                 className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-bold"
                 title="Dump current game config as JSON to console and clipboard"
@@ -294,7 +332,11 @@ export default function HostPage() {
               </button>
               <button
                 onClick={() => {
-                  window.open(`/game/${roomId}`, '_blank', 'width=1920,height=1080');
+                  window.open(
+                    `/game/${roomId}`,
+                    '_blank',
+                    'width=1920,height=1080',
+                  );
                 }}
                 className="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-700 font-bold"
                 title="Open game display in a new window for presentation"
@@ -304,10 +346,13 @@ export default function HostPage() {
             </div>
           </div>
           <div className="text-lg">
-            Round: {gameState.currentRound === 'jeopardy' ? 'Jeopardy' : 
-                   gameState.currentRound === 'doubleJeopardy' ? 'Double Jeopardy' : 
-                   'Final Jeopardy'} | 
-            Status: {gameState.status}
+            Round:{' '}
+            {gameState.currentRound === 'jeopardy'
+              ? 'Jeopardy'
+              : gameState.currentRound === 'doubleJeopardy'
+                ? 'Double Jeopardy'
+                : 'Final Jeopardy'}{' '}
+            | Status: {gameState.status}
           </div>
         </div>
 
@@ -321,20 +366,22 @@ export default function HostPage() {
           </div>
         )}
 
-        {(gameState.status === 'clueRevealed' || gameState.status === 'buzzing' || 
-          gameState.status === 'answering' || gameState.status === 'judging') && (
+        {(gameState.status === 'clueRevealed' ||
+          gameState.status === 'buzzing' ||
+          gameState.status === 'answering' ||
+          gameState.status === 'judging') && (
           <div className="mb-6">
-            <ClueDisplay 
-              gameState={gameState} 
-              showAnswer={true}
-            />
-            
+            <ClueDisplay gameState={gameState} showAnswer={true} />
+
             {/* Show resolved buzzer order and judging controls for host */}
-            {(gameState.status === 'answering' || gameState.status === 'judging') && (
+            {(gameState.status === 'answering' ||
+              gameState.status === 'judging') && (
               <div className="mt-4 bg-white p-6 rounded-lg shadow-lg">
                 {buzzerOrder.length > 0 ? (
                   <>
-                    <div className="text-xl font-bold mb-3 text-gray-800">Buzzed In (Resolved Order):</div>
+                    <div className="text-xl font-bold mb-3 text-gray-800">
+                      Buzzed In (Resolved Order):
+                    </div>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {buzzerOrder.map((player, index) => {
                         const isCurrentPlayer = currentPlayer?.id === player.id;
@@ -346,8 +393,8 @@ export default function HostPage() {
                               isCurrentPlayer
                                 ? 'bg-yellow-400 text-blue-900 font-bold border-2 border-blue-900'
                                 : isJudged
-                                ? 'bg-gray-300 text-gray-600 line-through'
-                                : 'bg-yellow-300 text-blue-900'
+                                  ? 'bg-gray-300 text-gray-600 line-through'
+                                  : 'bg-yellow-300 text-blue-900'
                             }`}
                           >
                             {index + 1}. {player.name}
@@ -357,12 +404,14 @@ export default function HostPage() {
                         );
                       })}
                     </div>
-                    
+
                     {currentPlayer && (
                       <div>
                         <div className="flex gap-4">
                           <button
-                            onClick={() => handleJudgeAnswer(currentPlayer.id, true)}
+                            onClick={() =>
+                              handleJudgeAnswer(currentPlayer.id, true)
+                            }
                             disabled={judgedPlayers.includes(currentPlayer.id)}
                             className={`px-6 py-3 rounded ${
                               judgedPlayers.includes(currentPlayer.id)
@@ -370,10 +419,14 @@ export default function HostPage() {
                                 : 'bg-green-600 hover:bg-green-700'
                             } text-white font-bold`}
                           >
-                            {judgedPlayers.includes(currentPlayer.id) ? 'Judged ✓' : 'Correct'}
+                            {judgedPlayers.includes(currentPlayer.id)
+                              ? 'Judged ✓'
+                              : 'Correct'}
                           </button>
                           <button
-                            onClick={() => handleJudgeAnswer(currentPlayer.id, false)}
+                            onClick={() =>
+                              handleJudgeAnswer(currentPlayer.id, false)
+                            }
                             disabled={judgedPlayers.includes(currentPlayer.id)}
                             className={`px-6 py-3 rounded ${
                               judgedPlayers.includes(currentPlayer.id)
@@ -381,28 +434,36 @@ export default function HostPage() {
                                 : 'bg-red-600 hover:bg-red-700'
                             } text-white font-bold`}
                           >
-                            {judgedPlayers.includes(currentPlayer.id) ? 'Judged ✓' : 'Incorrect'}
+                            {judgedPlayers.includes(currentPlayer.id)
+                              ? 'Judged ✓'
+                              : 'Incorrect'}
                           </button>
                         </div>
                       </div>
                     )}
-                    
+
                     {!currentPlayer && (
                       <div className="pt-4 border-t-2 border-gray-200">
                         {judgedPlayers.length === buzzerOrder.length ? (
-                          <p className="text-gray-600">All players have been judged.</p>
+                          <p className="text-gray-600">
+                            All players have been judged.
+                          </p>
                         ) : (
-                          <p className="text-gray-600">No one buzzed in. The clue goes unanswered.</p>
+                          <p className="text-gray-600">
+                            No one buzzed in. The clue goes unanswered.
+                          </p>
                         )}
                       </div>
                     )}
                   </>
                 ) : (
-                  <p className="text-gray-600">No one buzzed in. The clue goes unanswered.</p>
+                  <p className="text-gray-600">
+                    No one buzzed in. The clue goes unanswered.
+                  </p>
                 )}
               </div>
             )}
-            
+
             <div className="mt-4 flex gap-4">
               {!showAnswer && (
                 <button
@@ -419,58 +480,76 @@ export default function HostPage() {
         <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
           <h2 className="text-2xl font-bold mb-4">Manual Score Adjustment</h2>
           <div className="grid grid-cols-3 gap-4">
-            {[...players].sort((a, b) => a.name.localeCompare(b.name)).map((player) => (
-              <div key={player.id} className="flex items-center gap-2 justify-start text-left">
-                <span className="text-left">{player.name}</span>
-                <input
-                  type="text"
-                  value={scoreDelta[player.id] !== undefined ? scoreDelta[player.id] : ''}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    // Allow empty, negative sign, or valid number
-                    if (value === '' || value === '-' || /^-?\d*$/.test(value)) {
-                      setScoreDelta(prev => ({
-                        ...prev,
-                        [player.id]: value
-                      }));
-                    }
-                  }}
-                  className="w-24 px-2 py-1 border rounded"
-                  placeholder="±amount"
-                />
-                <button
-                  onClick={() => {
-                    const value = scoreDelta[player.id];
-                    const numValue = value === '' || value === '-' ? 0 : parseInt(value) || 0;
-                    handleUpdateScore(player.id, numValue);
-                  }}
-                  className="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+            {[...players]
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((player) => (
+                <div
+                  key={player.id}
+                  className="flex items-center gap-2 justify-start text-left"
                 >
-                  Apply
-                </button>
-              </div>
-            ))}
+                  <span className="text-left">{player.name}</span>
+                  <input
+                    type="text"
+                    value={
+                      scoreDelta[player.id] !== undefined
+                        ? scoreDelta[player.id]
+                        : ''
+                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow empty, negative sign, or valid number
+                      if (
+                        value === '' ||
+                        value === '-' ||
+                        /^-?\d*$/.test(value)
+                      ) {
+                        setScoreDelta((prev) => ({
+                          ...prev,
+                          [player.id]: value,
+                        }));
+                      }
+                    }}
+                    className="w-24 px-2 py-1 border rounded"
+                    placeholder="±amount"
+                  />
+                  <button
+                    onClick={() => {
+                      const value = scoreDelta[player.id];
+                      const numValue =
+                        value === '' || value === '-'
+                          ? 0
+                          : parseInt(value) || 0;
+                      handleUpdateScore(player.id, numValue);
+                    }}
+                    className="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Apply
+                  </button>
+                </div>
+              ))}
           </div>
         </div>
 
         <div className="flex gap-4">
-          {gameState.status === 'selecting' && gameState.currentRound === 'jeopardy' && (
-            <button
-              onClick={handleNextRound}
-              className="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-700"
-            >
-              Next Round
-            </button>
-          )}
+          {gameState.status === 'selecting' &&
+            gameState.currentRound === 'jeopardy' && (
+              <button
+                onClick={handleNextRound}
+                className="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-700"
+              >
+                Next Round
+              </button>
+            )}
 
-          {gameState.currentRound === 'doubleJeopardy' && gameState.status === 'selecting' && (
-            <button
-              onClick={handleStartFinalJeopardy}
-              className="px-6 py-3 bg-yellow-600 text-white rounded hover:bg-yellow-700"
-            >
-              Start Final Jeopardy
-            </button>
-          )}
+          {gameState.currentRound === 'doubleJeopardy' &&
+            gameState.status === 'selecting' && (
+              <button
+                onClick={handleStartFinalJeopardy}
+                className="px-6 py-3 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+              >
+                Start Final Jeopardy
+              </button>
+            )}
 
           {gameState.status === 'finalJeopardyReveal' && (
             <button
@@ -482,8 +561,10 @@ export default function HostPage() {
           )}
         </div>
 
-        {(gameState.status === 'clueRevealed' || gameState.status === 'buzzing' || 
-          gameState.status === 'answering' || gameState.status === 'judging') && (
+        {(gameState.status === 'clueRevealed' ||
+          gameState.status === 'buzzing' ||
+          gameState.status === 'answering' ||
+          gameState.status === 'judging') && (
           <div className="mt-6">
             <button
               onClick={handleReturnToBoard}
@@ -494,64 +575,89 @@ export default function HostPage() {
           </div>
         )}
 
-        {(gameState.status === 'finalJeopardyCategory' || gameState.status === 'finalJeopardyWagering') && gameState.config && (
-          <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
-            <h2 className="text-2xl font-bold mb-4">Final Jeopardy</h2>
-            <div className="mb-4">
-              <p className="text-lg font-bold">Category: {gameState.config.finalJeopardy.category}</p>
-            </div>
-            {gameState.status === 'finalJeopardyWagering' && (
-              <>
-                <div className="mb-4">
-                  <h3 className="text-xl font-bold mb-2">Players Wagering</h3>
-                  <div className="space-y-2">
-                    {players.filter(p => p.score > 0).map((player) => (
-                      <div key={player.id} className="flex items-center gap-4">
-                        <span className="font-bold">{player.name}</span>
-                        <span>Score: ${player.score}</span>
-                        {player.finalJeopardyWager !== undefined ? (
-                          <span className="text-green-600">Wagered: ${player.finalJeopardyWager}</span>
-                        ) : (
-                          <span className="text-gray-500">Waiting...</span>
-                        )}
-                      </div>
-                    ))}
+        {(gameState.status === 'finalJeopardyCategory' ||
+          gameState.status === 'finalJeopardyWagering') &&
+          gameState.config && (
+            <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
+              <h2 className="text-2xl font-bold mb-4">Final Jeopardy</h2>
+              <div className="mb-4">
+                <p className="text-lg font-bold">
+                  Category: {gameState.config.finalJeopardy.category}
+                </p>
+              </div>
+              {gameState.status === 'finalJeopardyWagering' && (
+                <>
+                  <div className="mb-4">
+                    <h3 className="text-xl font-bold mb-2">Players Wagering</h3>
+                    <div className="space-y-2">
+                      {players
+                        .filter((p) => p.score > 0)
+                        .map((player) => (
+                          <div
+                            key={player.id}
+                            className="flex items-center gap-4"
+                          >
+                            <span className="font-bold">{player.name}</span>
+                            <span>Score: ${player.score}</span>
+                            {player.finalJeopardyWager !== undefined ? (
+                              <span className="text-green-600">
+                                Wagered: ${player.finalJeopardyWager}
+                              </span>
+                            ) : (
+                              <span className="text-gray-500">Waiting...</span>
+                            )}
+                          </div>
+                        ))}
+                    </div>
                   </div>
-                </div>
-                <button
-                  onClick={handleShowFinalJeopardyClue}
-                  disabled={!players.filter(p => p.score > 0).every(p => p.finalJeopardyWager !== undefined)}
-                  className={`px-6 py-3 rounded ${
-                    players.filter(p => p.score > 0).every(p => p.finalJeopardyWager !== undefined)
-                      ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-gray-400 cursor-not-allowed'
-                  } text-white font-bold`}
-                >
-                  Show Clue
-                </button>
-              </>
-            )}
-          </div>
-        )}
+                  <button
+                    onClick={handleShowFinalJeopardyClue}
+                    disabled={
+                      !players
+                        .filter((p) => p.score > 0)
+                        .every((p) => p.finalJeopardyWager !== undefined)
+                    }
+                    className={`px-6 py-3 rounded ${
+                      players
+                        .filter((p) => p.score > 0)
+                        .every((p) => p.finalJeopardyWager !== undefined)
+                        ? 'bg-green-600 hover:bg-green-700'
+                        : 'bg-gray-400 cursor-not-allowed'
+                    } text-white font-bold`}
+                  >
+                    Show Clue
+                  </button>
+                </>
+              )}
+            </div>
+          )}
 
         {gameState.status === 'finalJeopardyAnswering' && (
           <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
-            <h2 className="text-2xl font-bold mb-4">Final Jeopardy - Players Answering</h2>
+            <h2 className="text-2xl font-bold mb-4">
+              Final Jeopardy - Players Answering
+            </h2>
             <div className="mb-4">
-              <p className="text-lg font-bold">Category: {gameState.config?.finalJeopardy.category}</p>
-              <p className="text-lg mb-2">Clue: {gameState.config?.finalJeopardy.clue}</p>
+              <p className="text-lg font-bold">
+                Category: {gameState.config?.finalJeopardy.category}
+              </p>
+              <p className="text-lg mb-2">
+                Clue: {gameState.config?.finalJeopardy.clue}
+              </p>
             </div>
             <div className="space-y-2 mb-4">
-              {players.filter(p => p.score > 0).map((player) => (
-                <div key={player.id} className="flex items-center gap-4">
-                  <span className="font-bold">{player.name}</span>
-                  {player.finalJeopardyAnswer ? (
-                    <span className="text-green-600">Answer submitted</span>
-                  ) : (
-                    <span className="text-gray-500">Waiting...</span>
-                  )}
-                </div>
-              ))}
+              {players
+                .filter((p) => p.score > 0)
+                .map((player) => (
+                  <div key={player.id} className="flex items-center gap-4">
+                    <span className="font-bold">{player.name}</span>
+                    {player.finalJeopardyAnswer ? (
+                      <span className="text-green-600">Answer submitted</span>
+                    ) : (
+                      <span className="text-gray-500">Waiting...</span>
+                    )}
+                  </div>
+                ))}
             </div>
             <button
               onClick={handleStartFinalJeopardyJudging}
@@ -562,78 +668,124 @@ export default function HostPage() {
           </div>
         )}
 
-        {gameState.status === 'finalJeopardyJudging' && gameState.config && gameState.finalJeopardyJudgingOrder && gameState.finalJeopardyJudgingPlayerIndex !== undefined && (
-          <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
-            <h2 className="text-2xl font-bold mb-4">Final Jeopardy - Judging</h2>
-            <div className="mb-4">
-              <p className="text-lg font-bold">Category: {gameState.config.finalJeopardy.category}</p>
-              <p className="text-lg mb-2">Clue: {gameState.config.finalJeopardy.clue}</p>
-              <p className="text-lg font-bold text-green-600">Answer: {gameState.config.finalJeopardy.answer}</p>
-            </div>
-            {(() => {
-              const currentPlayerId = gameState.finalJeopardyJudgingOrder[gameState.finalJeopardyJudgingPlayerIndex];
-              const currentPlayer = players.find(p => p.id === currentPlayerId);
-              if (!currentPlayer) return null;
-              
-              const initialScore = gameState.finalJeopardyInitialScores 
-                ? (typeof gameState.finalJeopardyInitialScores === 'object' && !Array.isArray(gameState.finalJeopardyInitialScores) && !(gameState.finalJeopardyInitialScores instanceof Map)
-                    ? (gameState.finalJeopardyInitialScores as Record<string, number>)[currentPlayerId]
-                    : (gameState.finalJeopardyInitialScores instanceof Map
-                      ? gameState.finalJeopardyInitialScores.get(currentPlayerId)
-                      : undefined))
-                : undefined;
-              
-              return (
-                <div className="space-y-4">
-                  <div className="p-4 bg-gray-100 rounded">
-                    <p className="text-xl font-bold mb-2">{currentPlayer.name}</p>
-                    {initialScore !== undefined && (
-                      <p className="text-sm text-gray-600">Initial Score: ${initialScore}</p>
-                    )}
-                    {!gameState.finalJeopardyRevealedWager && (
-                      <button
-                        onClick={handleRevealFinalJeopardyWager}
-                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                      >
-                        Reveal Wager
-                      </button>
-                    )}
-                    {gameState.finalJeopardyRevealedWager && (
-                      <p className="text-lg mt-2">Wager: ${currentPlayer.finalJeopardyWager || 0}</p>
-                    )}
-                    {gameState.finalJeopardyRevealedWager && !gameState.finalJeopardyRevealedAnswer && (
-                      <button
-                        onClick={handleRevealFinalJeopardyAnswer}
-                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                      >
-                        Reveal Answer
-                      </button>
-                    )}
-                    {gameState.finalJeopardyRevealedAnswer && (
-                      <p className="text-lg mt-2">Answer: {currentPlayer.finalJeopardyAnswer || 'No answer'}</p>
-                    )}
-                    {gameState.finalJeopardyRevealedWager && gameState.finalJeopardyRevealedAnswer && (
-                      <div className="mt-4 flex gap-4">
-                        <button
-                          onClick={() => handleJudgeFinalJeopardyAnswer(currentPlayer.id, true)}
-                          className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-bold"
+        {gameState.status === 'finalJeopardyJudging' &&
+          gameState.config &&
+          gameState.finalJeopardyJudgingOrder &&
+          gameState.finalJeopardyJudgingPlayerIndex !== undefined && (
+            <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
+              <h2 className="text-2xl font-bold mb-4">
+                Final Jeopardy - Judging
+              </h2>
+              <div className="mb-4">
+                <p className="text-lg font-bold">
+                  Category: {gameState.config.finalJeopardy.category}
+                </p>
+                <p className="text-lg mb-2">
+                  Clue: {gameState.config.finalJeopardy.clue}
+                </p>
+                <p className="text-lg font-bold text-green-600">
+                  Answer: {gameState.config.finalJeopardy.answer}
+                </p>
+              </div>
+              {(() => {
+                const currentPlayerId =
+                  gameState.finalJeopardyJudgingOrder[
+                    gameState.finalJeopardyJudgingPlayerIndex
+                  ];
+                const currentPlayer = players.find(
+                  (p) => p.id === currentPlayerId,
+                );
+                if (!currentPlayer) return null;
+
+                const initialScore = gameState.finalJeopardyInitialScores
+                  ? typeof gameState.finalJeopardyInitialScores === 'object' &&
+                    !Array.isArray(gameState.finalJeopardyInitialScores) &&
+                    !(gameState.finalJeopardyInitialScores instanceof Map)
+                    ? (
+                        gameState.finalJeopardyInitialScores as Record<
+                          string,
+                          number
                         >
-                          Correct
-                        </button>
+                      )[currentPlayerId]
+                    : gameState.finalJeopardyInitialScores instanceof Map
+                      ? gameState.finalJeopardyInitialScores.get(
+                          currentPlayerId,
+                        )
+                      : undefined
+                  : undefined;
+
+                return (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gray-100 rounded">
+                      <p className="text-xl font-bold mb-2">
+                        {currentPlayer.name}
+                      </p>
+                      {initialScore !== undefined && (
+                        <p className="text-sm text-gray-600">
+                          Initial Score: ${initialScore}
+                        </p>
+                      )}
+                      {!gameState.finalJeopardyRevealedWager && (
                         <button
-                          onClick={() => handleJudgeFinalJeopardyAnswer(currentPlayer.id, false)}
-                          className="px-6 py-3 bg-red-600 text-white rounded hover:bg-red-700 font-bold"
+                          onClick={handleRevealFinalJeopardyWager}
+                          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                         >
-                          Incorrect
+                          Reveal Wager
                         </button>
-                      </div>
-                    )}
+                      )}
+                      {gameState.finalJeopardyRevealedWager && (
+                        <p className="text-lg mt-2">
+                          Wager: ${currentPlayer.finalJeopardyWager || 0}
+                        </p>
+                      )}
+                      {gameState.finalJeopardyRevealedWager &&
+                        !gameState.finalJeopardyRevealedAnswer && (
+                          <button
+                            onClick={handleRevealFinalJeopardyAnswer}
+                            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                          >
+                            Reveal Answer
+                          </button>
+                        )}
+                      {gameState.finalJeopardyRevealedAnswer && (
+                        <p className="text-lg mt-2">
+                          Answer:{' '}
+                          {currentPlayer.finalJeopardyAnswer || 'No answer'}
+                        </p>
+                      )}
+                      {gameState.finalJeopardyRevealedWager &&
+                        gameState.finalJeopardyRevealedAnswer && (
+                          <div className="mt-4 flex gap-4">
+                            <button
+                              onClick={() =>
+                                handleJudgeFinalJeopardyAnswer(
+                                  currentPlayer.id,
+                                  true,
+                                )
+                              }
+                              className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-bold"
+                            >
+                              Correct
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleJudgeFinalJeopardyAnswer(
+                                  currentPlayer.id,
+                                  false,
+                                )
+                              }
+                              className="px-6 py-3 bg-red-600 text-white rounded hover:bg-red-700 font-bold"
+                            >
+                              Incorrect
+                            </button>
+                          </div>
+                        )}
+                    </div>
                   </div>
-                </div>
-              );
-            })()}
-          </div>
-        )}
+                );
+              })()}
+            </div>
+          )}
 
         {gameState.status === 'finished' && (
           <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
@@ -647,4 +799,3 @@ export default function HostPage() {
     </main>
   );
 }
-

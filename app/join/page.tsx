@@ -27,7 +27,7 @@ export default function JoinPage() {
     e.preventDefault();
     if (roomId && playerName) {
       const upperRoomId = roomId.toUpperCase();
-      
+
       // Check if already joined this room
       const existingPlayer = localStorage.getItem(`player_${upperRoomId}`);
       if (existingPlayer) {
@@ -37,37 +37,45 @@ export default function JoinPage() {
       }
 
       const client = new WebSocketClient(WS_URL, false); // Disable auto-reconnect, we'll handle navigation
-      client.connect().then(() => {
-        client.joinRoom(upperRoomId, playerName, 'player');
-        client.on('roomJoined', (message: any) => {
-          // Store player info in localStorage
-          localStorage.setItem(`player_${upperRoomId}`, JSON.stringify({
-            playerId: message.playerId,
-            playerName: playerName,
-            roomId: upperRoomId,
-          }));
-          
-          client.setPlayerId(message.playerId);
-          router.push(`/player/${upperRoomId}`);
+      client
+        .connect()
+        .then(() => {
+          client.joinRoom(upperRoomId, playerName, 'player');
+          client.on('roomJoined', (message: any) => {
+            // Store player info in localStorage
+            localStorage.setItem(
+              `player_${upperRoomId}`,
+              JSON.stringify({
+                playerId: message.playerId,
+                playerName: playerName,
+                roomId: upperRoomId,
+              }),
+            );
+
+            client.setPlayerId(message.playerId);
+            router.push(`/player/${upperRoomId}`);
+          });
+          client.on('error', (message: any) => {
+            setError(message.message);
+          });
+          setWs(client);
+        })
+        .catch((err) => {
+          setError('Failed to connect to server');
+          console.error(err);
         });
-        client.on('error', (message: any) => {
-          setError(message.message);
-        });
-        setWs(client);
-      }).catch((err) => {
-        setError('Failed to connect to server');
-        console.error(err);
-      });
     }
   };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <h1 className="text-4xl font-bold mb-8">Join Game</h1>
-      
+
       <form onSubmit={handleJoin} className="flex flex-col gap-4 w-80">
         <div>
-          <label htmlFor="roomId" className="block mb-2">Room Code</label>
+          <label htmlFor="roomId" className="block mb-2">
+            Room Code
+          </label>
           <input
             id="roomId"
             type="text"
@@ -79,9 +87,11 @@ export default function JoinPage() {
             required
           />
         </div>
-        
+
         <div>
-          <label htmlFor="playerName" className="block mb-2">Your Name</label>
+          <label htmlFor="playerName" className="block mb-2">
+            Your Name
+          </label>
           <input
             id="playerName"
             type="text"
@@ -93,9 +103,7 @@ export default function JoinPage() {
           />
         </div>
 
-        {error && (
-          <div className="text-red-600 text-sm">{error}</div>
-        )}
+        {error && <div className="text-red-600 text-sm">{error}</div>}
 
         <button
           type="submit"
@@ -115,4 +123,3 @@ export default function JoinPage() {
     </main>
   );
 }
-

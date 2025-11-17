@@ -17,7 +17,7 @@ async function parseSourceMaterial(sourceMaterial) {
     try {
       const filePath = path.resolve(sourceMaterial);
       const ext = path.extname(filePath).toLowerCase();
-      
+
       if (ext === '.txt') {
         const content = await fs.readFile(filePath, 'utf-8');
         return content;
@@ -65,7 +65,7 @@ You must also strictly adhere to the requested difficulty level, which you under
 
 function getUserInstructions(round, values) {
   const roundName = round === 'doubleJeopardy' ? 'Double Jeopardy' : 'Jeopardy';
-  
+
   return `Generate a complete ${roundName} round for a Jeopardy!-style game show.
 
 **Core Requirements:**
@@ -117,22 +117,28 @@ function getUserInstructions(round, values) {
 \`\`\``;
 }
 
-function buildPrompt(topics, difficulty, sourceMaterial, round, excludedAnswers = []) {
+function buildPrompt(
+  topics,
+  difficulty,
+  sourceMaterial,
+  round,
+  excludedAnswers = [],
+) {
   const isDouble = round === 'doubleJeopardy';
   const values = isDouble ? DOUBLE_VALUES : VALUES;
-  
+
   // Get base user instructions
   let prompt = getUserInstructions(round, values);
-  
+
   // Add excluded answers section if this is a subsequent round
   if (excludedAnswers.length > 0) {
     prompt += `\n\n**CRITICAL - EXCLUDE PREVIOUS ANSWERS:**
 Do NOT use any of these answers that have already been used in previous rounds:
-${excludedAnswers.map(a => `* ${a}`).join('\n')}
+${excludedAnswers.map((a) => `* ${a}`).join('\n')}
 
 Make sure all your answers are completely different from the ones listed above.`;
   }
-  
+
   // Add source material if provided
   if (sourceMaterial) {
     prompt += `\n\n**Source Material Context:**\n${sourceMaterial.substring(0, 1000)}${sourceMaterial.length > 1000 ? '...' : ''}`;
@@ -141,25 +147,43 @@ Make sure all your answers are completely different from the ones listed above.`
   return prompt;
 }
 
-async function generateRound(topics, difficulty, sourceMaterial, round = 'jeopardy', excludedAnswers = []) {
+async function generateRound(
+  topics,
+  difficulty,
+  sourceMaterial,
+  round = 'jeopardy',
+  excludedAnswers = [],
+) {
   const roundName = round === 'doubleJeopardy' ? 'Double Jeopardy' : 'Jeopardy';
   console.log(`[Generator] Starting ${roundName} round generation...`);
-  console.log(`[Generator] Topics: ${topics || 'General knowledge'}, Difficulty: ${difficulty || 'medium'}`);
+  console.log(
+    `[Generator] Topics: ${topics || 'General knowledge'}, Difficulty: ${difficulty || 'medium'}`,
+  );
   if (excludedAnswers.length > 0) {
-    console.log(`[Generator] Excluding ${excludedAnswers.length} previous answers`);
+    console.log(
+      `[Generator] Excluding ${excludedAnswers.length} previous answers`,
+    );
   }
-  
-  const prompt = buildPrompt(topics, difficulty, sourceMaterial, round, excludedAnswers);
+
+  const prompt = buildPrompt(
+    topics,
+    difficulty,
+    sourceMaterial,
+    round,
+    excludedAnswers,
+  );
   const systemInstructions = getSystemInstructions();
-  
+
   // Build the request message with topics and difficulty first
   const difficultyText = difficulty || 'medium';
   const topicsText = topics || 'General knowledge';
   const requestMessage = `Generate a complete ${roundName} round with ${difficultyText} difficulty for the topics: ${topicsText}`;
-  
+
   try {
     console.log(`[Generator] Making OpenAI API call for ${roundName} round...`);
-    console.log(`[Generator] Model: gpt-5, Topics: ${topicsText}, Difficulty: ${difficultyText}`);
+    console.log(
+      `[Generator] Model: gpt-5, Topics: ${topicsText}, Difficulty: ${difficultyText}`,
+    );
     const response = await openai.responses.create({
       model: 'gpt-5.1',
       instructions: systemInstructions,
@@ -167,7 +191,7 @@ async function generateRound(topics, difficulty, sourceMaterial, round = 'jeopar
         { type: 'message', role: 'user', content: prompt },
         { type: 'message', role: 'user', content: requestMessage },
       ],
-      text: { 
+      text: {
         format: { type: 'json_object' },
       },
     });
@@ -191,7 +215,9 @@ async function generateRound(topics, difficulty, sourceMaterial, round = 'jeopar
       })),
     }));
 
-    console.log(`[Generator] ${roundName} round generation completed successfully (${categories.length} categories, ${categories.reduce((sum, cat) => sum + cat.clues.length, 0)} clues)`);
+    console.log(
+      `[Generator] ${roundName} round generation completed successfully (${categories.length} categories, ${categories.reduce((sum, cat) => sum + cat.clues.length, 0)} clues)`,
+    );
     return categories;
   } catch (error) {
     console.error(`[Generator] Error generating ${roundName} round:`, error);
@@ -199,15 +225,24 @@ async function generateRound(topics, difficulty, sourceMaterial, round = 'jeopar
   }
 }
 
-async function generateFinalJeopardy(topics, difficulty, sourceMaterial, excludedAnswers = []) {
+async function generateFinalJeopardy(
+  topics,
+  difficulty,
+  sourceMaterial,
+  excludedAnswers = [],
+) {
   console.log('[Generator] Starting Final Jeopardy generation...');
-  console.log(`[Generator] Topics: ${topics || 'General knowledge'}, Difficulty: ${difficulty || 'medium'}`);
+  console.log(
+    `[Generator] Topics: ${topics || 'General knowledge'}, Difficulty: ${difficulty || 'medium'}`,
+  );
   if (excludedAnswers.length > 0) {
-    console.log(`[Generator] Excluding ${excludedAnswers.length} previous answers from rounds`);
+    console.log(
+      `[Generator] Excluding ${excludedAnswers.length} previous answers from rounds`,
+    );
   }
-  
+
   const systemInstructions = getSystemInstructions();
-  
+
   let prompt = `Generate a Final Jeopardy clue for a Jeopardy!-style game show.
 
 **Requirements:**
@@ -219,7 +254,7 @@ async function generateFinalJeopardy(topics, difficulty, sourceMaterial, exclude
 
 ${topics ? `**Topics/themes to focus on:** ${topics}\n` : ''}
 ${sourceMaterial ? `**Source material context:** ${sourceMaterial.substring(0, 1000)}${sourceMaterial.length > 1000 ? '...' : ''}\n` : ''}
-${excludedAnswers.length > 0 ? `\n**CRITICAL - EXCLUDE PREVIOUS ANSWERS:**\nDo NOT use any of these answers that have already been used in previous rounds:\n${excludedAnswers.map(a => `* ${a}`).join('\n')}\n\nMake sure your answer is completely different from the ones listed above.\n` : ''}
+${excludedAnswers.length > 0 ? `\n**CRITICAL - EXCLUDE PREVIOUS ANSWERS:**\nDo NOT use any of these answers that have already been used in previous rounds:\n${excludedAnswers.map((a) => `* ${a}`).join('\n')}\n\nMake sure your answer is completely different from the ones listed above.\n` : ''}
 
 **Format your response as a JSON object:**
 \`\`\`json
@@ -245,7 +280,9 @@ Generate the Final Jeopardy clue now:`;
 
   try {
     console.log('[Generator] Making OpenAI API call for Final Jeopardy...');
-    console.log(`[Generator] Model: gpt-5, Topics: ${topicsText}, Difficulty: ${difficultyText}`);
+    console.log(
+      `[Generator] Model: gpt-5, Topics: ${topicsText}, Difficulty: ${difficultyText}`,
+    );
     const response = await openai.responses.create({
       model: 'gpt-5.1',
       instructions: systemInstructions,
@@ -262,7 +299,9 @@ Generate the Final Jeopardy clue now:`;
     const content = response.output_text;
     const parsed = JSON.parse(content);
 
-    console.log(`[Generator] Final Jeopardy generation completed successfully (Category: "${parsed.category}")`);
+    console.log(
+      `[Generator] Final Jeopardy generation completed successfully (Category: "${parsed.category}")`,
+    );
     return {
       category: parsed.category,
       clue: parsed.clue,
@@ -278,34 +317,56 @@ async function generateGame(prompt, difficulty, sourceMaterial) {
   console.log('[Generator] ========================================');
   console.log('[Generator] Starting game generation...');
   console.log('[Generator] ========================================');
-  
+
   const sourceText = await parseSourceMaterial(sourceMaterial);
-  
+
   // Extract topics from prompt if not explicitly provided
   const topics = prompt || 'General knowledge';
 
   try {
     // Generate rounds sequentially to avoid duplicate answers
     // First, generate the Jeopardy round
-    const jeopardyCategories = await generateRound(topics, difficulty, sourceText, 'jeopardy');
-    
+    const jeopardyCategories = await generateRound(
+      topics,
+      difficulty,
+      sourceText,
+      'jeopardy',
+    );
+
     // Extract all answers from the first round
     console.log('[Generator] Extracting answers from Jeopardy round...');
     const jeopardyAnswers = extractAnswers(jeopardyCategories);
-    console.log(`[Generator] Extracted ${jeopardyAnswers.length} answers from Jeopardy round`);
-    
+    console.log(
+      `[Generator] Extracted ${jeopardyAnswers.length} answers from Jeopardy round`,
+    );
+
     // Generate Double Jeopardy with excluded answers from first round
-    const doubleJeopardyCategories = await generateRound(topics, difficulty, sourceText, 'doubleJeopardy', jeopardyAnswers);
-    
+    const doubleJeopardyCategories = await generateRound(
+      topics,
+      difficulty,
+      sourceText,
+      'doubleJeopardy',
+      jeopardyAnswers,
+    );
+
     // Extract all answers from both rounds
     console.log('[Generator] Extracting answers from Double Jeopardy round...');
     const doubleJeopardyAnswers = extractAnswers(doubleJeopardyCategories);
-    console.log(`[Generator] Extracted ${doubleJeopardyAnswers.length} answers from Double Jeopardy round`);
+    console.log(
+      `[Generator] Extracted ${doubleJeopardyAnswers.length} answers from Double Jeopardy round`,
+    );
     const allRoundAnswers = [...jeopardyAnswers, ...doubleJeopardyAnswers];
-    console.log(`[Generator] Total answers to exclude for Final Jeopardy: ${allRoundAnswers.length}`);
-    
+    console.log(
+      `[Generator] Total answers to exclude for Final Jeopardy: ${allRoundAnswers.length}`,
+    );
+
     // Generate Final Jeopardy with excluded answers from both rounds
-    const finalJeopardy = await generateFinalJeopardy(topics, difficulty, sourceText, allRoundAnswers);
+    const finalJeopardy = await generateFinalJeopardy(
+      topics,
+      difficulty,
+      sourceText,
+      allRoundAnswers,
+    );
 
     const gameConfig = {
       id: `game-${Date.now()}`,
@@ -322,7 +383,9 @@ async function generateGame(prompt, difficulty, sourceMaterial) {
     };
 
     console.log('[Generator] ========================================');
-    console.log(`[Generator] Game generation completed successfully! Game ID: ${gameConfig.id}`);
+    console.log(
+      `[Generator] Game generation completed successfully! Game ID: ${gameConfig.id}`,
+    );
     console.log('[Generator] ========================================');
     return gameConfig;
   } catch (error) {
@@ -337,4 +400,3 @@ module.exports = {
   generateFinalJeopardy,
   buildPrompt,
 };
-

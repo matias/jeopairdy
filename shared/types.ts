@@ -1,8 +1,8 @@
 // Game state types
-export type Round = "jeopardy" | "doubleJeopardy" | "finalJeopardy";
+export type Round = 'jeopardy' | 'doubleJeopardy' | 'finalJeopardy';
 
 export interface ConversationMessage {
-  role: "user" | "developer" | "assistant";
+  role: 'user' | 'developer' | 'assistant';
   content: string;
 }
 
@@ -17,20 +17,20 @@ export interface SampleCategory {
   clues: SampleClue[];
 }
 
-export type GameStatus = 
-  | "waiting" 
-  | "ready"
-  | "selecting" 
-  | "clueRevealed" 
-  | "buzzing" 
-  | "answering" 
-  | "judging" 
-  | "finalJeopardyCategory"
-  | "finalJeopardyWagering"
-  | "finalJeopardyAnswering"
-  | "finalJeopardyJudging"
-  | "finalJeopardyReveal"
-  | "finished";
+export type GameStatus =
+  | 'waiting'
+  | 'ready'
+  | 'selecting'
+  | 'clueRevealed'
+  | 'buzzing'
+  | 'answering'
+  | 'judging'
+  | 'finalJeopardyCategory'
+  | 'finalJeopardyWagering'
+  | 'finalJeopardyAnswering'
+  | 'finalJeopardyJudging'
+  | 'finalJeopardyReveal'
+  | 'finished';
 
 export interface Clue {
   id: string;
@@ -101,37 +101,52 @@ export interface GameState {
 }
 
 // WebSocket message types
-export type ClientMessage = 
-  | { type: "joinRoom"; roomId: string; playerName?: string; role: "host" | "player" | "viewer"; playerId?: string }
-  | { type: "buzz"; timestamp: number }
-  | { type: "selectClue"; categoryId: string; clueId: string }
-  | { type: "revealAnswer" }
-  | { type: "judgeAnswer"; correct: boolean; playerId: string }
-  | { type: "updateScore"; playerId: string; delta: number }
-  | { type: "nextRound" }
-  | { type: "startFinalJeopardy" }
-  | { type: "submitWager"; wager: number }
-  | { type: "submitFinalAnswer"; answer: string }
-  | { type: "revealFinalAnswers" }
-  | { type: "showFinalJeopardyClue" }
-  | { type: "startFinalJeopardyJudging" }
-  | { type: "revealFinalJeopardyWager" }
-  | { type: "revealFinalJeopardyAnswer" }
-  | { type: "judgeFinalJeopardyAnswer"; playerId: string; correct: boolean }
-  | { type: "createGame"; prompt: string; difficulty?: string; sourceMaterial?: string }
-  | { type: "saveGame"; gameConfig: GameConfig }
-  | { type: "loadGame"; gameConfig: GameConfig }
-  | { type: "returnToBoard" }
-  | { type: "startGame" }
-  | { type: "ping"; timestamp: number };
+export type ClientMessage =
+  | {
+      type: 'joinRoom';
+      roomId: string;
+      playerName?: string;
+      role: 'host' | 'player' | 'viewer';
+      playerId?: string;
+    }
+  | { type: 'buzz'; timestamp: number }
+  | { type: 'selectClue'; categoryId: string; clueId: string }
+  | { type: 'revealAnswer' }
+  | { type: 'judgeAnswer'; correct: boolean; playerId: string }
+  | { type: 'updateScore'; playerId: string; delta: number }
+  | { type: 'nextRound' }
+  | { type: 'startFinalJeopardy' }
+  | { type: 'submitWager'; wager: number }
+  | { type: 'submitFinalAnswer'; answer: string }
+  | { type: 'revealFinalAnswers' }
+  | { type: 'showFinalJeopardyClue' }
+  | { type: 'startFinalJeopardyJudging' }
+  | { type: 'revealFinalJeopardyWager' }
+  | { type: 'revealFinalJeopardyAnswer' }
+  | { type: 'judgeFinalJeopardyAnswer'; playerId: string; correct: boolean }
+  | {
+      type: 'createGame';
+      prompt: string;
+      difficulty?: string;
+      sourceMaterial?: string;
+    }
+  | { type: 'saveGame'; gameConfig: GameConfig }
+  | { type: 'loadGame'; gameConfig: GameConfig }
+  | { type: 'returnToBoard' }
+  | { type: 'startGame' }
+  | { type: 'ping'; timestamp: number };
 
-export type ServerMessage = 
-  | { type: "roomJoined"; roomId: string; gameState: GameState; playerId: string }
-  | { type: "gameStateUpdate"; gameState: GameState }
-  | { type: "buzzerLocked"; locked: boolean }
-  | { type: "buzzReceived"; playerId: string; timestamp: number }
-  | { type: "error"; message: string }
-  | { type: "gameCreated"; gameState: GameState }
-  | { type: "gameSaved"; gameId: string }
-  | { type: "pong"; timestamp: number };
-
+export type ServerMessage =
+  | {
+      type: 'roomJoined';
+      roomId: string;
+      gameState: GameState;
+      playerId: string;
+    }
+  | { type: 'gameStateUpdate'; gameState: GameState }
+  | { type: 'buzzerLocked'; locked: boolean }
+  | { type: 'buzzReceived'; playerId: string; timestamp: number }
+  | { type: 'error'; message: string }
+  | { type: 'gameCreated'; gameState: GameState }
+  | { type: 'gameSaved'; gameId: string }
+  | { type: 'pong'; timestamp: number };

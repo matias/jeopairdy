@@ -7,17 +7,25 @@ interface ClueDisplayProps {
   showAnswer?: boolean;
 }
 
-export default function ClueDisplay({ gameState, showAnswer = false }: ClueDisplayProps) {
+export default function ClueDisplay({
+  gameState,
+  showAnswer = false,
+}: ClueDisplayProps) {
   if (!gameState.config || !gameState.selectedClue) {
     return null;
   }
 
-  const round = gameState.currentRound === 'jeopardy' 
-    ? gameState.config.jeopardy 
-    : gameState.config.doubleJeopardy;
+  const round =
+    gameState.currentRound === 'jeopardy'
+      ? gameState.config.jeopardy
+      : gameState.config.doubleJeopardy;
 
-  const category = round.categories.find(c => c.id === gameState.selectedClue!.categoryId);
-  const clue = category?.clues.find(c => c.id === gameState.selectedClue!.clueId);
+  const category = round.categories.find(
+    (c) => c.id === gameState.selectedClue!.categoryId,
+  );
+  const clue = category?.clues.find(
+    (c) => c.id === gameState.selectedClue!.clueId,
+  );
 
   if (!clue) return null;
 
@@ -26,7 +34,7 @@ export default function ClueDisplay({ gameState, showAnswer = false }: ClueDispl
       {/* <div className="mb-6 text-3xl font-bold text-yellow-300 uppercase tracking-wide">
         <span className="category-text">{category?.name}</span> - <span className="value-text" style={{ fontSize: '1.5em' }}>${clue.value.toLocaleString()}</span>
       </div> */}
-      
+
       <div className="clue-text text-5xl font-bold mb-8 min-h-[300px] flex items-center justify-center text-center leading-tight px-4">
         {clue.clue}
       </div>
@@ -41,4 +49,3 @@ export default function ClueDisplay({ gameState, showAnswer = false }: ClueDispl
     </div>
   );
 }
-

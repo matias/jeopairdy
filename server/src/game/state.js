@@ -16,23 +16,23 @@ function calculateSpeakingTime(clueText) {
   if (!clueText) {
     return 1000; // Default 1 second minimum
   }
-  
+
   // Remove parenthetical starts and blanks (like reference implementation)
   const processedText = clueText
     .replace(/^\(.*\)/, '')
     .replace(/_+/g, ' blank ')
     .split(' ')
-    .map(word => syllableCount(word));
-  
+    .map((word) => syllableCount(word));
+
   const totalSyllables = processedText.reduce((a, b) => a + b, 0);
   // Assume speaking rate of 4.5 syllables/second, minimum 2 seconds
   let speakingTime = Math.max((totalSyllables / 4.5) * 1000, 2000);
 
   // Clamp the speaking time to 10 seconds max.
   speakingTime = Math.min(speakingTime, 10000);
-  
+
   // console.log('[calculateSpeakingTime]', clueText, 'syllables:', totalSyllables, 'speakingTime:', speakingTime + 'ms');
-  
+
   return speakingTime;
 }
 
@@ -45,8 +45,8 @@ class GameManager {
     const gameState = {
       roomId,
       config: null,
-      status: "waiting",
-      currentRound: "jeopardy",
+      status: 'waiting',
+      currentRound: 'jeopardy',
       selectedClue: null,
       players: new Map(),
       buzzerOrder: [],
@@ -94,7 +94,7 @@ class GameManager {
     if (!game) return false;
 
     game.config = config;
-    game.status = "ready";
+    game.status = 'ready';
     return true;
   }
 
@@ -102,19 +102,20 @@ class GameManager {
     const game = this.games.get(roomId);
     if (!game || !game.config) return false;
 
-    const round = game.currentRound === "jeopardy" 
-      ? game.config.jeopardy 
-      : game.config.doubleJeopardy;
+    const round =
+      game.currentRound === 'jeopardy'
+        ? game.config.jeopardy
+        : game.config.doubleJeopardy;
 
-    const category = round.categories.find(c => c.id === categoryId);
+    const category = round.categories.find((c) => c.id === categoryId);
     if (!category) return false;
 
-    const clue = category.clues.find(c => c.id === clueId);
+    const clue = category.clues.find((c) => c.id === clueId);
     if (!clue || clue.revealed) return false;
 
     clue.revealed = true;
     game.selectedClue = { categoryId, clueId };
-    game.status = "clueRevealed";
+    game.status = 'clueRevealed';
     game.buzzerOrder = [];
     game.resolvedBuzzerOrder = [];
     game.displayBuzzerOrder = [];
@@ -133,8 +134,8 @@ class GameManager {
     // Unlock buzzer after calculated delay (allows host time to read clue)
     setTimeout(() => {
       const currentGame = this.games.get(roomId);
-      if (currentGame && currentGame.status === "clueRevealed") {
-        currentGame.status = "buzzing";
+      if (currentGame && currentGame.status === 'clueRevealed') {
+        currentGame.status = 'buzzing';
       }
     }, speakingTime);
 
@@ -144,13 +145,14 @@ class GameManager {
   handleBuzz(roomId, playerId, clientTimestamp, serverTimestamp) {
     const game = this.games.get(roomId);
     // Allow buzzes during "buzzing" or "answering" status (answering means someone was selected but others can still buzz late)
-    if (!game || (game.status !== "buzzing" && game.status !== "answering")) return false;
+    if (!game || (game.status !== 'buzzing' && game.status !== 'answering'))
+      return false;
 
     // Check if player exists
     if (!game.players.has(playerId)) return false;
 
     // Check if already buzzed (prevent duplicate buzzes from same player)
-    if (game.buzzTimestamps.some(b => b.playerId === playerId)) {
+    if (game.buzzTimestamps.some((b) => b.playerId === playerId)) {
       // Already buzzed, but return true so client knows it was received
       return true;
     }
@@ -176,14 +178,14 @@ class GameManager {
     if (!game || game.buzzTimestamps.length === 0) return;
 
     // Always update buzzerOrder to include all buzzes (even late ones)
-    game.buzzerOrder = game.buzzTimestamps.map(b => b.playerId);
+    game.buzzerOrder = game.buzzTimestamps.map((b) => b.playerId);
 
     // If current player already set, update displayBuzzerOrder to include late buzzes
     // (late buzzes won't change who gets to answer, but should be shown in UI)
     if (game.currentPlayer) {
       // Add any new late buzzes to displayBuzzerOrder while preserving existing order
       if (game.displayBuzzerOrder && game.displayBuzzerOrder.length > 0) {
-        game.buzzerOrder.forEach(playerId => {
+        game.buzzerOrder.forEach((playerId) => {
           if (!game.displayBuzzerOrder.includes(playerId)) {
             game.displayBuzzerOrder.push(playerId);
           }
@@ -194,10 +196,10 @@ class GameManager {
 
     const TIE_WINDOW_MS = 250;
     const firstServerTime = game.buzzTimestamps[0].serverTimestamp;
-    
+
     // Find all buzzes within the tie window
     const tiedBuzzes = game.buzzTimestamps.filter(
-      b => b.serverTimestamp - firstServerTime <= TIE_WINDOW_MS
+      (b) => b.serverTimestamp - firstServerTime <= TIE_WINDOW_MS,
     );
 
     // Always wait for the tie window to close, even if only one buzzer so far
@@ -218,7 +220,7 @@ class GameManager {
 
       // Re-check tied buzzes after window closes
       const allTiedBuzzes = currentGame.buzzTimestamps.filter(
-        b => b.serverTimestamp - firstServerTime <= TIE_WINDOW_MS
+        (b) => b.serverTimestamp - firstServerTime <= TIE_WINDOW_MS,
       );
 
       // Determine who should get to answer
@@ -234,24 +236,32 @@ class GameManager {
 
       // Update buzzer order (all buzzes, in order - includes late buzzes)
       // This ensures all players who buzzed are shown in the UI
-      currentGame.buzzerOrder = currentGame.buzzTimestamps.map(b => b.playerId);
+      currentGame.buzzerOrder = currentGame.buzzTimestamps.map(
+        (b) => b.playerId,
+      );
 
       // Set current player
       if (selectedPlayerId) {
         currentGame.currentPlayer = selectedPlayerId;
-        currentGame.status = "answering";
+        currentGame.status = 'answering';
         const player = currentGame.players.get(selectedPlayerId);
         if (player) {
-          player.buzzedAt = allTiedBuzzes.find(b => b.playerId === selectedPlayerId)?.clientTimestamp || Date.now();
+          player.buzzedAt =
+            allTiedBuzzes.find((b) => b.playerId === selectedPlayerId)
+              ?.clientTimestamp || Date.now();
         }
 
         // Compute resolved buzzer order: currentPlayer first, then others in original order
-        currentGame.resolvedBuzzerOrder = this.computeResolvedBuzzerOrder(currentGame);
+        currentGame.resolvedBuzzerOrder =
+          this.computeResolvedBuzzerOrder(currentGame);
         // Set display order once - this stays static for UI display
         // Use the original buzzerOrder but put the selected player first
-        if (!currentGame.displayBuzzerOrder || currentGame.displayBuzzerOrder.length === 0) {
+        if (
+          !currentGame.displayBuzzerOrder ||
+          currentGame.displayBuzzerOrder.length === 0
+        ) {
           currentGame.displayBuzzerOrder = [selectedPlayerId];
-          currentGame.buzzerOrder.forEach(playerId => {
+          currentGame.buzzerOrder.forEach((playerId) => {
             if (playerId !== selectedPlayerId) {
               currentGame.displayBuzzerOrder.push(playerId);
             }
@@ -271,11 +281,13 @@ class GameManager {
   }
 
   selectFromTie(game, tiedBuzzes) {
-    const tiedPlayerIds = tiedBuzzes.map(b => b.playerId);
-    
+    const tiedPlayerIds = tiedBuzzes.map((b) => b.playerId);
+
     // First, try to pick from "not picked" list
     const notPickedInTies = game.notPickedInTies || [];
-    const notPickedInTie = tiedPlayerIds.filter(id => notPickedInTies.includes(id));
+    const notPickedInTie = tiedPlayerIds.filter((id) =>
+      notPickedInTies.includes(id),
+    );
 
     let selectedPlayerId = null;
 
@@ -283,15 +295,20 @@ class GameManager {
       // Pick the first one from not-picked list (they get priority)
       selectedPlayerId = notPickedInTie[0];
       // Remove from not-picked list since they're being picked now
-      game.notPickedInTies = game.notPickedInTies.filter(id => id !== selectedPlayerId);
+      game.notPickedInTies = game.notPickedInTies.filter(
+        (id) => id !== selectedPlayerId,
+      );
     } else {
       // No one in not-picked list, pick first in tie
       selectedPlayerId = tiedPlayerIds[0];
     }
 
     // Add all other tied players to "not picked" list (if not already there)
-    tiedPlayerIds.forEach(playerId => {
-      if (playerId !== selectedPlayerId && !game.notPickedInTies.includes(playerId)) {
+    tiedPlayerIds.forEach((playerId) => {
+      if (
+        playerId !== selectedPlayerId &&
+        !game.notPickedInTies.includes(playerId)
+      ) {
         game.notPickedInTies.push(playerId);
       }
     });
@@ -304,14 +321,14 @@ class GameManager {
     if (!game.currentPlayer) {
       return game.buzzerOrder;
     }
-    
+
     const resolved = [game.currentPlayer];
-    game.buzzerOrder.forEach(playerId => {
+    game.buzzerOrder.forEach((playerId) => {
       if (playerId !== game.currentPlayer) {
         resolved.push(playerId);
       }
     });
-    
+
     return resolved;
   }
 
@@ -326,43 +343,51 @@ class GameManager {
 
     console.log('\n=== BUZZER DEBUG INFO ===');
     console.log(`Total buzzes: ${game.buzzTimestamps.length}`);
-    
+
     game.buzzTimestamps.forEach((buzz, index) => {
       const latency = buzz.serverTimestamp - buzz.clientTimestamp;
-      const isTied = tiedBuzzes.some(tb => tb.playerId === buzz.playerId);
+      const isTied = tiedBuzzes.some((tb) => tb.playerId === buzz.playerId);
       const isSelected = buzz.playerId === selectedPlayerId;
       const timeFromFirst = buzz.serverTimestamp - firstServerTime;
       const isLate = timeFromFirst > TIE_WINDOW_MS;
-      
+
       console.log(
         `${index + 1}. ${playerNames[buzz.playerId] || buzz.playerId} | ` +
-        `Client: ${buzz.clientTimestamp} | ` +
-        `Server: ${buzz.serverTimestamp} | ` +
-        `Latency: ${latency}ms | ` +
-        `Time from first: ${timeFromFirst}ms | ` +
-        `${isTied ? 'TIED' : isLate ? 'LATE (not counted)' : ''} ${isSelected ? '✓ SELECTED' : ''}`
+          `Client: ${buzz.clientTimestamp} | ` +
+          `Server: ${buzz.serverTimestamp} | ` +
+          `Latency: ${latency}ms | ` +
+          `Time from first: ${timeFromFirst}ms | ` +
+          `${isTied ? 'TIED' : isLate ? 'LATE (not counted)' : ''} ${isSelected ? '✓ SELECTED' : ''}`,
       );
     });
 
     if (tiedBuzzes.length > 1) {
-      console.log(`\nTIE DETECTED (${tiedBuzzes.length} players within 250ms):`);
-      tiedBuzzes.forEach(buzz => {
+      console.log(
+        `\nTIE DETECTED (${tiedBuzzes.length} players within 250ms):`,
+      );
+      tiedBuzzes.forEach((buzz) => {
         console.log(`  - ${playerNames[buzz.playerId] || buzz.playerId}`);
       });
-      console.log(`Selected: ${playerNames[selectedPlayerId] || selectedPlayerId}`);
+      console.log(
+        `Selected: ${playerNames[selectedPlayerId] || selectedPlayerId}`,
+      );
     }
 
     const lateBuzzes = game.buzzTimestamps.filter(
-      b => (b.serverTimestamp - firstServerTime) > TIE_WINDOW_MS
+      (b) => b.serverTimestamp - firstServerTime > TIE_WINDOW_MS,
     );
     if (lateBuzzes.length > 0) {
-      console.log(`\nLATE BUZZES (outside 250ms window, shown but not counted):`);
-      lateBuzzes.forEach(buzz => {
+      console.log(
+        `\nLATE BUZZES (outside 250ms window, shown but not counted):`,
+      );
+      lateBuzzes.forEach((buzz) => {
         console.log(`  - ${playerNames[buzz.playerId] || buzz.playerId}`);
       });
     }
 
-    console.log(`\nNot-picked list: ${(game.notPickedInTies || []).map(id => playerNames[id] || id).join(', ') || '(empty)'}`);
+    console.log(
+      `\nNot-picked list: ${(game.notPickedInTies || []).map((id) => playerNames[id] || id).join(', ') || '(empty)'}`,
+    );
     console.log('=== END BUZZER DEBUG ===\n');
   }
 
@@ -375,14 +400,17 @@ class GameManager {
       return false; // Already judged
     }
 
-    const round = game.currentRound === "jeopardy" 
-      ? game.config.jeopardy 
-      : game.config.doubleJeopardy;
+    const round =
+      game.currentRound === 'jeopardy'
+        ? game.config.jeopardy
+        : game.config.doubleJeopardy;
 
-    const category = round.categories.find(c => c.id === game.selectedClue.categoryId);
+    const category = round.categories.find(
+      (c) => c.id === game.selectedClue.categoryId,
+    );
     if (!category) return false;
 
-    const clue = category.clues.find(c => c.id === game.selectedClue.clueId);
+    const clue = category.clues.find((c) => c.id === game.selectedClue.clueId);
     if (!clue) return false;
 
     const player = game.players.get(playerId);
@@ -403,14 +431,15 @@ class GameManager {
       player.score -= clue.value;
       // Move to next player in display buzzer order who hasn't been judged
       // Use displayBuzzerOrder (static order) to find next player, fallback to resolvedBuzzerOrder or buzzerOrder
-      const orderToUse = game.displayBuzzerOrder && game.displayBuzzerOrder.length > 0
-        ? game.displayBuzzerOrder
-        : (game.resolvedBuzzerOrder && game.resolvedBuzzerOrder.length > 0 
-          ? game.resolvedBuzzerOrder 
-          : game.buzzerOrder);
+      const orderToUse =
+        game.displayBuzzerOrder && game.displayBuzzerOrder.length > 0
+          ? game.displayBuzzerOrder
+          : game.resolvedBuzzerOrder && game.resolvedBuzzerOrder.length > 0
+            ? game.resolvedBuzzerOrder
+            : game.buzzerOrder;
       const currentIndex = orderToUse.indexOf(playerId);
       let nextPlayerId = null;
-      
+
       // Find the next player in display order who hasn't been judged
       for (let i = currentIndex + 1; i < orderToUse.length; i++) {
         const candidateId = orderToUse[i];
@@ -419,10 +448,10 @@ class GameManager {
           break;
         }
       }
-      
+
       if (nextPlayerId) {
         game.currentPlayer = nextPlayerId;
-        game.status = "answering";
+        game.status = 'answering';
         // Update resolved order with new current player (for logic)
         game.resolvedBuzzerOrder = this.computeResolvedBuzzerOrder(game);
         // Keep displayBuzzerOrder unchanged - it should never change after initial set
@@ -452,14 +481,14 @@ class GameManager {
     const game = this.games.get(roomId);
     if (!game) return false;
 
-    if (game.currentRound === "jeopardy") {
-      game.currentRound = "doubleJeopardy";
-      game.status = "selecting";
+    if (game.currentRound === 'jeopardy') {
+      game.currentRound = 'doubleJeopardy';
+      game.status = 'selecting';
       game.selectedClue = null;
       game.buzzerOrder = [];
       game.currentPlayer = null;
       game.lastCorrectPlayer = null; // Reset control for new round
-    } else if (game.currentRound === "doubleJeopardy") {
+    } else if (game.currentRound === 'doubleJeopardy') {
       // Allow advancing to Final Jeopardy (for testing, skip all clues answered check)
       this.initializeFinalJeopardy(roomId);
     }
@@ -471,27 +500,29 @@ class GameManager {
     const game = this.games.get(roomId);
     if (!game) return false;
 
-    game.currentRound = "finalJeopardy";
-    game.status = "finalJeopardyWagering";
-    
+    game.currentRound = 'finalJeopardy';
+    game.status = 'finalJeopardyWagering';
+
     // Capture initial scores and create judging order (ascending by score)
     game.finalJeopardyInitialScores = new Map();
     game.finalJeopardyJudgingOrder = [];
-    
+
     // Get all players with their scores, sort by score (ascending)
-    const playersWithScores = Array.from(game.players.entries()).map(([id, player]) => ({
-      id,
-      score: player.score
-    }));
-    
+    const playersWithScores = Array.from(game.players.entries()).map(
+      ([id, player]) => ({
+        id,
+        score: player.score,
+      }),
+    );
+
     playersWithScores.sort((a, b) => a.score - b.score);
-    
+
     // Store initial scores and create judging order
     playersWithScores.forEach(({ id, score }) => {
       game.finalJeopardyInitialScores.set(id, score);
       game.finalJeopardyJudgingOrder.push(id);
     });
-    
+
     // Reset Final Jeopardy state
     game.finalJeopardyClueShown = false;
     game.finalJeopardyCountdownStart = null;
@@ -499,25 +530,26 @@ class GameManager {
     game.finalJeopardyJudgingPlayerIndex = null;
     game.finalJeopardyRevealedWager = false;
     game.finalJeopardyRevealedAnswer = false;
-    
+
     // Clear any existing wagers/answers
-    game.players.forEach(player => {
+    game.players.forEach((player) => {
       player.finalJeopardyWager = undefined;
       player.finalJeopardyAnswer = undefined;
     });
-    
+
     return true;
   }
 
   allCluesAnswered(game) {
     if (!game.config) return false;
 
-    const round = game.currentRound === "jeopardy" 
-      ? game.config.jeopardy 
-      : game.config.doubleJeopardy;
+    const round =
+      game.currentRound === 'jeopardy'
+        ? game.config.jeopardy
+        : game.config.doubleJeopardy;
 
-    return round.categories.every(category =>
-      category.clues.every(clue => clue.revealed && clue.answered)
+    return round.categories.every((category) =>
+      category.clues.every((clue) => clue.revealed && clue.answered),
     );
   }
 
@@ -526,11 +558,11 @@ class GameManager {
     if (!game) return false;
 
     // Allow starting Final Jeopardy from doubleJeopardy (for testing)
-    if (game.currentRound === "doubleJeopardy") {
+    if (game.currentRound === 'doubleJeopardy') {
       this.initializeFinalJeopardy(roomId);
       return true;
-    } else if (game.currentRound === "finalJeopardy") {
-      game.status = "finalJeopardyWagering";
+    } else if (game.currentRound === 'finalJeopardy') {
+      game.status = 'finalJeopardyWagering';
       return true;
     }
 
@@ -539,7 +571,7 @@ class GameManager {
 
   submitWager(roomId, playerId, wager) {
     const game = this.games.get(roomId);
-    if (!game || game.status !== "finalJeopardyWagering") return false;
+    if (!game || game.status !== 'finalJeopardyWagering') return false;
 
     const player = game.players.get(playerId);
     if (!player) return false;
@@ -557,44 +589,51 @@ class GameManager {
 
   showFinalJeopardyClue(roomId) {
     const game = this.games.get(roomId);
-    if (!game || game.status !== "finalJeopardyWagering") return false;
+    if (!game || game.status !== 'finalJeopardyWagering') return false;
 
     // Check if all eligible players (score > 0) have wagered
-    const eligiblePlayers = Array.from(game.players.values()).filter(p => p.score > 0);
-    const allEligibleWagered = eligiblePlayers.every(p => p.finalJeopardyWager !== undefined);
-    
+    const eligiblePlayers = Array.from(game.players.values()).filter(
+      (p) => p.score > 0,
+    );
+    const allEligibleWagered = eligiblePlayers.every(
+      (p) => p.finalJeopardyWager !== undefined,
+    );
+
     if (!allEligibleWagered) return false;
 
     game.finalJeopardyClueShown = true;
-    game.status = "finalJeopardyAnswering";
-    
+    game.status = 'finalJeopardyAnswering';
+
     // Start countdown timer (30 seconds)
     const now = Date.now();
     game.finalJeopardyCountdownStart = now;
     game.finalJeopardyCountdownEnd = now + 30000; // 30 seconds
-    
+
     // Set timeout to lock answers after 30 seconds
     setTimeout(() => {
       this.lockFinalJeopardyAnswers(roomId);
     }, 30000);
-    
+
     return true;
   }
 
   lockFinalJeopardyAnswers(roomId) {
     const game = this.games.get(roomId);
-    if (!game || game.status !== "finalJeopardyAnswering") return;
-    
+    if (!game || game.status !== 'finalJeopardyAnswering') return;
+
     // Answers are now locked - no more submissions allowed
     // Status will change when host starts judging
   }
 
   submitFinalAnswer(roomId, playerId, answer) {
     const game = this.games.get(roomId);
-    if (!game || game.status !== "finalJeopardyAnswering") return false;
+    if (!game || game.status !== 'finalJeopardyAnswering') return false;
 
     // Check if countdown has expired
-    if (game.finalJeopardyCountdownEnd && Date.now() > game.finalJeopardyCountdownEnd) {
+    if (
+      game.finalJeopardyCountdownEnd &&
+      Date.now() > game.finalJeopardyCountdownEnd
+    ) {
       return false; // Countdown expired, answers are locked
     }
 
@@ -609,13 +648,16 @@ class GameManager {
 
   startFinalJeopardyJudging(roomId) {
     const game = this.games.get(roomId);
-    if (!game || game.status !== "finalJeopardyAnswering") return false;
+    if (!game || game.status !== 'finalJeopardyAnswering') return false;
 
-    if (!game.finalJeopardyJudgingOrder || game.finalJeopardyJudgingOrder.length === 0) {
+    if (
+      !game.finalJeopardyJudgingOrder ||
+      game.finalJeopardyJudgingOrder.length === 0
+    ) {
       return false;
     }
 
-    game.status = "finalJeopardyJudging";
+    game.status = 'finalJeopardyJudging';
     game.finalJeopardyJudgingPlayerIndex = 0;
     game.finalJeopardyRevealedWager = false;
     game.finalJeopardyRevealedAnswer = false;
@@ -625,7 +667,7 @@ class GameManager {
 
   revealFinalJeopardyWager(roomId) {
     const game = this.games.get(roomId);
-    if (!game || game.status !== "finalJeopardyJudging") return false;
+    if (!game || game.status !== 'finalJeopardyJudging') return false;
 
     if (game.finalJeopardyRevealedWager) return false; // Already revealed
 
@@ -635,7 +677,7 @@ class GameManager {
 
   revealFinalJeopardyAnswer(roomId) {
     const game = this.games.get(roomId);
-    if (!game || game.status !== "finalJeopardyJudging") return false;
+    if (!game || game.status !== 'finalJeopardyJudging') return false;
 
     if (!game.finalJeopardyRevealedWager) return false; // Must reveal wager first
     if (game.finalJeopardyRevealedAnswer) return false; // Already revealed
@@ -646,13 +688,17 @@ class GameManager {
 
   judgeFinalJeopardyAnswer(roomId, playerId, correct) {
     const game = this.games.get(roomId);
-    if (!game || game.status !== "finalJeopardyJudging") return false;
+    if (!game || game.status !== 'finalJeopardyJudging') return false;
 
-    if (!game.finalJeopardyJudgingOrder || game.finalJeopardyJudgingPlayerIndex === undefined) {
+    if (
+      !game.finalJeopardyJudgingOrder ||
+      game.finalJeopardyJudgingPlayerIndex === undefined
+    ) {
       return false;
     }
 
-    const currentPlayerId = game.finalJeopardyJudgingOrder[game.finalJeopardyJudgingPlayerIndex];
+    const currentPlayerId =
+      game.finalJeopardyJudgingOrder[game.finalJeopardyJudgingPlayerIndex];
     if (currentPlayerId !== playerId) return false; // Not the current player being judged
 
     if (!game.finalJeopardyRevealedWager || !game.finalJeopardyRevealedAnswer) {
@@ -674,10 +720,13 @@ class GameManager {
 
     // Move to next player
     game.finalJeopardyJudgingPlayerIndex++;
-    
-    if (game.finalJeopardyJudgingPlayerIndex >= game.finalJeopardyJudgingOrder.length) {
+
+    if (
+      game.finalJeopardyJudgingPlayerIndex >=
+      game.finalJeopardyJudgingOrder.length
+    ) {
       // All players judged, game is finished
-      game.status = "finished";
+      game.status = 'finished';
     } else {
       // Reset reveal flags for next player
       game.finalJeopardyRevealedWager = false;
@@ -689,15 +738,18 @@ class GameManager {
 
   revealFinalAnswers(roomId) {
     const game = this.games.get(roomId);
-    if (!game || !game.config || game.status !== "finalJeopardyReveal") return false;
+    if (!game || !game.config || game.status !== 'finalJeopardyReveal')
+      return false;
 
     const correctAnswer = game.config.finalJeopardy.answer.toLowerCase().trim();
-    
-    game.players.forEach(player => {
+
+    game.players.forEach((player) => {
       if (player.finalJeopardyWager !== undefined) {
-        const playerAnswer = (player.finalJeopardyAnswer || "").toLowerCase().trim();
+        const playerAnswer = (player.finalJeopardyAnswer || '')
+          .toLowerCase()
+          .trim();
         const isCorrect = playerAnswer === correctAnswer;
-        
+
         if (isCorrect) {
           player.score += player.finalJeopardyWager;
         } else {
@@ -706,7 +758,7 @@ class GameManager {
       }
     });
 
-    game.status = "finished";
+    game.status = 'finished';
     return true;
   }
 
@@ -715,7 +767,7 @@ class GameManager {
     if (!game) return false;
 
     // Reset to selecting state, clearing any selected clue
-    game.status = "selecting";
+    game.status = 'selecting';
     game.selectedClue = null;
     game.currentPlayer = null;
     game.buzzerOrder = [];
@@ -724,7 +776,7 @@ class GameManager {
     game.buzzTimestamps = [];
     game.judgedPlayers = [];
     // Note: We keep notPickedInTies across clues for fairness
-    
+
     return true;
   }
 
@@ -732,8 +784,8 @@ class GameManager {
     const game = this.games.get(roomId);
     if (!game || !game.config) return false;
 
-    if (game.status === "ready") {
-      game.status = "selecting";
+    if (game.status === 'ready') {
+      game.status = 'selecting';
       return true;
     }
 
@@ -744,4 +796,3 @@ class GameManager {
 const gameManager = new GameManager();
 
 module.exports = { gameManager };
-

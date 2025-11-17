@@ -31,14 +31,26 @@
 }
 
 :root {
-  --jeopardy-blue: #060CE9;
-  --jeopardy-dark-blue: #0A0A8F;
-  --jeopardy-yellow: #FFCC00;
-  --jeopardy-gold: #DAA520;
+  --jeopardy-blue: #060ce9;
+  --jeopardy-dark-blue: #0a0a8f;
+  --jeopardy-yellow: #ffcc00;
+  --jeopardy-gold: #daa520;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
 }
 
 /* Jeopardy-style board colors */
@@ -92,7 +104,7 @@ body {
 
 .category-text {
   font-family: 'Swiss 911';
-  font-size: 1.6em; 
+  font-size: 1.6em;
   line-height: 1em;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -112,4 +124,3 @@ body {
   font-family: 'Univers';
   font-weight: 400 !important;
 }
-

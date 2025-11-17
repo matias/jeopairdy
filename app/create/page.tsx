@@ -15,16 +15,19 @@ export default function CreatePage() {
 
   useEffect(() => {
     const client = new WebSocketClient(WS_URL);
-    client.connect().then(() => {
-      client.joinRoom(null, undefined, 'host');
-      client.on('roomJoined', (message: any) => {
-        setRoomId(message.roomId);
-        client.setPlayerId(message.playerId);
-        // Redirect to host page immediately
-        router.push(`/host/${message.roomId}`);
-      });
-      setWs(client);
-    }).catch(console.error);
+    client
+      .connect()
+      .then(() => {
+        client.joinRoom(null, undefined, 'host');
+        client.on('roomJoined', (message: any) => {
+          setRoomId(message.roomId);
+          client.setPlayerId(message.playerId);
+          // Redirect to host page immediately
+          router.push(`/host/${message.roomId}`);
+        });
+        setWs(client);
+      })
+      .catch(console.error);
 
     return () => {
       client.disconnect();
@@ -38,4 +41,3 @@ export default function CreatePage() {
     </main>
   );
 }
-

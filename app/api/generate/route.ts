@@ -28,7 +28,10 @@ export async function POST(req: Request) {
     } = body ?? {};
 
     if (typeof message !== 'string' || message.trim() === '') {
-      return NextResponse.json({ error: 'message is required.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'message is required.' },
+        { status: 400 },
+      );
     }
 
     let activeConversationId = conversationId;
@@ -36,7 +39,10 @@ export async function POST(req: Request) {
     if (!activeConversationId) {
       if (typeof instructions !== 'string' || instructions.trim() === '') {
         return NextResponse.json(
-          { error: 'instructions are required when creating a new conversation.' },
+          {
+            error:
+              'instructions are required when creating a new conversation.',
+          },
           { status: 400 },
         );
       }
@@ -93,4 +99,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

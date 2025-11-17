@@ -65,7 +65,8 @@ Every clue must remain grounded in the provided topics or source material (if an
 function formatSourceMaterial(sourceMaterial?: string) {
   if (!sourceMaterial?.trim()) return '';
   const trimmed = sourceMaterial.trim();
-  const snippet = trimmed.length > 1200 ? `${trimmed.slice(0, 1200)}…` : trimmed;
+  const snippet =
+    trimmed.length > 1200 ? `${trimmed.slice(0, 1200)}…` : trimmed;
   return `Source material (priority context):\n${snippet}\n`;
 }
 
@@ -135,7 +136,9 @@ Output format (JSON object):
 Keep the commentary concise (<= 3 sentences). Each clue must clearly map back to the provided topics.`;
 }
 
-export function getRegenerationPrompt(options: RegenerationPromptOptions): string {
+export function getRegenerationPrompt(
+  options: RegenerationPromptOptions,
+): string {
   const {
     categoryCount = DEFAULT_SAMPLE_CATEGORY_COUNT,
     totalClues = DEFAULT_SAMPLE_CLUE_COUNT,
@@ -157,7 +160,8 @@ Highlight the adjustments you made in the commentary.`;
 }
 
 export function getFullRoundPrompt(options: RoundPromptOptions): string {
-  const { topics, difficulty, sourceMaterial, round, values, excludedAnswers } = options;
+  const { topics, difficulty, sourceMaterial, round, values, excludedAnswers } =
+    options;
   const roundName =
     round === 'doubleJeopardy'
       ? 'Double Jeopardy'
@@ -200,7 +204,9 @@ Output JSON:
 Do not include commentary. Focus on balanced, television-ready material.`;
 }
 
-export function getFinalJeopardyPrompt(options: FinalJeopardyPromptOptions): string {
+export function getFinalJeopardyPrompt(
+  options: FinalJeopardyPromptOptions,
+): string {
   const { topics, difficulty, sourceMaterial, excludedAnswers } = options;
   return `Generate a Final Jeopardy prompt.
 
@@ -224,8 +230,19 @@ Final Jeopardy guardrails:
 Ensure the clue ties to the topics and meets Final Jeopardy gravitas.`;
 }
 
-export function getSingleClueRegenerationPrompt(options: SingleClueRegenerationPromptOptions): string {
-  const { topics, difficulty, sourceMaterial, categoryName, round, value, currentClue, currentAnswer } = options;
+export function getSingleClueRegenerationPrompt(
+  options: SingleClueRegenerationPromptOptions,
+): string {
+  const {
+    topics,
+    difficulty,
+    sourceMaterial,
+    categoryName,
+    round,
+    value,
+    currentClue,
+    currentAnswer,
+  } = options;
   const roundName =
     round === 'doubleJeopardy'
       ? 'Double Jeopardy'
@@ -260,4 +277,3 @@ Output JSON:
 
 Generate a fresh, high-quality clue that matches the category and difficulty level.`;
 }
-

@@ -26,18 +26,24 @@ function serializeGameState(gameState) {
     })),
     buzzerOrder: gameState.buzzerOrder,
     resolvedBuzzerOrder: gameState.resolvedBuzzerOrder || gameState.buzzerOrder, // Fallback to buzzerOrder if not set
-    displayBuzzerOrder: gameState.displayBuzzerOrder || gameState.resolvedBuzzerOrder || gameState.buzzerOrder, // Static display order for UI
+    displayBuzzerOrder:
+      gameState.displayBuzzerOrder ||
+      gameState.resolvedBuzzerOrder ||
+      gameState.buzzerOrder, // Static display order for UI
     currentPlayer: gameState.currentPlayer,
     judgedPlayers: gameState.judgedPlayers,
     notPickedInTies: gameState.notPickedInTies,
     lastCorrectPlayer: gameState.lastCorrectPlayer,
     hostId: gameState.hostId,
     // Final Jeopardy state
-    finalJeopardyInitialScores: gameState.finalJeopardyInitialScores 
-      ? Array.from(gameState.finalJeopardyInitialScores.entries()).reduce((obj, [id, score]) => {
-          obj[id] = score;
-          return obj;
-        }, {})
+    finalJeopardyInitialScores: gameState.finalJeopardyInitialScores
+      ? Array.from(gameState.finalJeopardyInitialScores.entries()).reduce(
+          (obj, [id, score]) => {
+            obj[id] = score;
+            return obj;
+          },
+          {},
+        )
       : undefined,
     finalJeopardyJudgingOrder: gameState.finalJeopardyJudgingOrder,
     finalJeopardyClueShown: gameState.finalJeopardyClueShown,
@@ -68,7 +74,9 @@ function handleWebSocket(ws, req) {
       handleMessage(ws, data, conn);
     } catch (error) {
       console.error('Error parsing message:', error);
-      ws.send(JSON.stringify({ type: 'error', message: 'Invalid message format' }));
+      ws.send(
+        JSON.stringify({ type: 'error', message: 'Invalid message format' }),
+      );
     }
   });
 
@@ -137,15 +145,25 @@ function handleMessage(ws, message, conn) {
       handleJudgeFinalJeopardyAnswer(ws, message, conn);
       break;
     case 'createGame':
-      handleCreateGame(ws, message, conn).catch(error => {
+      handleCreateGame(ws, message, conn).catch((error) => {
         console.error('Error in handleCreateGame:', error);
-        ws.send(JSON.stringify({ type: 'error', message: `Error creating game: ${error.message}` }));
+        ws.send(
+          JSON.stringify({
+            type: 'error',
+            message: `Error creating game: ${error.message}`,
+          }),
+        );
       });
       break;
     case 'saveGame':
-      handleSaveGame(ws, message, conn).catch(error => {
+      handleSaveGame(ws, message, conn).catch((error) => {
         console.error('Error in handleSaveGame:', error);
-        ws.send(JSON.stringify({ type: 'error', message: `Error saving game: ${error.message}` }));
+        ws.send(
+          JSON.stringify({
+            type: 'error',
+            message: `Error saving game: ${error.message}`,
+          }),
+        );
       });
       break;
     case 'loadGame':
@@ -158,7 +176,9 @@ function handleMessage(ws, message, conn) {
       handleStartGame(ws, message, conn);
       break;
     default:
-      ws.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
+      ws.send(
+        JSON.stringify({ type: 'error', message: 'Unknown message type' }),
+      );
   }
 }
 
@@ -176,7 +196,7 @@ function handleJoinRoom(ws, message, conn) {
 
     const playerId = uuidv4();
     let gameState = gameManager.getGame(roomId);
-    
+
     if (!gameState) {
       gameState = gameManager.createRoom(roomId, playerId);
     }
@@ -185,18 +205,24 @@ function handleJoinRoom(ws, message, conn) {
     conn.playerId = playerId;
     conn.role = 'host';
 
-    ws.send(JSON.stringify({
-      type: 'roomJoined',
-      roomId,
-      gameState: serializeGameState(gameState),
-      playerId,
-    }));
+    ws.send(
+      JSON.stringify({
+        type: 'roomJoined',
+        roomId,
+        gameState: serializeGameState(gameState),
+        playerId,
+      }),
+    );
 
     // Broadcast to all connections in room
-    broadcastToRoom(roomId, {
-      type: 'gameStateUpdate',
-      gameState: serializeGameState(gameState),
-    }, ws);
+    broadcastToRoom(
+      roomId,
+      {
+        type: 'gameStateUpdate',
+        gameState: serializeGameState(gameState),
+      },
+      ws,
+    );
   } else if (role === 'viewer') {
     // Viewer joins room (for game display - doesn't add as player)
     if (!roomId) {
@@ -213,11 +239,13 @@ function handleJoinRoom(ws, message, conn) {
     conn.roomId = roomId;
     conn.role = 'viewer';
 
-    ws.send(JSON.stringify({
-      type: 'roomJoined',
-      roomId,
-      gameState: serializeGameState(gameState),
-    }));
+    ws.send(
+      JSON.stringify({
+        type: 'roomJoined',
+        roomId,
+        gameState: serializeGameState(gameState),
+      }),
+    );
 
     // Don't broadcast - viewer doesn't affect game state
   } else {
@@ -236,7 +264,7 @@ function handleJoinRoom(ws, message, conn) {
     // Check if this is a reconnect (playerId provided and exists in game)
     let playerId = requestedPlayerId || conn.playerId;
     let isReconnect = false;
-    
+
     if (playerId && gameState.players.has(playerId)) {
       // Reconnecting with existing playerId
       isReconnect = true;
@@ -245,45 +273,57 @@ function handleJoinRoom(ws, message, conn) {
       playerId = uuidv4();
     }
 
-    const name = playerName || (isReconnect ? gameState.players.get(playerId)?.name : `Player ${Array.from(gameState.players.values()).length + 1}`);
-    
+    const name =
+      playerName ||
+      (isReconnect
+        ? gameState.players.get(playerId)?.name
+        : `Player ${Array.from(gameState.players.values()).length + 1}`);
+
     // Only add player if they don't already exist
     if (!isReconnect) {
       gameManager.addPlayer(roomId, playerId, name);
     }
-    
+
     const updatedGameState = gameManager.getGame(roomId);
 
     conn.roomId = roomId;
     conn.playerId = playerId;
     conn.role = 'player';
 
-    ws.send(JSON.stringify({
-      type: 'roomJoined',
-      roomId,
-      gameState: serializeGameState(updatedGameState),
-      playerId,
-    }));
+    ws.send(
+      JSON.stringify({
+        type: 'roomJoined',
+        roomId,
+        gameState: serializeGameState(updatedGameState),
+        playerId,
+      }),
+    );
 
     // Only broadcast update if this is a new player (not a reconnect)
     if (!isReconnect) {
-      broadcastToRoom(roomId, {
-        type: 'gameStateUpdate',
-        gameState: serializeGameState(updatedGameState),
-      }, ws);
+      broadcastToRoom(
+        roomId,
+        {
+          type: 'gameStateUpdate',
+          gameState: serializeGameState(updatedGameState),
+        },
+        ws,
+      );
     }
   }
 }
 
 function handleBuzz(ws, message, conn) {
   if (!conn.roomId || !conn.playerId || conn.role !== 'player') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Not a player in a room' }));
+    ws.send(
+      JSON.stringify({ type: 'error', message: 'Not a player in a room' }),
+    );
     return;
   }
 
   const { timestamp: clientTimestamp } = message;
   const serverTimestamp = Date.now();
-  
+
   // Set up callback for when buzzer processing completes (after tie window)
   const gameState = gameManager.getGame(conn.roomId);
   if (gameState && !gameState.onBuzzerProcessed) {
@@ -297,9 +337,14 @@ function handleBuzz(ws, message, conn) {
       }
     };
   }
-  
-  const success = gameManager.handleBuzz(conn.roomId, conn.playerId, clientTimestamp, serverTimestamp);
-  
+
+  const success = gameManager.handleBuzz(
+    conn.roomId,
+    conn.playerId,
+    clientTimestamp,
+    serverTimestamp,
+  );
+
   if (success) {
     const currentGameState = gameManager.getGame(conn.roomId);
     if (currentGameState) {
@@ -323,13 +368,15 @@ function handleBuzz(ws, message, conn) {
 
 function handleSelectClue(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can select clues' }));
+    ws.send(
+      JSON.stringify({ type: 'error', message: 'Only host can select clues' }),
+    );
     return;
   }
 
   const { categoryId, clueId } = message;
   const success = gameManager.selectClue(conn.roomId, categoryId, clueId);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -362,7 +409,12 @@ function handleSelectClue(ws, message, conn) {
 
 function handleRevealAnswer(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can reveal answers' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can reveal answers',
+      }),
+    );
     return;
   }
 
@@ -378,13 +430,15 @@ function handleRevealAnswer(ws, message, conn) {
 
 function handleJudgeAnswer(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can judge answers' }));
+    ws.send(
+      JSON.stringify({ type: 'error', message: 'Only host can judge answers' }),
+    );
     return;
   }
 
   const { correct, playerId } = message;
   const success = gameManager.judgeAnswer(conn.roomId, playerId, correct);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -395,7 +449,7 @@ function handleJudgeAnswer(ws, message, conn) {
           locked: true,
         });
       }
-      
+
       broadcastToRoom(conn.roomId, {
         type: 'gameStateUpdate',
         gameState: serializeGameState(gameState),
@@ -406,13 +460,15 @@ function handleJudgeAnswer(ws, message, conn) {
 
 function handleUpdateScore(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can update scores' }));
+    ws.send(
+      JSON.stringify({ type: 'error', message: 'Only host can update scores' }),
+    );
     return;
   }
 
   const { playerId, delta } = message;
   const success = gameManager.updateScore(conn.roomId, playerId, delta);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -426,12 +482,17 @@ function handleUpdateScore(ws, message, conn) {
 
 function handleNextRound(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can advance rounds' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can advance rounds',
+      }),
+    );
     return;
   }
 
   const success = gameManager.nextRound(conn.roomId);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -445,12 +506,17 @@ function handleNextRound(ws, message, conn) {
 
 function handleStartFinalJeopardy(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can start Final Jeopardy' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can start Final Jeopardy',
+      }),
+    );
     return;
   }
 
   const success = gameManager.startFinalJeopardy(conn.roomId);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -464,13 +530,15 @@ function handleStartFinalJeopardy(ws, message, conn) {
 
 function handleSubmitWager(ws, message, conn) {
   if (!conn.roomId || !conn.playerId || conn.role !== 'player') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Not a player in a room' }));
+    ws.send(
+      JSON.stringify({ type: 'error', message: 'Not a player in a room' }),
+    );
     return;
   }
 
   const { wager } = message;
   const success = gameManager.submitWager(conn.roomId, conn.playerId, wager);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -484,13 +552,19 @@ function handleSubmitWager(ws, message, conn) {
 
 function handleSubmitFinalAnswer(ws, message, conn) {
   if (!conn.roomId || !conn.playerId || conn.role !== 'player') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Not a player in a room' }));
+    ws.send(
+      JSON.stringify({ type: 'error', message: 'Not a player in a room' }),
+    );
     return;
   }
 
   const { answer } = message;
-  const success = gameManager.submitFinalAnswer(conn.roomId, conn.playerId, answer);
-  
+  const success = gameManager.submitFinalAnswer(
+    conn.roomId,
+    conn.playerId,
+    answer,
+  );
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -504,12 +578,17 @@ function handleSubmitFinalAnswer(ws, message, conn) {
 
 function handleRevealFinalAnswers(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can reveal final answers' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can reveal final answers',
+      }),
+    );
     return;
   }
 
   const success = gameManager.revealFinalAnswers(conn.roomId);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -523,12 +602,17 @@ function handleRevealFinalAnswers(ws, message, conn) {
 
 function handleShowFinalJeopardyClue(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can show Final Jeopardy clue' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can show Final Jeopardy clue',
+      }),
+    );
     return;
   }
 
   const success = gameManager.showFinalJeopardyClue(conn.roomId);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -538,18 +622,28 @@ function handleShowFinalJeopardyClue(ws, message, conn) {
       });
     }
   } else {
-    ws.send(JSON.stringify({ type: 'error', message: 'Cannot show clue yet - not all eligible players have wagered' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Cannot show clue yet - not all eligible players have wagered',
+      }),
+    );
   }
 }
 
 function handleStartFinalJeopardyJudging(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can start Final Jeopardy judging' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can start Final Jeopardy judging',
+      }),
+    );
     return;
   }
 
   const success = gameManager.startFinalJeopardyJudging(conn.roomId);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -563,12 +657,17 @@ function handleStartFinalJeopardyJudging(ws, message, conn) {
 
 function handleRevealFinalJeopardyWager(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can reveal Final Jeopardy wager' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can reveal Final Jeopardy wager',
+      }),
+    );
     return;
   }
 
   const success = gameManager.revealFinalJeopardyWager(conn.roomId);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -582,12 +681,17 @@ function handleRevealFinalJeopardyWager(ws, message, conn) {
 
 function handleRevealFinalJeopardyAnswer(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can reveal Final Jeopardy answer' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can reveal Final Jeopardy answer',
+      }),
+    );
     return;
   }
 
   const success = gameManager.revealFinalJeopardyAnswer(conn.roomId);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -601,13 +705,22 @@ function handleRevealFinalJeopardyAnswer(ws, message, conn) {
 
 function handleJudgeFinalJeopardyAnswer(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can judge Final Jeopardy answers' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can judge Final Jeopardy answers',
+      }),
+    );
     return;
   }
 
   const { playerId, correct } = message;
-  const success = gameManager.judgeFinalJeopardyAnswer(conn.roomId, playerId, correct);
-  
+  const success = gameManager.judgeFinalJeopardyAnswer(
+    conn.roomId,
+    playerId,
+    correct,
+  );
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -621,14 +734,18 @@ function handleJudgeFinalJeopardyAnswer(ws, message, conn) {
 
 async function handleSaveGame(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can save games' }));
+    ws.send(
+      JSON.stringify({ type: 'error', message: 'Only host can save games' }),
+    );
     return;
   }
 
   const { gameConfig } = message;
-  
+
   if (!gameConfig) {
-    ws.send(JSON.stringify({ type: 'error', message: 'No game config provided' }));
+    ws.send(
+      JSON.stringify({ type: 'error', message: 'No game config provided' }),
+    );
     return;
   }
 
@@ -636,7 +753,7 @@ async function handleSaveGame(ws, message, conn) {
   const fs = require('fs').promises;
   const path = require('path');
   const testDataDir = path.join(__dirname, '../../test-data');
-  
+
   try {
     await fs.mkdir(testDataDir, { recursive: true });
     const filePath = path.join(testDataDir, `${gameConfig.id}.json`);
@@ -644,25 +761,34 @@ async function handleSaveGame(ws, message, conn) {
     ws.send(JSON.stringify({ type: 'gameSaved', gameId: gameConfig.id }));
   } catch (error) {
     console.error('Error saving game config:', error);
-    ws.send(JSON.stringify({ type: 'error', message: `Error saving game: ${error.message}` }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: `Error saving game: ${error.message}`,
+      }),
+    );
   }
 }
 
 function handleLoadGame(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can load games' }));
+    ws.send(
+      JSON.stringify({ type: 'error', message: 'Only host can load games' }),
+    );
     return;
   }
 
   const { gameConfig } = message;
-  
+
   if (!gameConfig) {
-    ws.send(JSON.stringify({ type: 'error', message: 'No game config provided' }));
+    ws.send(
+      JSON.stringify({ type: 'error', message: 'No game config provided' }),
+    );
     return;
   }
 
   const success = gameManager.setConfig(conn.roomId, gameConfig);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -678,12 +804,17 @@ function handleLoadGame(ws, message, conn) {
 
 function handleReturnToBoard(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can return to board' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can return to board',
+      }),
+    );
     return;
   }
 
   const success = gameManager.returnToBoard(conn.roomId);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -692,7 +823,7 @@ function handleReturnToBoard(ws, message, conn) {
         type: 'buzzerLocked',
         locked: true,
       });
-      
+
       broadcastToRoom(conn.roomId, {
         type: 'gameStateUpdate',
         gameState: serializeGameState(gameState),
@@ -703,12 +834,17 @@ function handleReturnToBoard(ws, message, conn) {
 
 function handleStartGame(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can start the game' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can start the game',
+      }),
+    );
     return;
   }
 
   const success = gameManager.startGame(conn.roomId);
-  
+
   if (success) {
     const gameState = gameManager.getGame(conn.roomId);
     if (gameState) {
@@ -718,25 +854,32 @@ function handleStartGame(ws, message, conn) {
       });
     }
   } else {
-    ws.send(JSON.stringify({ type: 'error', message: 'Game cannot be started in current state' }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Game cannot be started in current state',
+      }),
+    );
   }
 }
 
 async function handleCreateGame(ws, message, conn) {
   if (!conn.roomId || conn.role !== 'host') {
-    ws.send(JSON.stringify({ type: 'error', message: 'Only host can create games' }));
+    ws.send(
+      JSON.stringify({ type: 'error', message: 'Only host can create games' }),
+    );
     return;
   }
 
   const { prompt, difficulty, sourceMaterial } = message;
-  
+
   try {
     const { generateGame } = require('../ai/generator');
     const gameConfig = await generateGame(prompt, difficulty, sourceMaterial);
-    
+
     // Set the game config
     const success = gameManager.setConfig(conn.roomId, gameConfig);
-    
+
     if (success) {
       const gameState = gameManager.getGame(conn.roomId);
       if (gameState) {
@@ -744,7 +887,7 @@ async function handleCreateGame(ws, message, conn) {
         const fs = require('fs').promises;
         const path = require('path');
         const testDataDir = path.join(__dirname, '../../test-data');
-        
+
         try {
           await fs.mkdir(testDataDir, { recursive: true });
           const filePath = path.join(testDataDir, `${gameConfig.id}.json`);
@@ -759,11 +902,18 @@ async function handleCreateGame(ws, message, conn) {
         });
       }
     } else {
-      ws.send(JSON.stringify({ type: 'error', message: 'Failed to create game' }));
+      ws.send(
+        JSON.stringify({ type: 'error', message: 'Failed to create game' }),
+      );
     }
   } catch (error) {
     console.error('Error creating game:', error);
-    ws.send(JSON.stringify({ type: 'error', message: `Error creating game: ${error.message}` }));
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: `Error creating game: ${error.message}`,
+      }),
+    );
   }
 }
 
@@ -776,4 +926,3 @@ function broadcastToRoom(roomId, message, excludeWs) {
 }
 
 module.exports = { handleWebSocket };
-

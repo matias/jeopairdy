@@ -64,32 +64,32 @@ The game progresses through these states:
 ```typescript
 interface GameState {
   roomId: string;
-  config: GameConfig | null;  // Game questions/categories
+  config: GameConfig | null; // Game questions/categories
   status: GameStatus;
-  currentRound: "jeopardy" | "doubleJeopardy" | "finalJeopardy";
+  currentRound: 'jeopardy' | 'doubleJeopardy' | 'finalJeopardy';
   selectedClue: { categoryId: string; clueId: string } | null;
   players: Map<string, Player>;
-  
+
   // Buzzer management
-  buzzerOrder: string[];  // Raw chronological order of all buzzes
-  resolvedBuzzerOrder?: string[];  // Order with tie resolution (currentPlayer first)
-  displayBuzzerOrder?: string[];  // Static display order (never changes after tie resolution)
-  currentPlayer: string | null;  // Player currently answering
-  judgedPlayers?: string[];  // Players who have been judged for current clue
-  
+  buzzerOrder: string[]; // Raw chronological order of all buzzes
+  resolvedBuzzerOrder?: string[]; // Order with tie resolution (currentPlayer first)
+  displayBuzzerOrder?: string[]; // Static display order (never changes after tie resolution)
+  currentPlayer: string | null; // Player currently answering
+  judgedPlayers?: string[]; // Players who have been judged for current clue
+
   // Final Jeopardy state
   finalJeopardyInitialScores?: Map<string, number> | Record<string, number>;
-  finalJeopardyJudgingOrder?: string[];  // Player IDs sorted by initial score (ascending)
+  finalJeopardyJudgingOrder?: string[]; // Player IDs sorted by initial score (ascending)
   finalJeopardyClueShown?: boolean;
   finalJeopardyCountdownStart?: number;
-  finalJeopardyCountdownEnd?: number;  // Server timestamp when countdown expires
+  finalJeopardyCountdownEnd?: number; // Server timestamp when countdown expires
   finalJeopardyJudgingPlayerIndex?: number;
   finalJeopardyRevealedWager?: boolean;
   finalJeopardyRevealedAnswer?: boolean;
-  
+
   // Game control
-  lastCorrectPlayer?: string | null;  // Player with board control
-  notPickedInTies?: string[];  // Fairness tracking for tie resolution
+  lastCorrectPlayer?: string | null; // Player with board control
+  notPickedInTies?: string[]; // Fairness tracking for tie resolution
   hostId: string;
 }
 ```
@@ -126,17 +126,20 @@ interface GameState {
 ### Buzzer Logic Details
 
 **Tie Resolution:**
+
 - 250ms window: all buzzes within 250ms of first buzz are "tied"
 - Fairness algorithm: prioritizes players who haven't been picked in previous ties
 - `displayBuzzerOrder`: set once when tie resolved, never changes (for UI consistency)
 - `resolvedBuzzerOrder`: updated as judging progresses (for logic)
 
 **Late Buzzes:**
+
 - Buzzes after 250ms window are "late" but still shown in UI
 - Added to `displayBuzzerOrder` when they arrive
 - Not eligible to answer (only tied players can answer)
 
 **Judging Multiple Players:**
+
 - When first player judged incorrect, server finds next unjudged player in `displayBuzzerOrder`
 - Sets that player as `currentPlayer`
 - Host can judge them, repeat until all judged or someone correct
@@ -214,6 +217,7 @@ interface GameState {
 - `judgeFinalJeopardyAnswer(roomId, playerId, correct)` - Judge and advance
 
 **State Persistence:**
+
 - Game state stored in memory (`games` Map)
 - No database (ephemeral)
 - Game config can be saved/loaded as JSON files
@@ -223,6 +227,7 @@ interface GameState {
 ### Message Types
 
 **Client → Server:**
+
 - `joinRoom` - Join as host/player/viewer
 - `selectClue` - Host selects clue
 - `buzz` - Player buzzes in
@@ -239,6 +244,7 @@ interface GameState {
 - `updateScore` - Host manually adjusts score
 
 **Server → Client:**
+
 - `roomJoined` - Confirmation of room join
 - `gameStateUpdate` - Broadcast of game state changes
 - `buzzerLocked` - Buzzer lock/unlock status
@@ -248,6 +254,7 @@ interface GameState {
 ### State Serialization
 
 `serializeGameState()` in `server.js` converts server game state to JSON:
+
 - Maps converted to arrays
 - Internal server-only fields excluded (timeouts, callbacks)
 - `finalJeopardyInitialScores` Map → plain object
@@ -366,4 +373,3 @@ jeopairdy/
 - Game state can be dumped to console via "Dump Game Config" button
 - Check browser console for WebSocket messages
 - Server console shows all game state changes
-

@@ -12,7 +12,10 @@ class AudioManager {
    * @param path - Path to the audio file (relative to public folder)
    * @param options - Optional playback options
    */
-  async play(path: string, options?: { volume?: number; loop?: boolean }): Promise<void> {
+  async play(
+    path: string,
+    options?: { volume?: number; loop?: boolean },
+  ): Promise<void> {
     // Create or reuse audio instance
     let audio = this.audioInstances.get(path);
     if (!audio) {
@@ -54,7 +57,7 @@ class AudioManager {
         keysToDelete.push(key);
       }
     });
-    keysToDelete.forEach(key => this.fadeIntervals.delete(key));
+    keysToDelete.forEach((key) => this.fadeIntervals.delete(key));
   }
 
   /**
@@ -65,7 +68,7 @@ class AudioManager {
    */
   async playLooping(
     path: string,
-    options?: { volume?: number }
+    options?: { volume?: number },
   ): Promise<void> {
     const volume = options?.volume ?? 1;
 
@@ -118,7 +121,10 @@ class AudioManager {
       }, 16); // ~60fps
 
       // Store interval so it can be cleared if needed
-      this.fadeIntervals.set(`${path}_fadeOut`, fadeInterval as unknown as number);
+      this.fadeIntervals.set(
+        `${path}_fadeOut`,
+        fadeInterval as unknown as number,
+      );
     });
   }
 
@@ -150,11 +156,19 @@ class AudioManager {
 export const audioManager = new AudioManager();
 
 // Convenience functions for common sounds
-export const playBoardFill = () => audioManager.play('/jeopardy/jeopardy-board-fill.mp3');
-export const playIntroMusic = () => audioManager.playLooping('/jeopardy/jeopardy-intro-full.ogg', { volume: 0.6 });
-export const stopIntroMusic = () => audioManager.stop('/jeopardy/jeopardy-intro-full.ogg');
-export const fadeOutIntroMusic = (duration?: number) => audioManager.fadeOut('/jeopardy/jeopardy-intro-full.ogg', duration);
-export const playTimesUp = () => audioManager.play('/jeopardy/jeopardy-times-up.mp3');
-export const playThinkMusic = () => audioManager.play('/jeopardy/jeopardy-think.mp3');
-export const stopThinkMusic = () => audioManager.stop('/jeopardy/jeopardy-think.mp3');
-
+export const playBoardFill = () =>
+  audioManager.play('/jeopardy/jeopardy-board-fill.mp3');
+export const playIntroMusic = () =>
+  audioManager.playLooping('/jeopardy/jeopardy-intro-full.ogg', {
+    volume: 0.6,
+  });
+export const stopIntroMusic = () =>
+  audioManager.stop('/jeopardy/jeopardy-intro-full.ogg');
+export const fadeOutIntroMusic = (duration?: number) =>
+  audioManager.fadeOut('/jeopardy/jeopardy-intro-full.ogg', duration);
+export const playTimesUp = () =>
+  audioManager.play('/jeopardy/jeopardy-times-up.mp3');
+export const playThinkMusic = () =>
+  audioManager.play('/jeopardy/jeopardy-think.mp3');
+export const stopThinkMusic = () =>
+  audioManager.stop('/jeopardy/jeopardy-think.mp3');

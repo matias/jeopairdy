@@ -12,7 +12,13 @@ import {
   getFinalJeopardyPrompt,
   getSingleClueRegenerationPrompt,
 } from '@/lib/prompts';
-import type { SampleCategory, GameConfig, Category, RoundData, Round } from '@/shared/types';
+import type {
+  SampleCategory,
+  GameConfig,
+  Category,
+  RoundData,
+  Round,
+} from '@/shared/types';
 
 const WS_URL = getWebSocketUrl();
 const JEOPARDY_VALUES = [200, 400, 600, 800, 1000];
@@ -43,7 +49,9 @@ export default function CreateGamePage() {
   const [commentary, setCommentary] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loadingState, setLoadingState] = useState<LoadingState>(null);
-  const [phase, setPhase] = useState<'setup' | 'iterating' | 'finalizing' | 'editing' | 'complete'>('setup');
+  const [phase, setPhase] = useState<
+    'setup' | 'iterating' | 'finalizing' | 'editing' | 'complete'
+  >('setup');
   const [wsClient, setWsClient] = useState<WebSocketClient | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [finalGameId, setFinalGameId] = useState<string | null>(null);
@@ -51,8 +59,13 @@ export default function CreateGamePage() {
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
   const [showInitialForm, setShowInitialForm] = useState(true);
   const [currentRound, setCurrentRound] = useState<Round>('jeopardy');
-  const [editingClue, setEditingClue] = useState<{ clueId: string; field: 'clue' | 'answer' } | null>(null);
-  const [regeneratingClueId, setRegeneratingClueId] = useState<string | null>(null);
+  const [editingClue, setEditingClue] = useState<{
+    clueId: string;
+    field: 'clue' | 'answer';
+  } | null>(null);
+  const [regeneratingClueId, setRegeneratingClueId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!roomId) return;
@@ -80,7 +93,10 @@ export default function CreateGamePage() {
     };
   }, [roomId]);
 
-  const hasSamples = useMemo(() => Array.isArray(samples) && samples.length > 0, [samples]);
+  const hasSamples = useMemo(
+    () => Array.isArray(samples) && samples.length > 0,
+    [samples],
+  );
 
   if (!roomId) {
     return (
@@ -90,7 +106,10 @@ export default function CreateGamePage() {
     );
   }
 
-  const disabled = !topics.trim() || loadingState === 'samples' || loadingState === 'regenerate';
+  const disabled =
+    !topics.trim() ||
+    loadingState === 'samples' ||
+    loadingState === 'regenerate';
 
   const instructions = getSystemInstructions();
 
@@ -108,7 +127,8 @@ export default function CreateGamePage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         conversationId: resetConversation ? null : conversationId,
-        instructions: !conversationId || resetConversation ? instructions : undefined,
+        instructions:
+          !conversationId || resetConversation ? instructions : undefined,
         message,
         format,
       }),
@@ -139,7 +159,12 @@ export default function CreateGamePage() {
       const prompt =
         mode === 'initial'
           ? getInitialSamplePrompt({ topics, difficulty, sourceMaterial })
-          : getRegenerationPrompt({ topics, difficulty, sourceMaterial, feedback });
+          : getRegenerationPrompt({
+              topics,
+              difficulty,
+              sourceMaterial,
+              feedback,
+            });
 
       const outputText = await sendConversationMessage({
         message: prompt,
@@ -159,14 +184,22 @@ export default function CreateGamePage() {
     }
   };
 
-  const mapCategoriesToRound = (round: Round, rawCategories: SampleCategory[]): RoundData => {
+  const mapCategoriesToRound = (
+    round: Round,
+    rawCategories: SampleCategory[],
+  ): RoundData => {
     const categories: Category[] = rawCategories.map((cat, index) => ({
       id: `cat-${round}-${index}-${randomId()}`,
       name: cat.name ?? `Category ${index + 1}`,
       clues: (cat.clues || []).map((clue, clueIndex) => ({
         id: `clue-${round}-${index}-${clueIndex}-${randomId()}`,
         category: cat.name ?? `Category ${index + 1}`,
-        value: Number(clue.value) || (round === 'doubleJeopardy' ? DOUBLE_VALUES : JEOPARDY_VALUES)[clueIndex] || 200,
+        value:
+          Number(clue.value) ||
+          (round === 'doubleJeopardy' ? DOUBLE_VALUES : JEOPARDY_VALUES)[
+            clueIndex
+          ] ||
+          200,
         clue: clue.clue ?? '',
         answer: clue.answer ?? '',
         revealed: false,
@@ -181,7 +214,9 @@ export default function CreateGamePage() {
   };
 
   const extractAnswers = (roundData: RoundData) =>
-    roundData.categories.flatMap((category) => category.clues.map((clue) => clue.answer));
+    roundData.categories.flatMap((category) =>
+      category.clues.map((clue) => clue.answer),
+    );
 
   const generateRound = async ({
     round,
@@ -217,14 +252,18 @@ export default function CreateGamePage() {
     return JSON.parse(outputText);
   };
 
-  const handleEditClue = (clueId: string, field: 'clue' | 'answer', newValue: string) => {
+  const handleEditClue = (
+    clueId: string,
+    field: 'clue' | 'answer',
+    newValue: string,
+  ) => {
     if (!gameConfig) return;
 
     const updateClueInRound = (roundData: RoundData): RoundData => {
       const updatedCategories = roundData.categories.map((category) => ({
         ...category,
         clues: category.clues.map((clue) =>
-          clue.id === clueId ? { ...clue, [field]: newValue } : clue
+          clue.id === clueId ? { ...clue, [field]: newValue } : clue,
         ),
       }));
       return { ...roundData, categories: updatedCategories };
@@ -232,8 +271,14 @@ export default function CreateGamePage() {
 
     const updatedConfig: GameConfig = {
       ...gameConfig,
-      jeopardy: gameConfig.jeopardy.round === 'jeopardy' ? updateClueInRound(gameConfig.jeopardy) : gameConfig.jeopardy,
-      doubleJeopardy: gameConfig.doubleJeopardy.round === 'doubleJeopardy' ? updateClueInRound(gameConfig.doubleJeopardy) : gameConfig.doubleJeopardy,
+      jeopardy:
+        gameConfig.jeopardy.round === 'jeopardy'
+          ? updateClueInRound(gameConfig.jeopardy)
+          : gameConfig.jeopardy,
+      doubleJeopardy:
+        gameConfig.doubleJeopardy.round === 'doubleJeopardy'
+          ? updateClueInRound(gameConfig.doubleJeopardy)
+          : gameConfig.doubleJeopardy,
       finalJeopardy:
         clueId === 'final-jeopardy'
           ? { ...gameConfig.finalJeopardy, [field]: newValue }
@@ -255,10 +300,18 @@ export default function CreateGamePage() {
 
     try {
       // Find the clue in the game config
-      let foundClue: { clue: string; answer: string; value: number; category: string } | null = null;
+      let foundClue: {
+        clue: string;
+        answer: string;
+        value: number;
+        category: string;
+      } | null = null;
       let foundRound: Round | null = null;
 
-      for (const roundData of [gameConfig.jeopardy, gameConfig.doubleJeopardy]) {
+      for (const roundData of [
+        gameConfig.jeopardy,
+        gameConfig.doubleJeopardy,
+      ]) {
         for (const category of roundData.categories) {
           if (category.id === categoryId) {
             const clue = category.clues.find((c) => c.id === clueId);
@@ -273,7 +326,10 @@ export default function CreateGamePage() {
       }
 
       // Check Final Jeopardy
-      if (!foundClue && (clueId === 'final-jeopardy' || clueId === 'final-jeopardy-answer')) {
+      if (
+        !foundClue &&
+        (clueId === 'final-jeopardy' || clueId === 'final-jeopardy-answer')
+      ) {
         foundClue = {
           clue: gameConfig.finalJeopardy.clue,
           answer: gameConfig.finalJeopardy.answer,
@@ -322,7 +378,9 @@ export default function CreateGamePage() {
             clues:
               category.id === categoryId
                 ? category.clues.map((clue) =>
-                    clue.id === clueId ? { ...clue, clue: parsed.clue, answer: parsed.answer } : clue
+                    clue.id === clueId
+                      ? { ...clue, clue: parsed.clue, answer: parsed.answer }
+                      : clue,
                   )
                 : category.clues,
           }));
@@ -331,8 +389,14 @@ export default function CreateGamePage() {
 
         setGameConfig({
           ...gameConfig,
-          jeopardy: gameConfig.jeopardy.round === foundRound ? updateClueInRound(gameConfig.jeopardy) : gameConfig.jeopardy,
-          doubleJeopardy: gameConfig.doubleJeopardy.round === foundRound ? updateClueInRound(gameConfig.doubleJeopardy) : gameConfig.doubleJeopardy,
+          jeopardy:
+            gameConfig.jeopardy.round === foundRound
+              ? updateClueInRound(gameConfig.jeopardy)
+              : gameConfig.jeopardy,
+          doubleJeopardy:
+            gameConfig.doubleJeopardy.round === foundRound
+              ? updateClueInRound(gameConfig.doubleJeopardy)
+              : gameConfig.doubleJeopardy,
         });
       }
     } catch (err: any) {
@@ -453,23 +517,35 @@ export default function CreateGamePage() {
 
   // Render editing phase
   if (phase === 'editing' && gameConfig) {
-    const currentRoundData = currentRound === 'jeopardy' ? gameConfig.jeopardy : currentRound === 'doubleJeopardy' ? gameConfig.doubleJeopardy : null;
+    const currentRoundData =
+      currentRound === 'jeopardy'
+        ? gameConfig.jeopardy
+        : currentRound === 'doubleJeopardy'
+          ? gameConfig.doubleJeopardy
+          : null;
     const isRegenerating = (clueId: string) => regeneratingClueId === clueId;
-    const isEditing = (clueId: string, field: 'clue' | 'answer') => editingClue?.clueId === clueId && editingClue?.field === field;
+    const isEditing = (clueId: string, field: 'clue' | 'answer') =>
+      editingClue?.clueId === clueId && editingClue?.field === field;
 
     return (
       <main className="flex min-h-screen flex-col gap-8 px-6 py-10 lg:px-20">
         <div className="flex flex-col gap-2">
-          <p className="text-sm uppercase tracking-wide text-gray-500">Room {roomId}</p>
+          <p className="text-sm uppercase tracking-wide text-gray-500">
+            Room {roomId}
+          </p>
           <h1 className="text-4xl font-bold">Edit Your Jeopardy! Game</h1>
-          <p className="text-gray-600">Review and edit clues, then save when ready.</p>
+          <p className="text-gray-600">
+            Review and edit clues, then save when ready.
+          </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => setCurrentRound('jeopardy')}
             className={`rounded px-4 py-2 text-sm font-medium transition ${
-              currentRound === 'jeopardy' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              currentRound === 'jeopardy'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
             Jeopardy
@@ -477,7 +553,9 @@ export default function CreateGamePage() {
           <button
             onClick={() => setCurrentRound('doubleJeopardy')}
             className={`rounded px-4 py-2 text-sm font-medium transition ${
-              currentRound === 'doubleJeopardy' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              currentRound === 'doubleJeopardy'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
             Double Jeopardy
@@ -485,7 +563,9 @@ export default function CreateGamePage() {
           <button
             onClick={() => setCurrentRound('finalJeopardy')}
             className={`rounded px-4 py-2 text-sm font-medium transition ${
-              currentRound === 'finalJeopardy' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              currentRound === 'finalJeopardy'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
             Final Jeopardy
@@ -501,17 +581,23 @@ export default function CreateGamePage() {
         </div>
 
         {error && (
-          <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+          <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
         )}
 
         {currentRound === 'finalJeopardy' ? (
           <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-2xl font-semibold">{gameConfig.finalJeopardy.category}</h2>
+            <h2 className="mb-4 text-2xl font-semibold">
+              {gameConfig.finalJeopardy.category}
+            </h2>
             <div className="group relative rounded-lg border border-gray-200 p-4">
               {isEditing('final-jeopardy', 'clue') ? (
                 <textarea
                   defaultValue={gameConfig.finalJeopardy.clue}
-                  onBlur={(e) => handleEditClue('final-jeopardy', 'clue', e.target.value)}
+                  onBlur={(e) =>
+                    handleEditClue('final-jeopardy', 'clue', e.target.value)
+                  }
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.currentTarget.blur();
@@ -526,12 +612,27 @@ export default function CreateGamePage() {
                 <>
                   <div className="absolute right-2 top-2 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                     <button
-                      onClick={() => setEditingClue({ clueId: 'final-jeopardy', field: 'clue' })}
+                      onClick={() =>
+                        setEditingClue({
+                          clueId: 'final-jeopardy',
+                          field: 'clue',
+                        })
+                      }
                       className="rounded bg-gray-100 p-1.5 hover:bg-gray-200"
                       title="Edit clue"
                     >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
                       </svg>
                     </button>
                     <button
@@ -540,12 +641,24 @@ export default function CreateGamePage() {
                       className="rounded bg-gray-100 p-1.5 hover:bg-gray-200 disabled:opacity-50"
                       title="Regenerate clue"
                     >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
                       </svg>
                     </button>
                   </div>
-                  <p className="text-sm text-gray-800">{gameConfig.finalJeopardy.clue}</p>
+                  <p className="text-sm text-gray-800">
+                    {gameConfig.finalJeopardy.clue}
+                  </p>
                 </>
               )}
             </div>
@@ -553,7 +666,9 @@ export default function CreateGamePage() {
               {isEditing('final-jeopardy', 'answer') ? (
                 <textarea
                   defaultValue={gameConfig.finalJeopardy.answer}
-                  onBlur={(e) => handleEditClue('final-jeopardy', 'answer', e.target.value)}
+                  onBlur={(e) =>
+                    handleEditClue('final-jeopardy', 'answer', e.target.value)
+                  }
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.currentTarget.blur();
@@ -568,26 +683,55 @@ export default function CreateGamePage() {
                 <>
                   <div className="absolute right-2 top-2 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                     <button
-                      onClick={() => setEditingClue({ clueId: 'final-jeopardy', field: 'answer' })}
+                      onClick={() =>
+                        setEditingClue({
+                          clueId: 'final-jeopardy',
+                          field: 'answer',
+                        })
+                      }
                       className="rounded bg-gray-100 p-1.5 hover:bg-gray-200"
                       title="Edit answer"
                     >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
                       </svg>
                     </button>
                     <button
-                      onClick={() => handleRegenerateClue('', 'final-jeopardy-answer')}
+                      onClick={() =>
+                        handleRegenerateClue('', 'final-jeopardy-answer')
+                      }
                       disabled={isRegenerating('final-jeopardy-answer')}
                       className="rounded bg-gray-100 p-1.5 hover:bg-gray-200 disabled:opacity-50"
                       title="Regenerate answer"
                     >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
                       </svg>
                     </button>
                   </div>
-                  <p className="text-xs font-mono text-green-700">{gameConfig.finalJeopardy.answer}</p>
+                  <p className="text-xs font-mono text-green-700">
+                    {gameConfig.finalJeopardy.answer}
+                  </p>
                 </>
               )}
             </div>
@@ -595,12 +739,18 @@ export default function CreateGamePage() {
         ) : currentRoundData ? (
           <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="mb-6 text-2xl font-semibold">
-              {currentRound === 'jeopardy' ? 'Jeopardy' : 'Double Jeopardy'} Round
+              {currentRound === 'jeopardy' ? 'Jeopardy' : 'Double Jeopardy'}{' '}
+              Round
             </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
               {currentRoundData.categories.map((category) => (
-                <div key={category.id} className="flex flex-col gap-3 rounded-lg border border-gray-100 p-4 shadow-sm">
-                  <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
+                <div
+                  key={category.id}
+                  className="flex flex-col gap-3 rounded-lg border border-gray-100 p-4 shadow-sm"
+                >
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {category.name}
+                  </h3>
                   <div className="space-y-3">
                     {category.clues
                       .sort((a, b) => a.value - b.value)
@@ -610,35 +760,72 @@ export default function CreateGamePage() {
                           className="group relative rounded border border-gray-200 p-3 hover:border-gray-300"
                         >
                           {isRegenerating(clue.id) ? (
-                            <div className="text-sm text-gray-500">Regenerating...</div>
+                            <div className="text-sm text-gray-500">
+                              Regenerating...
+                            </div>
                           ) : (
                             <>
                               <div className="absolute right-2 top-2 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                                 <button
-                                  onClick={() => setEditingClue({ clueId: clue.id, field: 'clue' })}
+                                  onClick={() =>
+                                    setEditingClue({
+                                      clueId: clue.id,
+                                      field: 'clue',
+                                    })
+                                  }
                                   className="rounded bg-gray-100 p-1.5 hover:bg-gray-200"
                                   title="Edit clue"
                                 >
-                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  <svg
+                                    className="h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                    />
                                   </svg>
                                 </button>
                                 <button
-                                  onClick={() => handleRegenerateClue(category.id, clue.id)}
+                                  onClick={() =>
+                                    handleRegenerateClue(category.id, clue.id)
+                                  }
                                   disabled={isRegenerating(clue.id)}
                                   className="rounded bg-gray-100 p-1.5 hover:bg-gray-200 disabled:opacity-50"
                                   title="Regenerate clue"
                                 >
-                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                  <svg
+                                    className="h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                    />
                                   </svg>
                                 </button>
                               </div>
-                              <div className="text-xs font-semibold uppercase text-gray-500">Value {clue.value}</div>
+                              <div className="text-xs font-semibold uppercase text-gray-500">
+                                Value {clue.value}
+                              </div>
                               {isEditing(clue.id, 'clue') ? (
                                 <textarea
                                   defaultValue={clue.clue}
-                                  onBlur={(e) => handleEditClue(clue.id, 'clue', e.target.value)}
+                                  onBlur={(e) =>
+                                    handleEditClue(
+                                      clue.id,
+                                      'clue',
+                                      e.target.value,
+                                    )
+                                  }
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                       e.currentTarget.blur();
@@ -650,13 +837,21 @@ export default function CreateGamePage() {
                                   autoFocus
                                 />
                               ) : (
-                                <p className="mt-1 text-sm text-gray-800">{clue.clue}</p>
+                                <p className="mt-1 text-sm text-gray-800">
+                                  {clue.clue}
+                                </p>
                               )}
                               <div className="relative mt-2">
                                 {isEditing(clue.id, 'answer') ? (
                                   <textarea
                                     defaultValue={clue.answer}
-                                    onBlur={(e) => handleEditClue(clue.id, 'answer', e.target.value)}
+                                    onBlur={(e) =>
+                                      handleEditClue(
+                                        clue.id,
+                                        'answer',
+                                        e.target.value,
+                                      )
+                                    }
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter' && !e.shiftKey) {
                                         e.currentTarget.blur();
@@ -671,16 +866,33 @@ export default function CreateGamePage() {
                                   <>
                                     <div className="absolute right-0 top-0 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                                       <button
-                                        onClick={() => setEditingClue({ clueId: clue.id, field: 'answer' })}
+                                        onClick={() =>
+                                          setEditingClue({
+                                            clueId: clue.id,
+                                            field: 'answer',
+                                          })
+                                        }
                                         className="rounded bg-gray-100 p-1 hover:bg-gray-200"
                                         title="Edit answer"
                                       >
-                                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        <svg
+                                          className="h-3 w-3"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                          />
                                         </svg>
                                       </button>
                                     </div>
-                                    <p className="cursor-pointer text-xs font-mono text-green-700">{clue.answer}</p>
+                                    <p className="cursor-pointer text-xs font-mono text-green-700">
+                                      {clue.answer}
+                                    </p>
                                   </>
                                 )}
                               </div>
@@ -702,14 +914,18 @@ export default function CreateGamePage() {
   return (
     <main className="flex min-h-screen flex-col gap-8 px-6 py-10 lg:px-20">
       <div className="flex flex-col gap-2">
-        <p className="text-sm uppercase tracking-wide text-gray-500">Room {roomId}</p>
+        <p className="text-sm uppercase tracking-wide text-gray-500">
+          Room {roomId}
+        </p>
         <h1 className="text-4xl font-bold">Co-create a Jeopardy! Game</h1>
         <p className="text-gray-600">
-          Guide GPT-5.1 through an iterative process—preview categories, give feedback, and finalize when ready.
+          Guide GPT-5.1 through an iterative process—preview categories, give
+          feedback, and finalize when ready.
         </p>
         {connectionError && (
           <p className="text-sm text-red-600">
-            {connectionError} The final game cannot be loaded until the connection is restored.
+            {connectionError} The final game cannot be loaded until the
+            connection is restored.
           </p>
         )}
       </div>
@@ -719,7 +935,9 @@ export default function CreateGamePage() {
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-semibold">Sample Categories</h2>
-              <p className="text-sm text-gray-600">Review the structure below, then keep iterating or finalize.</p>
+              <p className="text-sm text-gray-600">
+                Review the structure below, then keep iterating or finalize.
+              </p>
             </div>
             <div className="rounded border border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-900 md:max-w-sm">
               {commentary || 'No commentary returned with this sample.'}
@@ -728,14 +946,26 @@ export default function CreateGamePage() {
 
           <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {samples!.map((category) => (
-              <div key={category.name} className="flex flex-col gap-3 rounded-lg border border-gray-100 p-4 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
+              <div
+                key={category.name}
+                className="flex flex-col gap-3 rounded-lg border border-gray-100 p-4 shadow-sm"
+              >
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {category.name}
+                </h3>
                 <div className="space-y-3">
                   {(category.clues || []).map((clue) => (
-                    <div key={`${category.name}-${clue.value}-${clue.clue}`} className="rounded border border-gray-200 p-3">
-                      <div className="text-xs font-semibold uppercase text-gray-500">Value {clue.value}</div>
+                    <div
+                      key={`${category.name}-${clue.value}-${clue.clue}`}
+                      className="rounded border border-gray-200 p-3"
+                    >
+                      <div className="text-xs font-semibold uppercase text-gray-500">
+                        Value {clue.value}
+                      </div>
                       <p className="mt-1 text-sm text-gray-800">{clue.clue}</p>
-                      <p className="mt-2 text-xs font-mono text-green-700">{clue.answer}</p>
+                      <p className="mt-2 text-xs font-mono text-green-700">
+                        {clue.answer}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -760,7 +990,10 @@ export default function CreateGamePage() {
               )}
             </div>
             <div>
-              <label htmlFor="topics" className="mb-2 block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="topics"
+                className="mb-2 block text-sm font-semibold text-gray-700"
+              >
                 Topics / Prompt *
               </label>
               <textarea
@@ -770,11 +1003,16 @@ export default function CreateGamePage() {
                 className="h-32 w-full rounded border px-4 py-2 text-sm"
                 placeholder="1990s pop culture, World War II leadership, Shakespeare deep cuts..."
               />
-              <p className="mt-1 text-xs text-gray-500">Describe themes or constraints to ground the clues.</p>
+              <p className="mt-1 text-xs text-gray-500">
+                Describe themes or constraints to ground the clues.
+              </p>
             </div>
 
             <div>
-              <label htmlFor="difficulty" className="mb-2 block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="difficulty"
+                className="mb-2 block text-sm font-semibold text-gray-700"
+              >
                 Difficulty Level
               </label>
               <select
@@ -784,13 +1022,18 @@ export default function CreateGamePage() {
                 className="w-full rounded border px-4 py-2 text-sm"
               >
                 <option value="easy">Easy – family friendly</option>
-                <option value="medium">Medium – classic Jeopardy difficulty</option>
+                <option value="medium">
+                  Medium – classic Jeopardy difficulty
+                </option>
                 <option value="hard">Hard – trivia diehards</option>
               </select>
             </div>
 
             <div>
-              <label htmlFor="sourceMaterial" className="mb-2 block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="sourceMaterial"
+                className="mb-2 block text-sm font-semibold text-gray-700"
+              >
                 Source Material (optional)
               </label>
               <textarea
@@ -808,7 +1051,9 @@ export default function CreateGamePage() {
                 disabled={disabled}
                 className="rounded bg-blue-600 px-5 py-2 text-white transition disabled:bg-gray-400"
               >
-                {loadingState === 'samples' ? 'Generating samples…' : 'Generate Samples'}
+                {loadingState === 'samples'
+                  ? 'Generating samples…'
+                  : 'Generate Samples'}
               </button>
               <button
                 onClick={() => router.push(`/host/${roomId}`)}
@@ -824,7 +1069,8 @@ export default function CreateGamePage() {
           <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="text-xl font-semibold">Feedback & Controls</h2>
             <p className="text-sm text-gray-600">
-              Each iteration overwrites the panel above. Leave targeted notes (e.g., "shift harder" or "add more science").
+              Each iteration overwrites the panel above. Leave targeted notes
+              (e.g., "shift harder" or "add more science").
             </p>
             <textarea
               value={feedback}
@@ -835,21 +1081,35 @@ export default function CreateGamePage() {
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => handleSampleGeneration('regenerate')}
-                disabled={!hasSamples || !feedback.trim() || loadingState === 'regenerate'}
+                disabled={
+                  !hasSamples ||
+                  !feedback.trim() ||
+                  loadingState === 'regenerate'
+                }
                 className="rounded bg-purple-600 px-5 py-2 text-white transition disabled:bg-gray-400"
               >
-                {loadingState === 'regenerate' ? 'Updating samples…' : 'Regenerate with Feedback'}
+                {loadingState === 'regenerate'
+                  ? 'Updating samples…'
+                  : 'Regenerate with Feedback'}
               </button>
               <button
                 onClick={handleFinalize}
-                disabled={!hasSamples || loadingState === 'finalize' || !!connectionError}
+                disabled={
+                  !hasSamples ||
+                  loadingState === 'finalize' ||
+                  !!connectionError
+                }
                 className="rounded bg-green-600 px-5 py-2 text-white transition disabled:bg-gray-400"
               >
-                {loadingState === 'finalize' ? 'Building full game…' : 'Finalize Game'}
+                {loadingState === 'finalize'
+                  ? 'Building full game…'
+                  : 'Finalize Game'}
               </button>
             </div>
             {finalGameId && (
-              <p className="text-sm text-emerald-600">Game {finalGameId} ready—redirecting you to the host screen.</p>
+              <p className="text-sm text-emerald-600">
+                Game {finalGameId} ready—redirecting you to the host screen.
+              </p>
             )}
           </div>
         )}
@@ -859,16 +1119,21 @@ export default function CreateGamePage() {
             onClick={() => setShowInitialForm(true)}
             className="h-fit rounded-lg border border-gray-200 bg-white p-3 text-left shadow-sm hover:bg-gray-50"
           >
-            <div className="text-xs font-semibold text-gray-700">Show Game Setup</div>
-            <div className="mt-0.5 text-[10px] text-gray-500">Edit topics, difficulty, or source material</div>
+            <div className="text-xs font-semibold text-gray-700">
+              Show Game Setup
+            </div>
+            <div className="mt-0.5 text-[10px] text-gray-500">
+              Edit topics, difficulty, or source material
+            </div>
           </button>
         )}
       </section>
 
       {error && (
-        <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
       )}
     </main>
   );
 }
-

@@ -6,7 +6,7 @@ const DOUBLE_VALUES = [400, 800, 1200, 1600, 2000];
 
 function getUserInstructions(round, values) {
   const roundName = round === 'doubleJeopardy' ? 'Double Jeopardy' : 'Jeopardy';
-  
+
   return `Generate a complete ${roundName} round for a Jeopardy!-style game show.
 
 **Core Requirements:**
@@ -58,27 +58,33 @@ function getUserInstructions(round, values) {
 \`\`\``;
 }
 
-function buildPrompt(topics, difficulty, sourceMaterial, round, excludedAnswers = []) {
+function buildPrompt(
+  topics,
+  difficulty,
+  sourceMaterial,
+  round,
+  excludedAnswers = [],
+) {
   const isDouble = round === 'doubleJeopardy';
   const values = isDouble ? DOUBLE_VALUES : VALUES;
-  
+
   // Get base user instructions
   let prompt = getUserInstructions(round, values);
-  
+
   // Add excluded answers section if this is a subsequent round
   if (excludedAnswers.length > 0) {
     prompt += `\n\n**CRITICAL - EXCLUDE PREVIOUS ANSWERS:**
 Do NOT use any of these answers that have already been used in previous rounds:
-${excludedAnswers.map(a => `* ${a}`).join('\n')}
+${excludedAnswers.map((a) => `* ${a}`).join('\n')}
 
 Make sure all your answers are completely different from the ones listed above.`;
   }
-  
+
   // Add source material if provided
   if (sourceMaterial) {
     prompt += `\n\n**Source Material Context:**\n${sourceMaterial.substring(0, 1000)}${sourceMaterial.length > 1000 ? '...' : ''}`;
   }
-  
+
   // Add the specific user prompt with topics and difficulty
   const difficultyText = difficulty || 'medium';
   const topicsText = topics || 'General knowledge';
@@ -98,7 +104,7 @@ let round = 'jeopardy';
 // Parse arguments
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
-  
+
   if (arg === '--topics' || arg === '-t') {
     topics = args[++i] || topics;
   } else if (arg === '--difficulty' || arg === '-d') {
@@ -138,4 +144,3 @@ console.log('\n');
 console.log(prompt);
 console.log('\n');
 console.log('='.repeat(80));
-

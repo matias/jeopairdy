@@ -14,8 +14,10 @@ export default function LoadGamePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomId = searchParams?.get('roomId');
-  
-  const [games, setGames] = useState<Array<{ id: string; createdAt: string; filename: string }>>([]);
+
+  const [games, setGames] = useState<
+    Array<{ id: string; createdAt: string; filename: string }>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [ws, setWs] = useState<WebSocketClient | null>(null);
@@ -56,7 +58,7 @@ export default function LoadGamePage() {
       const client = new WebSocketClient(WS_URL);
       await client.connect();
       client.joinRoom(roomId, undefined, 'host');
-      
+
       client.on('gameStateUpdate', (message: any) => {
         router.push(`/host/${roomId}`);
       });
@@ -88,7 +90,7 @@ export default function LoadGamePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <h1 className="text-4xl font-bold mb-8">Load Game</h1>
-      
+
       {loading ? (
         <div>Loading games...</div>
       ) : error ? (
@@ -148,4 +150,3 @@ export default function LoadGamePage() {
     </main>
   );
 }
-

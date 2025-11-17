@@ -8,7 +8,11 @@ interface BuzzerProps {
   buzzed?: boolean;
 }
 
-export default function Buzzer({ locked, onBuzz, buzzed = false }: BuzzerProps) {
+export default function Buzzer({
+  locked,
+  onBuzz,
+  buzzed = false,
+}: BuzzerProps) {
   const [pressed, setPressed] = useState(false);
 
   const handlePress = () => {
@@ -36,11 +40,12 @@ export default function Buzzer({ locked, onBuzz, buzzed = false }: BuzzerProps) 
         className={`
           w-64 h-64 rounded-full text-4xl font-bold uppercase tracking-wide
           transition-all duration-150
-          ${locked || buzzed
-            ? 'bg-gray-400 cursor-not-allowed'
-            : pressed
-            ? 'bg-red-600 scale-95 shadow-inner'
-            : 'bg-red-500 hover:bg-red-600 active:scale-95 shadow-2xl'
+          ${
+            locked || buzzed
+              ? 'bg-gray-400 cursor-not-allowed'
+              : pressed
+                ? 'bg-red-600 scale-95 shadow-inner'
+                : 'bg-red-500 hover:bg-red-600 active:scale-95 shadow-2xl'
           }
           text-white border-4 border-white
         `}
@@ -53,7 +58,7 @@ export default function Buzzer({ locked, onBuzz, buzzed = false }: BuzzerProps) 
       >
         {locked ? 'LOCKED' : buzzed ? 'BUZZED' : 'BUZZ IN'}
       </button>
-      
+
       <div className="mt-4 text-lg">
         {locked && <p className="text-gray-600">Wait for the clue...</p>}
         {buzzed && <p className="text-green-600">You buzzed in!</p>}
@@ -62,4 +67,3 @@ export default function Buzzer({ locked, onBuzz, buzzed = false }: BuzzerProps) 
     </div>
   );
 }
-
