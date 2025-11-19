@@ -144,17 +144,6 @@ function handleMessage(ws, message, conn) {
     case 'judgeFinalJeopardyAnswer':
       handleJudgeFinalJeopardyAnswer(ws, message, conn);
       break;
-    case 'createGame':
-      handleCreateGame(ws, message, conn).catch((error) => {
-        console.error('Error in handleCreateGame:', error);
-        ws.send(
-          JSON.stringify({
-            type: 'error',
-            message: `Error creating game: ${error.message}`,
-          }),
-        );
-      });
-      break;
     case 'saveGame':
       handleSaveGame(ws, message, conn).catch((error) => {
         console.error('Error in handleSaveGame:', error);
@@ -858,60 +847,6 @@ function handleStartGame(ws, message, conn) {
       JSON.stringify({
         type: 'error',
         message: 'Game cannot be started in current state',
-      }),
-    );
-  }
-}
-
-async function handleCreateGame(ws, message, conn) {
-  if (!conn.roomId || conn.role !== 'host') {
-    ws.send(
-      JSON.stringify({ type: 'error', message: 'Only host can create games' }),
-    );
-    return;
-  }
-
-  const { prompt, difficulty, sourceMaterial } = message;
-
-  try {
-    const { generateGame } = require('../ai/generator');
-    const gameConfig = await generateGame(prompt, difficulty, sourceMaterial);
-
-    // Set the game config
-    const success = gameManager.setConfig(conn.roomId, gameConfig);
-
-    if (success) {
-      const gameState = gameManager.getGame(conn.roomId);
-      if (gameState) {
-        // Save to file for testing/replay
-        const fs = require('fs').promises;
-        const path = require('path');
-        const testDataDir = path.join(__dirname, '../../test-data');
-
-        try {
-          await fs.mkdir(testDataDir, { recursive: true });
-          const filePath = path.join(testDataDir, `${gameConfig.id}.json`);
-          await fs.writeFile(filePath, JSON.stringify(gameConfig, null, 2));
-        } catch (error) {
-          console.error('Error saving game config:', error);
-        }
-
-        broadcastToRoom(conn.roomId, {
-          type: 'gameCreated',
-          gameState: serializeGameState(gameState),
-        });
-      }
-    } else {
-      ws.send(
-        JSON.stringify({ type: 'error', message: 'Failed to create game' }),
-      );
-    }
-  } catch (error) {
-    console.error('Error creating game:', error);
-    ws.send(
-      JSON.stringify({
-        type: 'error',
-        message: `Error creating game: ${error.message}`,
       }),
     );
   }

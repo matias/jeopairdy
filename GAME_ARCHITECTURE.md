@@ -35,7 +35,6 @@ Only the final `GameConfig` touches the server; iterative samples remain client-
 
 - **`server/src/game/state.js`** - Game state management (GameManager class)
 - **`server/src/websocket/server.js`** - WebSocket message handling
-- **`server/src/ai/generator.js`** - AI game generation (unused after the interactive game creation flow)
 
 ### Shared Types
 
@@ -312,8 +311,7 @@ jeopairdy/
 ├── server/               # Node.js backend
 │   ├── src/
 │   │   ├── game/         # Game state management
-│   │   ├── websocket/    # WebSocket server
-│   │   └── ai/           # Game generation
+│   │   └── websocket/    # WebSocket server
 │   └── test-data/        # Saved game configs
 ├── lib/                  # Client utilities
 │   ├── websocket.ts      # WebSocket client
