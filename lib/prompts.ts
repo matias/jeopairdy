@@ -39,15 +39,18 @@ interface SingleClueRegenerationPromptOptions extends BasePromptOptions {
 }
 
 const DEFAULT_SAMPLE_VALUES = [200, 600, 1000];
-const DEFAULT_SAMPLE_CATEGORY_COUNT = 4;
-const DEFAULT_SAMPLE_CLUE_COUNT = 6;
+const DEFAULT_SAMPLE_CATEGORY_COUNT = 6;
+const DEFAULT_SAMPLE_CLUE_COUNT = 12;
 
 const DIFFICULTY_GUIDELINES = `Difficulty Definitions:
 * 200: \"Gimme\" fact—broadly known even to casual viewers.
 * 400: Accessible detail that most attentive people can recall.
 * 600: Trivia-enthusiast territory—specific but still reasonable.
 * 800: Deep knowledge or multi-step connection across facts.
-* 1000: Expert-only detail, obscure connections, or nuanced insight.`;
+* 1000: Expert-only detail, obscure connections, or nuanced insight.
+
+800 and 1000-value clues should have answers that are NOT a very well-known name (of a movie, song, a person, etc) unless the clue itself is very obscure. For example, if the answer is "Blade Runner", the clue should not be "The 1982 Riddley Scott film starring Harrison Ford" or the like. Better, make the answers themselves relatively hard. 
+ `;
 
 const BOARD_GUIDELINES = `Board composition:
 * Balance subjects—mix academics, pop culture, wordplay, and general knowledge.
@@ -60,17 +63,18 @@ const CLUE_GUIDELINES = `Clue writing expectations:
 * Provide exactly one unambiguous correct response—avoid multi-answer ambiguity.
 * Escalate difficulty with each value and keep clues concise but information-rich.
 * Verify every fact; give enough context for contestants to reason to the response.
+* Do NOT include any part of the category or of the clue in the answer.
 * Do NOT use swear words or offensive language.`;
 
 const CATEGORY_RULES = `Invent interesting, fun categories inspired by the host's topics without mapping topics 1:1.
 Honor the requested themes while still feeling like classic Jeopardy categories—puns and playful framing welcome.
-Every clue must remain grounded in the provided topics or source material (if any).`;
+Every clue must remain grounded in the provided topics or source material.`;
 
 function formatSourceMaterial(sourceMaterial?: string) {
   if (!sourceMaterial?.trim()) return '';
   const trimmed = sourceMaterial.trim();
   const snippet =
-    trimmed.length > 1200 ? `${trimmed.slice(0, 1200)}…` : trimmed;
+    trimmed.length > 12000 ? `${trimmed.slice(0, 12000)}…` : trimmed;
   return `Source material (priority context):\n${snippet}\n`;
 }
 

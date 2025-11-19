@@ -502,6 +502,10 @@ export default function CreateGamePage() {
           answer: finalJeopardy.answer,
         },
         createdAt: new Date().toISOString(),
+        metadata: {
+          topics,
+          difficulty,
+        },
       };
 
       setGameConfig(newGameConfig);

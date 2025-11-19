@@ -1,0 +1,184 @@
+{
+  "categories": [
+    {
+      "name": "SCI-FI CINEMA",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "In a 1982 classic, this alien uses a Speak & Spell to 'phone home'.",
+          "answer": "Who is E.T.?"
+        },
+        {
+          "value": 400,
+          "clue": "In 'Back to the Future', the DeLorean must reach this speed to activate the flux capacitor.",
+          "answer": "What is 88 miles per hour?"
+        },
+        {
+          "value": 600,
+          "clue": "This 1999 film reveals that human reality is actually a simulation created by intelligent machines.",
+          "answer": "What is The Matrix?"
+        },
+        {
+          "value": 800,
+          "clue": "Ethan Hawke hides his genetic invalid status to join the space program in this DNA-obsessed thriller.",
+          "answer": "What is Gattaca?"
+        },
+        {
+          "value": 1000,
+          "clue": "Fritz Lang directed this 1927 silent masterpiece featuring a dystopian city and the robot Maria.",
+          "answer": "What is Metropolis?"
+        }
+      ]
+    },
+    {
+      "name": "QUEER HISTORY",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "Gilbert Baker designed this colorful symbol of the LGBTQ+ movement, first flown in 1978.",
+          "answer": "What is the Rainbow Flag?"
+        },
+        {
+          "value": 400,
+          "clue": "In 1997, she made TV history when both she and her sitcom character came out as gay.",
+          "answer": "Who is Ellen DeGeneres?"
+        },
+        {
+          "value": 600,
+          "clue": "The NAMES Project created a massive memorial in the form of this craft to remember victims of AIDS.",
+          "answer": "What is the Quilt?"
+        },
+        {
+          "value": 800,
+          "clue": "This advisor to MLK organized the March on Washington but was often kept in the background due to his sexuality.",
+          "answer": "Who is Bayard Rustin?"
+        },
+        {
+          "value": 1000,
+          "clue": "Term for the McCarthy-era witch hunt that fired thousands of gay government employees in the 1950s.",
+          "answer": "What is the Lavender Scare?"
+        }
+      ]
+    },
+    {
+      "name": "NICKELODEON NOSTALGIA",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "Drake Bell and Josh Peck played unlikely stepbrothers in this hit sitcom.",
+          "answer": "What is Drake & Josh?"
+        },
+        {
+          "value": 400,
+          "clue": "In 'iCarly', Carly and Sam hosted their web show from a studio in this room of the apartment.",
+          "answer": "What is the attic (or the third floor)?"
+        },
+        {
+          "value": 600,
+          "clue": "Jamie Lynn Spears played a student at Pacific Coast Academy in this gender-blending dramedy.",
+          "answer": "What is Zoey 101?"
+        },
+        {
+          "value": 800,
+          "clue": "Before her pop career exploded, she played the red-haired Cat Valentine on 'Victorious'.",
+          "answer": "Who is Ariana Grande?"
+        },
+        {
+          "value": 1000,
+          "clue": "This actor played the eccentric, shirtless-prone friend Gibby on 'iCarly'.",
+          "answer": "Who is Noah Munck?"
+        }
+      ]
+    },
+    {
+      "name": "DUNGEONS & DRAGONS",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "This 20-sided die is the primary tool used to determine success or failure in the game.",
+          "answer": "What is a d20?"
+        },
+        {
+          "value": 400,
+          "clue": "Often abbreviated as DM, this person acts as the game's referee and storyteller.",
+          "answer": "Who is the Dungeon Master?"
+        },
+        {
+          "value": 600,
+          "clue": "This predatory monster disguises itself as an ordinary treasure chest to trap greedy adventurers.",
+          "answer": "What is a Mimic?"
+        },
+        {
+          "value": 800,
+          "clue": "He co-created Dungeons & Dragons in 1974 and founded the company TSR.",
+          "answer": "Who is Gary Gygax?"
+        },
+        {
+          "value": 1000,
+          "clue": "In early editions, players aimed for a low number in this statistic, the predecessor to Armor Class.",
+          "answer": "What is THAC0 (To Hit Armor Class Zero)?"
+        }
+      ]
+    },
+    {
+      "name": "SPELL CHECK",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "A D&D cantrip that illuminates dark areas, or a word meaning 'not heavy'.",
+          "answer": "What is Light?"
+        },
+        {
+          "value": 400,
+          "clue": "A spell that hides you from sight, or the superpower possessed by the Invisible Man.",
+          "answer": "What is Invisibility?"
+        },
+        {
+          "value": 600,
+          "clue": "A 3rd-level transmutation spell that doubles a creature's speed, or simply 'acting quickly'.",
+          "answer": "What is Haste?"
+        },
+        {
+          "value": 800,
+          "clue": "This beginner magic trick spell shares its name with a word for 'sleight of hand'.",
+          "answer": "What is Prestidigitation?"
+        },
+        {
+          "value": 1000,
+          "clue": "From Irish folklore, this D&D spell places a magical command or obligation on a creature.",
+          "answer": "What is Geas?"
+        }
+      ]
+    },
+    {
+      "name": "BEFORE THEY WERE STARS",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "Before guarding the galaxy as Star-Lord, he fell into a pit on 'Parks and Recreation'.",
+          "answer": "Who is Chris Pratt?"
+        },
+        {
+          "value": 400,
+          "clue": "This 'Dune: Part Two' villain actor got his start as a recurring love interest on 'Zoey 101'.",
+          "answer": "Who is Austin Butler?"
+        },
+        {
+          "value": 600,
+          "clue": "Before becoming an LGBTQ+ advocate and star of 'Orange Is the New Black', she appeared on 'Law & Order'.",
+          "answer": "Who is Laverne Cox?"
+        },
+        {
+          "value": 800,
+          "clue": "This 'Fast & Furious' star is a vocal D&D player and wrote the foreword to the game's 30th anniversary book.",
+          "answer": "Who is Vin Diesel?"
+        },
+        {
+          "value": 1000,
+          "clue": "Before starring in 'The Umbrella Academy', this trans actor was nominated for an Oscar for 'Juno'.",
+          "answer": "Who is Elliot Page?"
+        }
+      ]
+    }
+  ]
+}

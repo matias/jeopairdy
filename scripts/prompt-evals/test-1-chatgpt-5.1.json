@@ -1,0 +1,184 @@
+{
+  "categories": [
+    {
+      "name": "Queer Keys to History",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "This 1969 bar uprising sparked major LGBTQ activism",
+          "answer": "What is Stonewall?"
+        },
+        {
+          "value": 400,
+          "clue": "She coined 'Lavender Menace' protesting exclusion in 1970",
+          "answer": "Who is Rita Mae Brown?"
+        },
+        {
+          "value": 600,
+          "clue": "Milk won this S.F. office in 1977, a first for gay officials",
+          "answer": "What is the San Francisco Board of Supervisors?"
+        },
+        {
+          "value": 800,
+          "clue": "Founded in 1950, this group became the first lasting U.S. gay rights org",
+          "answer": "What is the Mattachine Society?"
+        },
+        {
+          "value": 1000,
+          "clue": "BSDM activist who led 1980s leather‑community AIDS outreach",
+          "answer": "Who is Cynthia Slater?"
+        }
+      ]
+    },
+    {
+      "name": "Sci‑Fi Screen Time",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "This 1982 film follows Deckard hunting replicants",
+          "answer": "What is Blade Runner?"
+        },
+        {
+          "value": 400,
+          "clue": "Sigourney Weaver battles a xenomorph queen in this 1986 sequel",
+          "answer": "What is Aliens?"
+        },
+        {
+          "value": 600,
+          "clue": "This 1999 hit satirizes space TV via the Thermians’ fandom",
+          "answer": "What is Galaxy Quest?"
+        },
+        {
+          "value": 800,
+          "clue": "Neill Blomkamp set this 2009 sci‑fi allegory in Johannesburg",
+          "answer": "What is District 9?"
+        },
+        {
+          "value": 1000,
+          "clue": "2016’s 'Arrival' centers on this logogram‑using alien species",
+          "answer": "What are the Heptapods?"
+        }
+      ]
+    },
+    {
+      "name": "Nick Kids, Big Laughs",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "This webshow star was played by Miranda Cosgrove",
+          "answer": "Who is Carly Shay?"
+        },
+        {
+          "value": 400,
+          "clue": "Spencer creates offbeat art in this series",
+          "answer": "What is iCarly?"
+        },
+        {
+          "value": 600,
+          "clue": "Jamie Lynn Spears played the lead at Pacific Coast Academy",
+          "answer": "Who is Zoey Brooks?"
+        },
+        {
+          "value": 800,
+          "clue": "This actor portrayed Chase Matthews, Zoey’s close friend",
+          "answer": "Who is Sean Flynn?"
+        },
+        {
+          "value": 1000,
+          "clue": "iCarly’s tech mastermind who invented the PearPhone",
+          "answer": "Who is Freddie Benson?"
+        }
+      ]
+    },
+    {
+      "name": "Roll for Lore",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "This 20‑sided staple is D&D’s most iconic die",
+          "answer": "What is a d20?"
+        },
+        {
+          "value": 400,
+          "clue": "This alignment pairs lawfulness with benevolence",
+          "answer": "What is lawful good?"
+        },
+        {
+          "value": 600,
+          "clue": "This mage class feature stores spells in a tiny book",
+          "answer": "What is an arcane grimoire?"
+        },
+        {
+          "value": 800,
+          "clue": "This dragon queen rules Avernus with five chromatic heads",
+          "answer": "Who is Tiamat?"
+        },
+        {
+          "value": 1000,
+          "clue": "The 1e setting featuring Greyhawk’s Archmage Mordenkainen",
+          "answer": "What is the World of Greyhawk?"
+        }
+      ]
+    },
+    {
+      "name": "Space & Spellbooks",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "This 'Star Trek' officer boldly leads the Enterprise",
+          "answer": "Who is Captain Kirk?"
+        },
+        {
+          "value": 400,
+          "clue": "D&D wizards prep spells like this sci‑fi crew preps away missions",
+          "answer": "What is memorization?"
+        },
+        {
+          "value": 600,
+          "clue": "This 2015 sci‑fi hit features a botanist stranded on Mars",
+          "answer": "What is The Martian?"
+        },
+        {
+          "value": 800,
+          "clue": "Plane‑traveling mages reach this astral dragon‑ruled dominion",
+          "answer": "What is the Astral Sea?"
+        },
+        {
+          "value": 1000,
+          "clue": "This 1979 cult film sees psychic teens battling a cosmic entity",
+          "answer": "What is The Visitor?"
+        }
+      ]
+    },
+    {
+      "name": "Teen Screen Scene",
+      "clues": [
+        {
+          "value": 200,
+          "clue": "This Nickelodeon campus drama is set at PCA",
+          "answer": "What is Zoey 101?"
+        },
+        {
+          "value": 400,
+          "clue": "Carly’s brother Spencer often built sculptures from this material",
+          "answer": "What is spaghetti?"
+        },
+        {
+          "value": 600,
+          "clue": "This character is Zoey’s sporty roommate and friend",
+          "answer": "Who is Dana Cruz?"
+        },
+        {
+          "value": 800,
+          "clue": "Jennette McCurdy’s character co‑hosted iCarly’s webshow",
+          "answer": "Who is Sam Puckett?"
+        },
+        {
+          "value": 1000,
+          "clue": "This quirky tech teacher oversaw PCA’s high‑tech classrooms",
+          "answer": "Who is Mr. Bender?"
+        }
+      ]
+    }
+  ]
+}

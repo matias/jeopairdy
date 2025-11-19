@@ -63,6 +63,10 @@ export interface GameConfig {
     answer: string;
   };
   createdAt: string;
+  metadata?: {
+    topics: string;
+    difficulty: string;
+  };
 }
 
 export interface Player {
