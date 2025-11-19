@@ -17,7 +17,7 @@ Currently implements the basic game flow of an initial round, a double Jeopardy 
 ## Features
 
 - **Live Gameplay**: Play in real-time with a host and multiple players
-- **AI-Generated Questions**: Uses OpenAI GPT-5.1 (bring your own API key) to generate custom games through an interactive co-creation flow
+- **AI-Generated Questions**: Uses OpenAI GPT-5.1 or Google Gemini 3.0 Pro (bring your own API keys) to generate custom games through an interactive co-creation flow
 - **Three Rounds**: Jeopardy, Double Jeopardy, and Final Jeopardy
 - **Real-time Buzzer System**: Client-side timestamping for accurate buzzer order, with a fair(ish) tie-breaking mechanism.
 - **Multiple Views**:
@@ -32,7 +32,7 @@ Currently implements the basic game flow of an initial round, a double Jeopardy 
 - **Frontend**: Next.js 15 (React + TypeScript)
 - **Backend**: Node.js + Express
 - **Real-time**: WebSockets (native `ws` library)
-- **AI**: OpenAI GPT-5.1 API (Conversations API)
+- **AI**: OpenAI GPT-5.1 API (Conversations API) or Google Gemini 3.0 Pro API
 - **Styling**: Tailwind CSS
 
 ## Requirements
@@ -64,11 +64,14 @@ npm install
 cp .env.example .env
 ```
 
-Add your OpenAI API key:
+Add your API keys (at least one is required):
 
 ```
 OPENAI_API_KEY=your_key_here
+GEMINI_API_KEY=your_key_here
 ```
+
+You can use either OpenAI or Gemini, or both. The create-game interface allows you to choose which model to use.
 
 ### Running Locally
 
@@ -107,7 +110,7 @@ To allow players on the same Wi-Fi network to join:
 The app can be deployed to cloud hosting, but specific deployment instructions are not yet documented. Requirements for cloud deployment:
 
 - **WebSocket support**: The hosting provider must support WebSocket connections (e.g., Render, Railway, Fly.io)
-- **Environment variables**: Set `OPENAI_API_KEY`, `NEXT_PUBLIC_WS_URL`, and `NEXT_PUBLIC_API_URL` in your hosting dashboard
+- **Environment variables**: Set `OPENAI_API_KEY` (and/or `GEMINI_API_KEY`), `NEXT_PUBLIC_WS_URL`, and `NEXT_PUBLIC_API_URL` in your hosting dashboard
 - **Port configuration**: Ensure both frontend and backend ports are properly configured
 
 Note: The app is designed to work on Render's free tier, which supports WebSockets.
@@ -127,6 +130,8 @@ Note: The app is designed to work on Render's free tier, which supports WebSocke
      - Topics/Prompt: Describe themes or constraints (e.g., "1990s pop culture", "World War II leadership")
      - Difficulty: Easy, Medium, or Hard
      - Source Material (optional): Paste reference text or context
+     - AI Model: Choose between ChatGPT 5.1 or Gemini 3.0 Pro
+     - Google Search Grounding (Gemini only): Enable web search for real-time information
    - **Generate samples**: Click "Generate Samples" to see sample categories and clues
    - **Iterate with feedback**:
      - Review the AI's commentary and sample categories
@@ -223,14 +228,17 @@ jeopairdy/
 
 ## Environment Variables
 
-- `OPENAI_API_KEY`: Your OpenAI API key (required for AI generation)
+- `OPENAI_API_KEY`: Your OpenAI API key (required for ChatGPT 5.1)
+- `GEMINI_API_KEY`: Your Google Gemini API key (required for Gemini 3.0 Pro)
 - `PORT`: Backend server port (default: 3001)
 - `NEXT_PUBLIC_WS_URL`: WebSocket URL (default: `ws://localhost:3001` for local, or `ws://YOUR_IP:3001` for local network)
 - `NEXT_PUBLIC_API_URL`: API URL (default: `http://localhost:3001` for local, or `http://YOUR_IP:3001` for local network)
 
+**Note**: At least one API key (`OPENAI_API_KEY` or `GEMINI_API_KEY`) is required. You can use both if you want to switch between models.
+
 ## How Game Creation Works
 
-The game uses an **interactive co-creation flow** with GPT-5.1:
+The game uses an **interactive co-creation flow** with either ChatGPT 5.1 or Gemini 3.0 Pro:
 
 1. **Sample Generation**: Host provides topics, difficulty, and optional source material. The AI generates sample categories with a few example clues.
 
