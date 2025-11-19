@@ -1,5 +1,9 @@
 import type { Round } from '@/shared/types';
 
+/**
+ * These prompts are used to generate the game content during the client-side create-game flow.
+ */
+
 interface BasePromptOptions {
   topics: string;
   difficulty: string;
