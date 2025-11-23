@@ -284,6 +284,14 @@ export default function HostPage() {
               They will need to be in the same WiFi network as the host&apos;s
               computer for local games.
             </p>
+            <p className="mt-2">
+              Join URL:{' '}
+              <span className="font-mono text-blue-600">
+                {typeof window !== 'undefined'
+                  ? `${window.location.origin}/join?room=${roomId}`
+                  : ''}
+              </span>
+            </p>
           </div>
         </div>
       </main>
