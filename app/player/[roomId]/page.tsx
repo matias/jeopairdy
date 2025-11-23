@@ -20,12 +20,15 @@ export default function PlayerPage() {
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [buzzerLocked, setBuzzerLocked] = useState(true);
   const [buzzed, setBuzzed] = useState(false);
+  const [earlyBuzzPenalty, setEarlyBuzzPenalty] = useState(false);
+  const [showTooSoonMessage, setShowTooSoonMessage] = useState(false);
   const [finalWager, setFinalWager] = useState('');
   const [finalAnswer, setFinalAnswer] = useState('');
   const [isConnected, setIsConnected] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const connectedRef = useRef(false);
   const playerIdRef = useRef<string | null>(null);
+  const earlyBuzzTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Check localStorage for existing player info
@@ -104,12 +107,18 @@ export default function PlayerPage() {
             message.gameState.buzzerOrder?.includes(playerIdRef.current) ||
             false;
           setBuzzed(hasBuzzed);
-          // Reset buzzed state when new clue is selected
+          // Reset buzzed state and early buzz penalty when new clue is selected
           if (
             message.gameState.status === 'clueRevealed' ||
             message.gameState.status === 'selecting'
           ) {
             setBuzzed(false);
+            setEarlyBuzzPenalty(false);
+            setShowTooSoonMessage(false);
+            if (earlyBuzzTimeoutRef.current) {
+              clearTimeout(earlyBuzzTimeoutRef.current);
+              earlyBuzzTimeoutRef.current = null;
+            }
           }
         });
 
@@ -137,17 +146,50 @@ export default function PlayerPage() {
     return () => {
       unsubscribeConnectionState();
       connectedRef.current = false;
+      if (earlyBuzzTimeoutRef.current) {
+        clearTimeout(earlyBuzzTimeoutRef.current);
+      }
       client.disconnect();
     };
   }, [roomId, router]);
 
   const handleBuzz = () => {
-    // Allow buzzing even if already buzzed (in case of network issues)
-    // Server will handle duplicate prevention
-    // Set buzzed state immediately for better UX (will be confirmed by server)
-    if (ws && !buzzerLocked) {
-      setBuzzed(true); // Optimistic update - show "BUZZED" immediately
-      ws.buzz();
+    // Normal buzz - check for early buzz penalty
+    if (ws && !buzzerLocked && !buzzed) {
+      const delayMs = earlyBuzzPenalty ? 250 : 0;
+
+      if (delayMs > 0) {
+        // Apply penalty delay
+        setTimeout(() => {
+          setBuzzed(true);
+          ws.buzz();
+        }, delayMs);
+      } else {
+        // No penalty, buzz immediately
+        setBuzzed(true);
+        ws.buzz();
+      }
+    }
+  };
+
+  const handleEarlyBuzz = () => {
+    // Only apply penalty during clue reading (clueRevealed status)
+    if (gameState?.status !== 'clueRevealed') {
+      return;
+    }
+
+    // Set early buzz penalty (not cumulative)
+    if (!earlyBuzzPenalty) {
+      setEarlyBuzzPenalty(true);
+      setShowTooSoonMessage(true);
+
+      // Clear "Too soon!" message after 3 seconds
+      if (earlyBuzzTimeoutRef.current) {
+        clearTimeout(earlyBuzzTimeoutRef.current);
+      }
+      earlyBuzzTimeoutRef.current = setTimeout(() => {
+        setShowTooSoonMessage(false);
+      }, 3000);
     }
   };
 
@@ -335,50 +377,68 @@ export default function PlayerPage() {
             <h2 className="text-2xl font-bold mb-4">
               Final Jeopardy - Your Answer
             </h2>
-            {countdown !== null && (
-              <div className="mb-4 p-4 bg-red-100 rounded-lg">
-                <p className="text-xl font-bold text-red-600">
-                  Time remaining: {countdown} seconds
+            {player && player.score <= 0 ? (
+              <div className="text-center py-8">
+                <p className="text-xl text-gray-600 mb-2">
+                  Unfortunately, you cannot participate in Final Jeopardy
+                </p>
+                <p className="text-lg text-gray-500">
+                  Your score is ${player.score}
+                </p>
+                <p className="text-lg text-gray-500 mt-4">
+                  Thank you for playing!
                 </p>
               </div>
-            )}
-            <div className="mb-4">
-              <p className="text-lg mb-2">
-                Your wager:{' '}
-                <span className="font-bold text-2xl">
-                  ${player?.finalJeopardyWager || 0}
-                </span>
-              </p>
-            </div>
-            <div className="flex flex-col gap-4">
-              <input
-                type="text"
-                value={finalAnswer}
-                onChange={(e) => setFinalAnswer(e.target.value)}
-                placeholder="Your answer (in the form of a question)"
-                className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-                disabled={hasAnswered || (countdown !== null && countdown <= 0)}
-              />
-              <button
-                onClick={handleSubmitFinalAnswer}
-                disabled={
-                  hasAnswered ||
-                  !finalAnswer ||
-                  (countdown !== null && countdown <= 0)
-                }
-                className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 text-xl font-bold"
-              >
-                {hasAnswered
-                  ? 'Answer Submitted ✓'
-                  : countdown !== null && countdown <= 0
-                    ? 'Time Expired'
-                    : 'Submit Answer'}
-              </button>
-            </div>
-            {hasAnswered && (
-              <p className="mt-4 text-green-600 text-lg font-bold">
-                Answer submitted!
-              </p>
+            ) : (
+              <>
+                {countdown !== null && (
+                  <div className="mb-4 p-4 bg-red-100 rounded-lg">
+                    <p className="text-xl font-bold text-red-600">
+                      Time remaining: {countdown} seconds
+                    </p>
+                  </div>
+                )}
+                <div className="mb-4">
+                  <p className="text-lg mb-2">
+                    Your wager:{' '}
+                    <span className="font-bold text-2xl">
+                      ${player?.finalJeopardyWager || 0}
+                    </span>
+                  </p>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <input
+                    type="text"
+                    value={finalAnswer}
+                    onChange={(e) => setFinalAnswer(e.target.value)}
+                    placeholder="Your answer (in the form of a question)"
+                    className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                    disabled={
+                      hasAnswered || (countdown !== null && countdown <= 0)
+                    }
+                  />
+                  <button
+                    onClick={handleSubmitFinalAnswer}
+                    disabled={
+                      hasAnswered ||
+                      !finalAnswer ||
+                      (countdown !== null && countdown <= 0)
+                    }
+                    className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 text-xl font-bold"
+                  >
+                    {hasAnswered
+                      ? 'Answer Submitted ✓'
+                      : countdown !== null && countdown <= 0
+                        ? 'Time Expired'
+                        : 'Submit Answer'}
+                  </button>
+                </div>
+                {hasAnswered && (
+                  <p className="mt-4 text-green-600 text-lg font-bold">
+                    Answer submitted!
+                  </p>
+                )}
+              </>
             )}
           </div>
         )}
@@ -409,7 +469,13 @@ export default function PlayerPage() {
           gameState.status !== 'finalJeopardyCategory' &&
           gameState.status !== 'finalJeopardyJudging' &&
           gameState.status !== 'finished' && (
-            <Buzzer locked={buzzerLocked} onBuzz={handleBuzz} buzzed={buzzed} />
+            <Buzzer
+              locked={buzzerLocked}
+              onBuzz={handleBuzz}
+              onEarlyBuzz={handleEarlyBuzz}
+              buzzed={buzzed}
+              showTooSoonMessage={showTooSoonMessage}
+            />
           )}
 
         {/* <div className="mt-8">

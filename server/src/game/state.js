@@ -283,37 +283,20 @@ class GameManager {
   selectFromTie(game, tiedBuzzes) {
     const tiedPlayerIds = tiedBuzzes.map((b) => b.playerId);
 
-    // First, try to pick from "not picked" list
-    const notPickedInTies = game.notPickedInTies || [];
-    const notPickedInTie = tiedPlayerIds.filter((id) =>
-      notPickedInTies.includes(id),
-    );
-
+    // Find the player with the lowest score among those who tied
     let selectedPlayerId = null;
+    let lowestScore = Infinity;
 
-    if (notPickedInTie.length > 0) {
-      // Pick the first one from not-picked list (they get priority)
-      selectedPlayerId = notPickedInTie[0];
-      // Remove from not-picked list since they're being picked now
-      game.notPickedInTies = game.notPickedInTies.filter(
-        (id) => id !== selectedPlayerId,
-      );
-    } else {
-      // No one in not-picked list, pick first in tie
-      selectedPlayerId = tiedPlayerIds[0];
-    }
-
-    // Add all other tied players to "not picked" list (if not already there)
     tiedPlayerIds.forEach((playerId) => {
-      if (
-        playerId !== selectedPlayerId &&
-        !game.notPickedInTies.includes(playerId)
-      ) {
-        game.notPickedInTies.push(playerId);
+      const player = game.players.get(playerId);
+      if (player && player.score < lowestScore) {
+        lowestScore = player.score;
+        selectedPlayerId = playerId;
       }
     });
 
-    return selectedPlayerId;
+    // Fallback to first player if no valid player found (shouldn't happen)
+    return selectedPlayerId || tiedPlayerIds[0];
   }
 
   computeResolvedBuzzerOrder(game) {
@@ -517,10 +500,13 @@ class GameManager {
 
     playersWithScores.sort((a, b) => a.score - b.score);
 
-    // Store initial scores and create judging order
+    // Store initial scores and create judging order (only players with score > 0)
     playersWithScores.forEach(({ id, score }) => {
       game.finalJeopardyInitialScores.set(id, score);
-      game.finalJeopardyJudgingOrder.push(id);
+      // Only add players with positive scores to judging order
+      if (score > 0) {
+        game.finalJeopardyJudgingOrder.push(id);
+      }
     });
 
     // Reset Final Jeopardy state

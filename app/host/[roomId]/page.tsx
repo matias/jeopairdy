@@ -80,13 +80,17 @@ export default function HostPage() {
 
   const handleNextRound = () => {
     if (ws) {
-      ws.nextRound();
+      if (confirm('Are you sure you want to advance to the next round?')) {
+        ws.nextRound();
+      }
     }
   };
 
   const handleStartFinalJeopardy = () => {
     if (ws) {
-      ws.startFinalJeopardy();
+      if (confirm('Are you sure you want to start Final Jeopardy?')) {
+        ws.startFinalJeopardy();
+      }
     }
   };
 
@@ -248,12 +252,6 @@ export default function HostPage() {
 
           <div className="flex gap-4 justify-center">
             <button
-              onClick={handleStartGame}
-              className="px-8 py-4 bg-green-600 text-white rounded hover:bg-green-700 text-xl font-bold"
-            >
-              Start Game
-            </button>
-            <button
               onClick={() => {
                 window.open(
                   `/game/${roomId}`,
@@ -265,6 +263,27 @@ export default function HostPage() {
             >
               Open Game Display
             </button>
+            <button
+              onClick={handleStartGame}
+              disabled={players.length < 2}
+              className={`px-8 py-4 rounded text-xl font-bold ${
+                players.length < 2
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
+            >
+              Start Game {players.length < 2 && '(Need 2+ players)'}
+            </button>
+          </div>
+          <div className="mt-4 text-center text-gray-600">
+            <p>
+              Ask users to join the game by scanning the QR code seen in the
+              Game Display screen.
+            </p>
+            <p>
+              They will need to be in the same WiFi network as the host&apos;s
+              computer for local games.
+            </p>
           </div>
         </div>
       </main>
