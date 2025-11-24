@@ -74,6 +74,9 @@ export default function CreateGamePage() {
   const [finalizingRound, setFinalizingRound] = useState<
     'jeopardy' | 'doubleJeopardy' | 'finalJeopardy' | null
   >(null);
+  const [failedRound, setFailedRound] = useState<
+    'jeopardy' | 'doubleJeopardy' | 'finalJeopardy' | null
+  >(null);
 
   useEffect(() => {
     if (!roomId) return;
@@ -472,6 +475,86 @@ export default function CreateGamePage() {
     }
   };
 
+  const processGameGeneration = async (initialConfig: GameConfig) => {
+    let currentConfig = initialConfig;
+    let currentStep: 'jeopardy' | 'doubleJeopardy' | 'finalJeopardy' =
+      'jeopardy';
+
+    try {
+      // 1. Jeopardy
+      if (currentConfig.jeopardy.categories.length === 0) {
+        currentStep = 'jeopardy';
+        setFinalizingRound('jeopardy');
+        const jeopardyRound = await generateRound({
+          round: 'jeopardy',
+          values: JEOPARDY_VALUES,
+        });
+
+        currentConfig = {
+          ...currentConfig,
+          jeopardy: jeopardyRound,
+        };
+        setGameConfig(currentConfig);
+      }
+
+      // 2. Double Jeopardy
+      if (currentConfig.doubleJeopardy.categories.length === 0) {
+        currentStep = 'doubleJeopardy';
+        setFinalizingRound('doubleJeopardy');
+        const jeopardyAnswers = extractAnswers(currentConfig.jeopardy);
+        const doubleRound = await generateRound({
+          round: 'doubleJeopardy',
+          values: DOUBLE_VALUES,
+          excludedAnswers: jeopardyAnswers,
+        });
+
+        currentConfig = {
+          ...currentConfig,
+          doubleJeopardy: doubleRound,
+        };
+        setGameConfig(currentConfig);
+      }
+
+      // 3. Final Jeopardy
+      if (!currentConfig.finalJeopardy.category) {
+        currentStep = 'finalJeopardy';
+        setFinalizingRound('finalJeopardy');
+        const allAnswers = [
+          ...extractAnswers(currentConfig.jeopardy),
+          ...extractAnswers(currentConfig.doubleJeopardy),
+        ];
+        const finalJeopardy = await generateFinalJeopardy(allAnswers);
+
+        currentConfig = {
+          ...currentConfig,
+          finalJeopardy: {
+            category: finalJeopardy.category,
+            clue: finalJeopardy.clue,
+            answer: finalJeopardy.answer,
+          },
+        };
+        setGameConfig(currentConfig);
+      }
+
+      setFinalizingRound(null);
+    } catch (err: any) {
+      console.error(`[CreateGame] Finalization failed at ${currentStep}`, err);
+      setError(err?.message || 'Failed to generate round.');
+      setFailedRound(currentStep);
+      setFinalizingRound(null);
+    } finally {
+      setLoadingState(null);
+    }
+  };
+
+  const handleRetry = async () => {
+    if (!gameConfig) return;
+    setError(null);
+    setFailedRound(null);
+    setLoadingState('finalize');
+    await processGameGeneration(gameConfig);
+  };
+
   const handleFinalize = async () => {
     if (!topics.trim()) {
       setError('Topics are required before finalizing.');
@@ -484,9 +567,9 @@ export default function CreateGamePage() {
     }
 
     setError(null);
+    setFailedRound(null);
     setPhase('editing');
     setLoadingState('finalize');
-    setFinalizingRound('jeopardy');
 
     // Initialize game config with empty rounds that will be filled progressively
     const initialGameConfig: GameConfig = {
@@ -512,71 +595,7 @@ export default function CreateGamePage() {
     };
     setGameConfig(initialGameConfig);
 
-    try {
-      // Generate Jeopardy round
-      setFinalizingRound('jeopardy');
-      const jeopardyRound = await generateRound({
-        round: 'jeopardy',
-        values: JEOPARDY_VALUES,
-      });
-      const jeopardyAnswers = extractAnswers(jeopardyRound);
-
-      // Update game config with Jeopardy round
-      setGameConfig((prev) =>
-        prev
-          ? {
-              ...prev,
-              jeopardy: jeopardyRound,
-            }
-          : null,
-      );
-
-      // Generate Double Jeopardy round
-      setFinalizingRound('doubleJeopardy');
-      const doubleRound = await generateRound({
-        round: 'doubleJeopardy',
-        values: DOUBLE_VALUES,
-        excludedAnswers: jeopardyAnswers,
-      });
-      const allAnswers = [...jeopardyAnswers, ...extractAnswers(doubleRound)];
-
-      // Update game config with Double Jeopardy round
-      setGameConfig((prev) =>
-        prev
-          ? {
-              ...prev,
-              doubleJeopardy: doubleRound,
-            }
-          : null,
-      );
-
-      // Generate Final Jeopardy
-      setFinalizingRound('finalJeopardy');
-      const finalJeopardy = await generateFinalJeopardy(allAnswers);
-
-      // Update game config with Final Jeopardy
-      setGameConfig((prev) =>
-        prev
-          ? {
-              ...prev,
-              finalJeopardy: {
-                category: finalJeopardy.category,
-                clue: finalJeopardy.clue,
-                answer: finalJeopardy.answer,
-              },
-            }
-          : null,
-      );
-
-      setFinalizingRound(null);
-    } catch (err: any) {
-      console.error('[CreateGame] Finalization failed', err);
-      setError(err?.message || 'Failed to build the full game.');
-      setPhase('iterating');
-      setFinalizingRound(null);
-    } finally {
-      setLoadingState(null);
-    }
+    await processGameGeneration(initialGameConfig);
   };
 
   // Render editing phase
@@ -594,6 +613,7 @@ export default function CreateGamePage() {
     const getRoundStatus = (
       round: 'jeopardy' | 'doubleJeopardy' | 'finalJeopardy',
     ) => {
+      if (failedRound === round) return 'error';
       if (!finalizingRound) return null;
       if (finalizingRound === round) {
         return 'generating';
@@ -687,7 +707,19 @@ export default function CreateGamePage() {
 
         {currentRound === 'finalJeopardy' ? (
           <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            {getRoundStatus('finalJeopardy') === 'generating' ? (
+            {getRoundStatus('finalJeopardy') === 'error' ? (
+              <div className="py-8 text-center">
+                <p className="mb-4 text-lg text-red-600">
+                  Failed to generate Final Jeopardy.
+                </p>
+                <button
+                  onClick={handleRetry}
+                  className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                >
+                  Retry Generation
+                </button>
+              </div>
+            ) : getRoundStatus('finalJeopardy') === 'generating' ? (
               <div className="py-8 text-center">
                 <p className="text-lg text-gray-600">
                   Generating game... please wait
@@ -865,7 +897,21 @@ export default function CreateGamePage() {
           </section>
         ) : currentRoundData ? (
           <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            {getRoundStatus(currentRound) === 'generating' ? (
+            {getRoundStatus(currentRound) === 'error' ? (
+              <div className="py-8 text-center">
+                <p className="mb-4 text-lg text-red-600">
+                  Failed to generate{' '}
+                  {currentRound === 'jeopardy' ? 'Jeopardy' : 'Double Jeopardy'}{' '}
+                  Round.
+                </p>
+                <button
+                  onClick={handleRetry}
+                  className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                >
+                  Retry Generation
+                </button>
+              </div>
+            ) : getRoundStatus(currentRound) === 'generating' ? (
               <div className="py-8 text-center">
                 <p className="text-lg text-gray-600">
                   Generating game... please wait

@@ -1,0 +1,635 @@
+{
+  "id": "game-1763953578269",
+  "jeopardy": {
+    "round": "jeopardy",
+    "categories": [
+      {
+        "id": "cat-jeopardy-0-eb5a5648-9769-42ea-b7af-b106e5ff4ee4",
+        "name": "Don't Lose Your Head",
+        "clues": [
+          {
+            "id": "clue-jeopardy-0-0-9645eced-ba80-418c-8b20-636ac76e4459",
+            "category": "Don't Lose Your Head",
+            "value": 200,
+            "clue": "This French queen really took the cake—or didn't—before facing the guillotine in 1793.",
+            "answer": "Who is Marie Antoinette?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-1-d56ffce4-5160-4715-b78b-45136b4b0100",
+            "category": "Don't Lose Your Head",
+            "value": 400,
+            "clue": "Named for a physician, this 'national razor' was designed to make executions democratic and painless.",
+            "answer": "What is the guillotine?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-2-81a89f23-c961-4494-b62a-83f1dd66891b",
+            "category": "Don't Lose Your Head",
+            "value": 600,
+            "clue": "Henry VIII's second wife, she lost her head after failing to produce a male heir.",
+            "answer": "Who is Anne Boleyn?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-3-34a51dbe-1241-43b1-8da1-44e700f3f67c",
+            "category": "Don't Lose Your Head",
+            "value": 800,
+            "clue": "This Stuart king lost the English Civil War and was shorter by a head in 1649.",
+            "answer": "Who is Charles I?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-4-133c8e61-666c-4772-a03a-d25025de5f45",
+            "category": "Don't Lose Your Head",
+            "value": 1000,
+            "clue": "Ironically, this architect of the Reign of Terror was himself guillotined in the month of Thermidor.",
+            "answer": "Who is Maximilien Robespierre?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-1-324955d9-1369-4b06-868c-04ed46755b7b",
+        "name": "A Bone-a-parte to Pick",
+        "clues": [
+          {
+            "id": "clue-jeopardy-1-0-3d6d14aa-6913-46fb-9125-9ba3c8d4ef9b",
+            "category": "A Bone-a-parte to Pick",
+            "value": 200,
+            "clue": "Napoleon met his final defeat at this 1815 battle, also a catchy ABBA tune.",
+            "answer": "What is Waterloo?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-1-554edde8-3de3-412e-879b-c08fbc3f67a4",
+            "category": "A Bone-a-parte to Pick",
+            "value": 400,
+            "clue": "While in Egypt, Napoleon's troops found this slab that finally cracked the code on hieroglyphics.",
+            "answer": "What is the Rosetta Stone?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-2-dc37e086-be7e-453c-bfb9-60decc2553cc",
+            "category": "A Bone-a-parte to Pick",
+            "value": 600,
+            "clue": "Napoleon sold this massive chunk of land to the U.S. in 1803 for about 3 cents an acre.",
+            "answer": "What is the Louisiana Purchase?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-3-1a1c688d-7a05-405f-baa9-a5b18f8b067d",
+            "category": "A Bone-a-parte to Pick",
+            "value": 800,
+            "clue": "Before St. Helena, the emperor was exiled to this Mediterranean island, of which he was made ruler.",
+            "answer": "What is Elba?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-4-b88f4bf0-7027-4d3f-8ec2-11b1bc66e8f2",
+            "category": "A Bone-a-parte to Pick",
+            "value": 1000,
+            "clue": "This 'Iron Duke' gave Napoleon a boot to the backside as the victor at Waterloo.",
+            "answer": "Who is the Duke of Wellington?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-2-3c0c1184-1bed-499d-a286-28d02c56d597",
+        "name": "Greece Lightning",
+        "clues": [
+          {
+            "id": "clue-jeopardy-2-0-a900f543-e1d3-480b-9aaa-772511b382d9",
+            "category": "Greece Lightning",
+            "value": 200,
+            "clue": "Beware of Greeks bearing gifts, especially huge wooden horses filled with soldiers in this city.",
+            "answer": "What is Troy?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-1-2f778d19-8a17-4894-9425-37aeb2f1f1d0",
+            "category": "Greece Lightning",
+            "value": 400,
+            "clue": "This militaristic city-state was so tough, they didn't build walls; their men were the walls.",
+            "answer": "What is Sparta?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-2-59b62b94-175f-4cc2-bc99-87c91d04529f",
+            "category": "Greece Lightning",
+            "value": 600,
+            "clue": "This philosopher was sentenced to death for corrupting youth and drank a cup of hemlock.",
+            "answer": "Who is Socrates?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-3-a84c6bf8-68a1-45c3-aabd-59ba9e0f844d",
+            "category": "Greece Lightning",
+            "value": 800,
+            "clue": "A messenger ran 26 miles to Athens to announce victory in this 490 BC battle, then promptly died.",
+            "answer": "What is Marathon?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-4-4e4d64b7-4a29-4aed-883a-1f8b6ef6af29",
+            "category": "Greece Lightning",
+            "value": 1000,
+            "clue": "The Delian League was an alliance of Greek states led by this city, the birthplace of democracy.",
+            "answer": "What is Athens?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-3-704ba7f2-b448-4525-bdae-f6d2f6730413",
+        "name": "Royal Pains",
+        "clues": [
+          {
+            "id": "clue-jeopardy-3-0-144fc8e3-7f96-499a-b48b-09a87b78e2f1",
+            "category": "Royal Pains",
+            "value": 200,
+            "clue": "To divorce Catherine of Aragon, this tubby Tudor split from the Catholic Church.",
+            "answer": "Who is Henry VIII?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-1-c84ac7c9-37f3-4697-ace1-5cc5b3f63683",
+            "category": "Royal Pains",
+            "value": 400,
+            "clue": "This Russian Tsar killed his own son in a fit of rage, earning the nickname 'Grozny' or 'Terrible'.",
+            "answer": "Who is Ivan the Terrible (or Ivan IV)?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-2-b2eef611-90a8-4e0a-bdc7-a0dd6ecd7054",
+            "category": "Royal Pains",
+            "value": 600,
+            "clue": "Legend says this Roman emperor made his favorite horse, Incitatus, a consul.",
+            "answer": "Who is Caligula?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-3-7762936c-f849-4dc2-b1bc-4edaedb9642c",
+            "category": "Royal Pains",
+            "value": 800,
+            "clue": "This British monarch 'lost' the American colonies, possibly because he was going 'Mad'.",
+            "answer": "Who is George III?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-4-0c5a65d0-b3a9-40cc-abb2-1837b581b603",
+            "category": "Royal Pains",
+            "value": 1000,
+            "clue": "The Habsburg jaw was most prominent in this bewitched Spanish king who died childless in 1700.",
+            "answer": "Who is Charles II?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-4-53f41352-a71b-4c77-8565-37fdac619fbf",
+        "name": "\"Russian\" to Conclusions",
+        "clues": [
+          {
+            "id": "clue-jeopardy-4-0-96ba7ae7-56bc-4243-96fd-d969ebd9f212",
+            "category": "\"Russian\" to Conclusions",
+            "value": 200,
+            "clue": "This fortified complex in the center of Moscow is the historic seat of Russian power.",
+            "answer": "What is the Kremlin?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-1-bc40696b-b0cd-4c0b-94ec-99472289e339",
+            "category": "\"Russian\" to Conclusions",
+            "value": 400,
+            "clue": "Though German-born, she became 'The Great' empress of Russia after her husband conveniently died.",
+            "answer": "Who is Catherine the Great?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-2-0dba00c4-571c-4065-b311-189637d3bb61",
+            "category": "\"Russian\" to Conclusions",
+            "value": 600,
+            "clue": "In 1957, the USSR launched this first artificial satellite, initiating the Space Race.",
+            "answer": "What is Sputnik?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-3-a48e5e33-dce1-485d-ae4d-081243f2da8a",
+            "category": "\"Russian\" to Conclusions",
+            "value": 800,
+            "clue": "Led by Lenin, this faction of the Marxists seized power in the October Revolution.",
+            "answer": "Who are the Bolsheviks?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-4-e33c67e7-7a9d-4c33-9473-f07e0b289ba6",
+            "category": "\"Russian\" to Conclusions",
+            "value": 1000,
+            "clue": "Ruling from 1613 to 1917, this was the last imperial dynasty of Russia.",
+            "answer": "Who are the Romanovs?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-5-56989969-0d6b-4889-96c5-60afb5b6c0ca",
+        "name": "Fight Club",
+        "clues": [
+          {
+            "id": "clue-jeopardy-5-0-13ff43d7-13d9-4dac-8cb5-7a8fe50b9031",
+            "category": "Fight Club",
+            "value": 200,
+            "clue": "A global standoff between the U.S. and USSR that involved very little actual temperature dropping.",
+            "answer": "What is the Cold War?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-1-44be2665-52cd-42cc-bbdd-d1cebc48d6e9",
+            "category": "Fight Club",
+            "value": 400,
+            "clue": "In 1932, the Australian military technically lost a 'war' against these flightless birds.",
+            "answer": "What are Emus?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-2-5f36ffe7-834c-4f04-b5e0-fd2b1d9d07c4",
+            "category": "Fight Club",
+            "value": 600,
+            "clue": "A British sea captain's severed appendage sparked the 1739 War of [This Man's] Ear.",
+            "answer": "Who is Jenkins?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-3-eece36e9-953f-4b21-8241-8764017455e6",
+            "category": "Fight Club",
+            "value": 800,
+            "clue": "Fought between the houses of Lancaster and York, this conflict ended with the Tudors rising.",
+            "answer": "What is the War of the Roses?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-4-bf426e41-04ea-4225-ba77-bb7c8fb20672",
+            "category": "Fight Club",
+            "value": 1000,
+            "clue": "Britain fought China in the mid-1800s to force open trade for this addictive poppy product.",
+            "answer": "What are the Opium Wars?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      }
+    ]
+  },
+  "doubleJeopardy": {
+    "round": "doubleJeopardy",
+    "categories": [
+      {
+        "id": "cat-doubleJeopardy-0-26ab18d6-61e1-48b7-a2eb-1a170d3c6798",
+        "name": "Pyramid Schemes",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-0-0-5af53577-1536-48f0-9edb-494e9dd144c3",
+            "category": "Pyramid Schemes",
+            "value": 400,
+            "clue": "To get ahead in the afterlife, embalmers used a hook to pull the brain out through this facial feature.",
+            "answer": "What is the nose?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-1-c81c6309-c5f0-4ecd-82c1-040d33f90353",
+            "category": "Pyramid Schemes",
+            "value": 800,
+            "clue": "Howard Carter found this 'Boy King' in 1922; he was well-preserved, unlike the curse victims.",
+            "answer": "Who is King Tutankhamun (or King Tut)?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-2-b80591bd-dcf4-4345-be3a-e9912a4a15b7",
+            "category": "Pyramid Schemes",
+            "value": 1200,
+            "clue": "She famously rolled herself up in a carpet to sneak in and meet Julius Caesar.",
+            "answer": "Who is Cleopatra?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-3-dcaa56f9-c8c7-4dbc-a64c-a86053d04d5c",
+            "category": "Pyramid Schemes",
+            "value": 1600,
+            "clue": "This limestone statue near Giza has the body of a lion and a face that is famously missing its nose.",
+            "answer": "What is the Sphinx?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-4-14b6ad9f-edc9-4cad-84c1-9115bf64bd48",
+            "category": "Pyramid Schemes",
+            "value": 2000,
+            "clue": "This heretic pharaoh tried to make 'fetch' happen by banning old gods in favor of the Aten sun disk.",
+            "answer": "Who is Akhenaten?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-1-b3c0f6fa-0fdb-4ee0-9d45-77bd741be743",
+        "name": "Norse Code",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-1-0-f6f65f3d-b3d2-40c3-9c2a-4734df56c52d",
+            "category": "Norse Code",
+            "value": 400,
+            "clue": "Viking GPS was just following the coast in these shallow-draft vessels often adorned with dragon heads.",
+            "answer": "What are longships?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-1-1d375fa4-0825-4e36-b641-94eeaabe0f62",
+            "category": "Norse Code",
+            "value": 800,
+            "clue": "Erik the Red was the original real estate scammer, naming this icy island something lush to attract settlers.",
+            "answer": "What is Greenland?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-2-1ddf05f2-0c26-43e7-9d52-53b4f78fd0ed",
+            "category": "Norse Code",
+            "value": 1200,
+            "clue": "Nearly 500 years before Columbus, this Norse explorer likely set foot in Newfoundland.",
+            "answer": "Who is Leif Erikson?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-3-22d744f6-52af-4daa-9eef-0cea848cd4b0",
+            "category": "Norse Code",
+            "value": 1600,
+            "clue": "If you died bravely in battle, the Valkyries gave you a ride to this great hall of Odin.",
+            "answer": "What is Valhalla?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-4-eae859d3-b385-47c6-8575-f4c38335fef1",
+            "category": "Norse Code",
+            "value": 2000,
+            "clue": "These fierce warriors wore bear or wolf skins and fought in a trance-like fury, giving us a modern word for going crazy.",
+            "answer": "Who are berserkers?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-2-63ef4e9c-cd6a-4973-893d-4914c8f0dacc",
+        "name": "Middle Age Spread",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-2-0-6e0dbabf-d350-4cbb-aade-9849881f5251",
+            "category": "Middle Age Spread",
+            "value": 400,
+            "clue": "Fleas hitching rides on rats were the primary Uber drivers for this 14th-century pandemic.",
+            "answer": "What is the Black Death (or the Bubonic Plague)?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-1-cff69b1b-9d2c-42ca-b210-c5ca520977a7",
+            "category": "Middle Age Spread",
+            "value": 800,
+            "clue": "King John was forced to sign this 'Great Charter' in 1215 because the barons were tired of his taxes.",
+            "answer": "What is the Magna Carta?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-2-8ef1d4ab-c206-44bd-887a-95441f3ee9b8",
+            "category": "Middle Age Spread",
+            "value": 1200,
+            "clue": "This teenage peasant girl heard voices telling her to save France, though the English fired her up at the stake.",
+            "answer": "Who is Joan of Arc?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-3-56db0f1f-f8e2-400c-a610-93e7e9773fb5",
+            "category": "Middle Age Spread",
+            "value": 1600,
+            "clue": "Pope Urban II launched the first of these religious military campaigns to retake the Holy Land.",
+            "answer": "What are the Crusades?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-4-0f54c436-a8e7-4d27-8081-087d5a095ea8",
+            "category": "Middle Age Spread",
+            "value": 2000,
+            "clue": "Established by Ferdinand and Isabella, this tribunal famously rooted out heresy—nobody expects it!",
+            "answer": "What is the Spanish Inquisition?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-3-1b5fd688-df53-4b60-bc85-46dde53330ca",
+        "name": "Axis Bold as Love",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-3-0-eff8a86f-8590-438b-9e7b-bf92ab137a04",
+            "category": "Axis Bold as Love",
+            "value": 400,
+            "clue": "FDR called December 7, 1941, a 'date which will live in infamy' after the attack on this naval base.",
+            "answer": "What is Pearl Harbor?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-1-ec0f2280-d3ff-498f-9ace-f6fa19f518c3",
+            "category": "Axis Bold as Love",
+            "value": 800,
+            "clue": "This British Prime Minister offered nothing but 'blood, toil, tears, and sweat'—and cigars.",
+            "answer": "Who is Winston Churchill?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-2-8230a847-fce2-4977-bc3b-cf2b300c102a",
+            "category": "Axis Bold as Love",
+            "value": 1200,
+            "clue": "Meaning 'lightning war,' this German tactic involved moving tanks and planes faster than the paperwork.",
+            "answer": "What is Blitzkrieg?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-3-351a8b8f-f432-413f-833f-dd2f7b3e3634",
+            "category": "Axis Bold as Love",
+            "value": 1600,
+            "clue": "Led by Oppenheimer, this secretive project in the desert developed the first atomic bombs.",
+            "answer": "What is the Manhattan Project?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-4-0f8bc2f7-614e-4140-b7a6-7b8765406530",
+            "category": "Axis Bold as Love",
+            "value": 2000,
+            "clue": "The French built this line of concrete fortifications to stop Germany, who simply drove around it.",
+            "answer": "What is the Maginot Line?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-4-7fe0319b-e2a1-4f0f-9a72-f2f1c0e7b960",
+        "name": "Tea-dious Events",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-4-0-2813acd2-9914-403f-840b-0353810a9181",
+            "category": "Tea-dious Events",
+            "value": 400,
+            "clue": "In 1773, colonists dressed as Mohawks turned Boston Harbor into the world's largest cold brew.",
+            "answer": "What is the Boston Tea Party?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-1-388c7f29-bff0-4867-a7e3-2d776e4955f2",
+            "category": "Tea-dious Events",
+            "value": 800,
+            "clue": "This 'Mahatma' led the Salt March to protest British taxes and advocated non-violent resistance.",
+            "answer": "Who is Gandhi?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-2-068bac77-4e47-4e71-ae40-9801203f3753",
+            "category": "Tea-dious Events",
+            "value": 1200,
+            "clue": "She ruled for 63 years, wore black for 40 of them, and was definitely 'not amused'.",
+            "answer": "Who is Queen Victoria?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-3-ca2620ce-f5f6-4539-8c12-eaac20bab78e",
+            "category": "Tea-dious Events",
+            "value": 1600,
+            "clue": "Captain James Cook met a sharp end in 1779 after overstaying his welcome in these islands.",
+            "answer": "What is Hawaii?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-4-831b3e95-deea-4e1c-9b67-54fe1256c484",
+            "category": "Tea-dious Events",
+            "value": 2000,
+            "clue": "Dutch settlers called Boers fought the British Empire for control of diamonds and gold in this country.",
+            "answer": "What is South Africa?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-5-ae77eb30-cf85-415d-9319-a8e836480aa3",
+        "name": "History's Worst Breakups",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-5-0-e289e3ba-d6e6-45a0-9f68-c65475d8a608",
+            "category": "History's Worst Breakups",
+            "value": 400,
+            "clue": "In 1776, Thomas Jefferson wrote this ultimate 'it's not me, it's you' letter to King George.",
+            "answer": "What is the Declaration of Independence?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-1-bb45630b-b8ea-4101-9d73-a3940e84ecd4",
+            "category": "History's Worst Breakups",
+            "value": 800,
+            "clue": "In 1947, the British Raj was split into two independent nations: India and this Muslim-majority state.",
+            "answer": "What is Pakistan?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-2-f05767e2-de91-4cb8-bac3-3a0d7fafdf24",
+            "category": "History's Worst Breakups",
+            "value": 1200,
+            "clue": "Concrete and barbed wire physically separated this capital city from 1961 until 1989.",
+            "answer": "What is Berlin?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-3-20e9c684-d243-49bd-9e09-5df3a84457c0",
+            "category": "History's Worst Breakups",
+            "value": 1600,
+            "clue": "With some U.S. help, this country broke up with Colombia in 1903 just so we could dig a canal there.",
+            "answer": "What is Panama?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-4-0fe7caa2-1c56-48e2-a887-8d7f92cc32a0",
+            "category": "History's Worst Breakups",
+            "value": 2000,
+            "clue": "The Great Schism of 1054 split Christianity into the Roman Catholic Church and this Eastern branch.",
+            "answer": "What is the Eastern Orthodox Church?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      }
+    ]
+  },
+  "finalJeopardy": {
+    "category": "Historical Burns",
+    "clue": "Voltaire famously quipped that this political entity, which ruled central Europe until 1806, was \"neither holy, nor Roman, nor an empire.\"",
+    "answer": "What is the Holy Roman Empire?"
+  },
+  "createdAt": "2025-11-24T03:06:18.269Z",
+  "metadata": {
+    "topics": "world history, but make it really funny, with puns and jokes",
+    "difficulty": "medium"
+  }
+}
