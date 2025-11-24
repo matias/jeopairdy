@@ -25,8 +25,8 @@ function calculateSpeakingTime(clueText) {
     .map((word) => syllableCount(word));
 
   const totalSyllables = processedText.reduce((a, b) => a + b, 0);
-  // Assume speaking rate of 4.5 syllables/second, minimum 2 seconds
-  let speakingTime = Math.max((totalSyllables / 4.5) * 1000, 2000);
+  // Assume speaking rate of 4 syllables/second, minimum 2 seconds
+  let speakingTime = Math.max((totalSyllables / 4) * 1000, 2000);
 
   // Clamp the speaking time to 10 seconds max.
   speakingTime = Math.min(speakingTime, 10000);
