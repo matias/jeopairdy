@@ -19,6 +19,7 @@ router.get('/list', async (req, res) => {
           id: game.id,
           createdAt: game.createdAt,
           filename: file,
+          metadata: game.metadata,
         };
       }),
     );
