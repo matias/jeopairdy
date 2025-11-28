@@ -104,7 +104,10 @@ interface FirestoreMetadata {
   createdAt: Timestamp;
 }
 
+let clientInstanceCounter = 0;
+
 export class FirestoreClient implements IGameClient {
+  private instanceId: number = 0;
   private roomId: string | null = null;
   private playerId: string | null = null;
   private role: 'host' | 'player' | 'viewer' | null = null;
@@ -134,6 +137,9 @@ export class FirestoreClient implements IGameClient {
   private buzzerProcessTimeout: NodeJS.Timeout | null = null;
 
   async connect(): Promise<void> {
+    this.instanceId = ++clientInstanceCounter;
+    console.log(`[FirestoreClient #${this.instanceId}] Connecting...`);
+
     if (!isFirebaseConfigured()) {
       throw new Error(
         'Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* environment variables.',
@@ -143,6 +149,10 @@ export class FirestoreClient implements IGameClient {
     try {
       this.userId = await ensureAuth();
       this.setConnected(true);
+      console.log(
+        `[FirestoreClient #${this.instanceId}] Connected, userId:`,
+        this.userId,
+      );
     } catch (error) {
       console.error('Failed to authenticate with Firebase:', error);
       throw error;
@@ -150,6 +160,7 @@ export class FirestoreClient implements IGameClient {
   }
 
   disconnect(): void {
+    console.log(`[FirestoreClient #${this.instanceId}] Disconnecting...`);
     this.cleanupSubscriptions();
     this.setConnected(false);
     this.listeners.clear();
@@ -249,6 +260,9 @@ export class FirestoreClient implements IGameClient {
 
   private emit(type: string, data: any): void {
     const listeners = this.listeners.get(type);
+    console.log(
+      `[FirestoreClient #${this.instanceId}] emit('${type}') - ${listeners?.size || 0} listeners`,
+    );
     if (listeners) {
       listeners.forEach((cb) => cb(data));
     }
@@ -310,13 +324,23 @@ export class FirestoreClient implements IGameClient {
         } as FirestoreGameState);
 
         // Notify Slack about new room creation
+        const currentUser = getCurrentUser();
         notifyRoomCreated({
           roomId: actualRoomId,
           hostId: this.userId!,
+          hostName: currentUser?.displayName,
+          hostEmail: currentUser?.email,
           clientType: 'firestore',
         });
       }
 
+      console.log(
+        '[FirestoreClient] Host joined room, setting up subscriptions',
+        {
+          roomId: actualRoomId,
+          userId: this.userId,
+        },
+      );
       this.setupSubscriptions(actualRoomId);
     } else if (role === 'player') {
       // Player joins existing room
@@ -470,7 +494,23 @@ export class FirestoreClient implements IGameClient {
     );
 
     // Emit initial roomJoined after subscriptions are set up
-    setTimeout(() => this.emitRoomJoined(), 100);
+    console.log(
+      `[FirestoreClient #${this.instanceId}] Subscriptions set up, scheduling roomJoined emit`,
+    );
+    const instanceId = this.instanceId;
+    setTimeout(() => {
+      // Check if this client is still valid (not disconnected)
+      if (this.instanceId !== instanceId || !this.roomId || !this.role) {
+        console.log(
+          `[FirestoreClient #${instanceId}] Timeout fired but client is no longer valid, skipping`,
+        );
+        return;
+      }
+      console.log(
+        `[FirestoreClient #${this.instanceId}] Timeout fired, calling emitRoomJoined`,
+      );
+      this.emitRoomJoined();
+    }, 100);
   }
 
   private updateLocalGameState(stateData: FirestoreGameState): void {
@@ -502,9 +542,24 @@ export class FirestoreClient implements IGameClient {
   }
 
   private emitRoomJoined(): void {
-    if (!this.roomId) return;
+    console.log(`[FirestoreClient #${this.instanceId}] emitRoomJoined called`, {
+      roomId: this.roomId,
+      playerId: this.playerId,
+      role: this.role,
+      listenerCount: this.listeners.get('roomJoined')?.size || 0,
+    });
+
+    if (!this.roomId) {
+      console.log(
+        `[FirestoreClient #${this.instanceId}] emitRoomJoined - no roomId, skipping`,
+      );
+      return;
+    }
 
     const serializedState = this.serializeGameState();
+    console.log(
+      `[FirestoreClient #${this.instanceId}] Emitting roomJoined event`,
+    );
     this.emit('roomJoined', {
       type: 'roomJoined',
       roomId: this.roomId,

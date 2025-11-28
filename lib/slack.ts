@@ -48,12 +48,39 @@ export function sendSlackNotification(message: SlackMessage): void {
 export function notifyRoomCreated(data: {
   roomId: string;
   hostId: string;
+  hostName?: string | null;
+  hostEmail?: string | null;
   clientType?: 'firestore' | 'websocket';
 }) {
   const clientType = data.clientType || 'unknown';
+  const hostDisplay = data.hostName || data.hostEmail || data.hostId;
+
+  const fields = [
+    {
+      type: 'mrkdwn',
+      text: `*Room ID:*\n\`${data.roomId}\``,
+    },
+    {
+      type: 'mrkdwn',
+      text: `*Host:*\n${hostDisplay}`,
+    },
+  ];
+
+  // Add email if different from display name
+  if (data.hostEmail && data.hostName) {
+    fields.push({
+      type: 'mrkdwn',
+      text: `*Email:*\n${data.hostEmail}`,
+    });
+  }
+
+  fields.push({
+    type: 'mrkdwn',
+    text: `*Client Type:*\n${clientType}`,
+  });
 
   sendSlackNotification({
-    text: `🎮 New game room created: ${data.roomId}`,
+    text: `🎮 New game room created: ${data.roomId} by ${hostDisplay}`,
     blocks: [
       {
         type: 'header',
@@ -64,20 +91,7 @@ export function notifyRoomCreated(data: {
       },
       {
         type: 'section',
-        fields: [
-          {
-            type: 'mrkdwn',
-            text: `*Room ID:*\n\`${data.roomId}\``,
-          },
-          {
-            type: 'mrkdwn',
-            text: `*Host ID:*\n\`${data.hostId}\``,
-          },
-          {
-            type: 'mrkdwn',
-            text: `*Client Type:*\n${clientType}`,
-          },
-        ],
+        fields,
       },
     ],
   });
