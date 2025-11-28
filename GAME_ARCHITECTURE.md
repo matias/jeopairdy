@@ -2,7 +2,104 @@
 
 ## Overview
 
-Jeopairdy is a Jeopardy!-style trivia game built with Next.js (React) frontend and Node.js WebSocket backend. The game supports multiple players competing in real-time with a host controlling the game flow.
+Jeopairdy is a Jeopardy!-style trivia game built with Next.js (React) frontend. The game supports multiple players competing in real-time with a host controlling the game flow.
+
+**The game supports two modes:**
+
+- **Local Mode (WebSocket)**: Uses a local Node.js WebSocket server for real-time communication. Best for local network play where the host runs the server.
+- **Online Mode (Firebase)**: Uses Firebase Firestore for real-time synchronization. Best for online play without running a server.
+
+## Dual-Mode Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Page Components                          │
+│  (host/player/game pages - use IGameClient interface)       │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│              createGameClient() Factory                     │
+│  (lib/game-client-factory.ts - auto-detects mode)           │
+└─────────────────────────────────────────────────────────────┘
+                    │                     │
+          ┌─────────┴─────────┐   ┌───────┴────────┐
+          ▼                   ▼   ▼                ▼
+┌──────────────────┐  ┌──────────────────────────────┐
+│  WebSocketClient │  │     FirestoreClient          │
+│  (lib/websocket) │  │  (lib/firestore-client.ts)   │
+└──────────────────┘  └──────────────────────────────┘
+          │                         │
+          ▼                         ▼
+┌──────────────────┐  ┌──────────────────────────────┐
+│  Local WS Server │  │       Firebase Firestore     │
+│  (server/)       │  │  (Cloud-hosted database)     │
+└──────────────────┘  └──────────────────────────────┘
+```
+
+### Mode Auto-Detection
+
+The `createGameClient()` factory automatically detects which mode to use:
+
+1. **Explicit override**: Set `NEXT_PUBLIC_FIREBASE_MODE=true` or `false` in environment
+2. **Firebase Hosting**: If running on `*.firebaseapp.com` or `*.web.app` domains
+3. **Cloud deployment**: If running on non-local hostname with Firebase configured
+4. **Default**: Uses WebSocket mode for localhost and local network IPs
+
+### Key Files
+
+- **`lib/game-client-interface.ts`** - Common interface (`IGameClient`) for both clients
+- **`lib/game-client-factory.ts`** - Factory that creates the appropriate client
+- **`lib/websocket.ts`** - WebSocket client implementation
+- **`lib/firestore-client.ts`** - Firestore client implementation
+- **`lib/firebase.ts`** - Firebase initialization and authentication
+- **`firestore.rules`** - Security rules for Firestore
+
+### Environment Variables
+
+Add these to your `.env.local` file:
+
+```env
+# Mode selection (optional - auto-detects if not set)
+NEXT_PUBLIC_FIREBASE_MODE=false
+
+# WebSocket mode
+NEXT_PUBLIC_WS_PORT=3001
+NEXT_PUBLIC_API_URL=http://localhost:3001
+
+# Firebase mode (get from Firebase Console)
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+```
+
+### Firebase Setup
+
+1. Create a Firebase project at https://console.firebase.google.com
+2. Enable **Firestore Database** in production mode
+3. Enable **Anonymous Authentication** under Authentication > Sign-in method
+4. Add a Web App and copy the config values to `.env.local`
+5. Deploy security rules: `firebase deploy --only firestore:rules`
+
+### Firestore Data Model
+
+```
+games/
+└── {roomId}/
+    ├── metadata/
+    │   └── info          # hostId, createdAt
+    ├── config/
+    │   └── current       # GameConfig (categories, clues, etc.)
+    ├── state/
+    │   └── current       # GameState (status, currentPlayer, etc.)
+    ├── players/
+    │   └── {playerId}/   # Player data (name, score, wagers, etc.)
+    └── buzzes/
+        └── {buzzId}/     # Buzz records with serverTimestamp
+```
 
 ## Core Components
 
@@ -269,9 +366,36 @@ interface GameState {
 
 ### Tie Fairness
 
-- `notPickedInTies`: Tracks players who were in ties but not selected
-- Next tie: Prioritizes players from `notPickedInTies`
-- Ensures fair distribution over multiple ties
+The tie resolution algorithm ensures fair treatment of players who frequently tie:
+
+1. **Track passed-over players**: `notPickedInTies` array stores player IDs who were in a tie but not selected
+2. **Priority selection**: When a tie occurs, players in `notPickedInTies` get priority
+3. **Update tracking**: After selection:
+   - Remove selected player from `notPickedInTies`
+   - Add other tied players (who weren't selected) to `notPickedInTies`
+
+**Algorithm in `selectFromTie()`:**
+
+```javascript
+// Priority: players who haven't been picked in previous ties
+const priorityPlayers = tiedPlayerIds.filter((id) =>
+  notPickedInTies.includes(id),
+);
+
+// Select from priority list if available, otherwise first by timestamp
+const selectedPlayerId =
+  priorityPlayers.length > 0 ? priorityPlayers[0] : tiedPlayerIds[0];
+
+// Update tracking list
+notPickedInTies = notPickedInTies.filter((id) => id !== selectedPlayerId);
+tiedPlayerIds.forEach((id) => {
+  if (id !== selectedPlayerId && !notPickedInTies.includes(id)) {
+    notPickedInTies.push(id);
+  }
+});
+```
+
+This ensures fair rotation among players who frequently tie, rather than always favoring the same player.
 
 ### Display Order vs Logic Order
 
@@ -297,27 +421,33 @@ interface GameState {
 
 ```
 jeopairdy/
-├── app/                    # Next.js pages
-│   ├── host/[roomId]/     # Host control page
-│   ├── player/[roomId]/   # Player page
-│   ├── game/[roomId]/     # Game display page
-│   ├── join/              # Join page
-│   └── create-game/       # Game creation
-├── components/            # React components
-│   ├── Buzzer/           # Player buzzer component
-│   ├── ClueDisplay/      # Clue/question display
-│   ├── GameBoard/        # Jeopardy board
-│   └── Scoreboard/       # Player scores
-├── server/               # Node.js backend
+├── app/                         # Next.js pages
+│   ├── host/[roomId]/          # Host control page
+│   ├── player/[roomId]/        # Player page
+│   ├── game/[roomId]/          # Game display page
+│   ├── join/                   # Join page
+│   ├── create-game/            # Game creation
+│   └── load-game/              # Load saved game
+├── components/                  # React components
+│   ├── Buzzer/                 # Player buzzer component
+│   ├── ClueDisplay/            # Clue/question display
+│   ├── GameBoard/              # Jeopardy board
+│   └── Scoreboard/             # Player scores
+├── server/                      # Node.js backend (WebSocket mode)
 │   ├── src/
-│   │   ├── game/         # Game state management
-│   │   └── websocket/    # WebSocket server
-│   └── test-data/        # Saved game configs
-├── lib/                  # Client utilities
-│   ├── websocket.ts      # WebSocket client
-│   └── websocket-url.ts  # WebSocket URL config
-└── shared/               # Shared types
-    └── types.ts          # TypeScript definitions
+│   │   ├── game/               # Game state management
+│   │   └── websocket/          # WebSocket server
+│   └── test-data/              # Saved game configs
+├── lib/                         # Client utilities
+│   ├── game-client-interface.ts # IGameClient interface
+│   ├── game-client-factory.ts   # Factory for creating clients
+│   ├── websocket.ts             # WebSocket client implementation
+│   ├── firestore-client.ts      # Firebase/Firestore client implementation
+│   ├── firebase.ts              # Firebase initialization
+│   └── websocket-url.ts         # WebSocket URL config
+├── shared/                      # Shared types
+│   └── types.ts                 # TypeScript definitions
+└── firestore.rules              # Firebase security rules
 ```
 
 ## Important Patterns
@@ -352,11 +482,16 @@ jeopairdy/
 ### Adding a New Game Action
 
 1. Add message type to `ClientMessage` in `shared/types.ts`
-2. Add handler in `server/src/websocket/server.js` `handleMessage()`
-3. Implement handler function (e.g., `handleNewAction()`)
-4. Add method to `GameManager` class if state change needed
-5. Add client method to `lib/websocket.ts`
-6. Update UI components to call new method
+2. Add method to `IGameClient` interface in `lib/game-client-interface.ts`
+3. **WebSocket mode:**
+   - Add handler in `server/src/websocket/server.js` `handleMessage()`
+   - Implement handler function (e.g., `handleNewAction()`)
+   - Add method to `GameManager` class if state change needed
+   - Add client method to `lib/websocket.ts`
+4. **Firebase mode:**
+   - Add method to `FirestoreClient` class in `lib/firestore-client.ts`
+   - Update Firestore writes/reads as needed
+5. Update UI components to call new method via `IGameClient`
 
 ### Modifying Game Flow
 

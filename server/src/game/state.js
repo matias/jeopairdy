@@ -283,20 +283,34 @@ class GameManager {
   selectFromTie(game, tiedBuzzes) {
     const tiedPlayerIds = tiedBuzzes.map((b) => b.playerId);
 
-    // Find the player with the lowest score among those who tied
-    let selectedPlayerId = null;
-    let lowestScore = Infinity;
+    // Priority: players who haven't been picked in previous ties
+    const priorityPlayers = tiedPlayerIds.filter((id) =>
+      (game.notPickedInTies || []).includes(id),
+    );
 
-    tiedPlayerIds.forEach((playerId) => {
-      const player = game.players.get(playerId);
-      if (player && player.score < lowestScore) {
-        lowestScore = player.score;
-        selectedPlayerId = playerId;
+    let selectedPlayerId;
+    if (priorityPlayers.length > 0) {
+      // Pick the first priority player (was passed over in a previous tie)
+      selectedPlayerId = priorityPlayers[0];
+    } else {
+      // No priority players, pick first by server timestamp
+      selectedPlayerId = tiedPlayerIds[0];
+    }
+
+    // Update notPickedInTies list for fairness tracking
+    // Remove the selected player from the list
+    game.notPickedInTies = (game.notPickedInTies || []).filter(
+      (id) => id !== selectedPlayerId,
+    );
+
+    // Add all other tied players who weren't already in the list
+    tiedPlayerIds.forEach((id) => {
+      if (id !== selectedPlayerId && !game.notPickedInTies.includes(id)) {
+        game.notPickedInTies.push(id);
       }
     });
 
-    // Fallback to first player if no valid player found (shouldn't happen)
-    return selectedPlayerId || tiedPlayerIds[0];
+    return selectedPlayerId;
   }
 
   computeResolvedBuzzerOrder(game) {

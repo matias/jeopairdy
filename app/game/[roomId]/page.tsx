@@ -3,13 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import QRCode from 'qrcode';
-import { WebSocketClient } from '@/lib/websocket';
+import { createGameClient } from '@/lib/game-client-factory';
+import { IGameClient } from '@/lib/game-client-interface';
 import { GameState, ServerMessage } from '@/shared/types';
 import GameBoard from '@/components/GameBoard/GameBoard';
 import ClueDisplay from '@/components/ClueDisplay/ClueDisplay';
 import Scoreboard from '@/components/Scoreboard/Scoreboard';
 
-import { getWebSocketUrl } from '@/lib/websocket-url';
 import {
   playBoardFill,
   playIntroMusic,
@@ -19,8 +19,6 @@ import {
   playThinkMusic,
   stopThinkMusic,
 } from '@/lib/audio';
-
-const WS_URL = getWebSocketUrl();
 const ANSWER_TIMEOUT = 20000; // 20 seconds
 
 function CountdownTimer({
@@ -68,7 +66,7 @@ function CountdownTimer({
 export default function GameDisplayPage() {
   const params = useParams();
   const roomId = params.roomId as string;
-  const [ws, setWs] = useState<WebSocketClient | null>(null);
+  const [gameClient, setGameClient] = useState<IGameClient | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [showScores, setShowScores] = useState(true);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
@@ -90,7 +88,7 @@ export default function GameDisplayPage() {
   }, [gameState]);
 
   useEffect(() => {
-    const client = new WebSocketClient(WS_URL);
+    const client = createGameClient();
     client
       .connect()
       .then(() => {
@@ -127,7 +125,7 @@ export default function GameDisplayPage() {
           }
         });
 
-        setWs(client);
+        setGameClient(client);
       })
       .catch(console.error);
 

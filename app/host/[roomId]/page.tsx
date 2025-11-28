@@ -2,20 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { WebSocketClient } from '@/lib/websocket';
+import { createGameClient } from '@/lib/game-client-factory';
+import { IGameClient } from '@/lib/game-client-interface';
 import { GameState, ServerMessage, Player } from '@/shared/types';
 import GameBoard from '@/components/GameBoard/GameBoard';
 import ClueDisplay from '@/components/ClueDisplay/ClueDisplay';
 import Scoreboard from '@/components/Scoreboard/Scoreboard';
 
-import { getWebSocketUrl } from '@/lib/websocket-url';
-
-const WS_URL = getWebSocketUrl();
-
 export default function HostPage() {
   const params = useParams();
   const roomId = params.roomId as string;
-  const [ws, setWs] = useState<WebSocketClient | null>(null);
+  const [gameClient, setGameClient] = useState<IGameClient | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -24,7 +21,7 @@ export default function HostPage() {
   );
 
   useEffect(() => {
-    const client = new WebSocketClient(WS_URL);
+    const client = createGameClient();
     client
       .connect()
       .then(() => {
@@ -43,7 +40,7 @@ export default function HostPage() {
           }
         });
 
-        setWs(client);
+        setGameClient(client);
       })
       .catch(console.error);
 
@@ -53,74 +50,74 @@ export default function HostPage() {
   }, [roomId]);
 
   const handleSelectClue = (categoryId: string, clueId: string) => {
-    if (ws) {
-      ws.selectClue(categoryId, clueId);
+    if (gameClient) {
+      gameClient.selectClue(categoryId, clueId);
     }
   };
 
   const handleRevealAnswer = () => {
-    if (ws) {
-      ws.revealAnswer();
+    if (gameClient) {
+      gameClient.revealAnswer();
       setShowAnswer(true);
     }
   };
 
   const handleJudgeAnswer = (playerId: string, correct: boolean) => {
-    if (ws) {
-      ws.judgeAnswer(correct, playerId);
+    if (gameClient) {
+      gameClient.judgeAnswer(correct, playerId);
     }
   };
 
   const handleUpdateScore = (playerId: string, delta: number) => {
-    if (ws) {
-      ws.updateScore(playerId, delta);
+    if (gameClient) {
+      gameClient.updateScore(playerId, delta);
       setScoreDelta((prev) => ({ ...prev, [playerId]: '' }));
     }
   };
 
   const handleNextRound = () => {
-    if (ws) {
+    if (gameClient) {
       if (confirm('Are you sure you want to advance to the next round?')) {
-        ws.nextRound();
+        gameClient.nextRound();
       }
     }
   };
 
   const handleStartFinalJeopardy = () => {
-    if (ws) {
+    if (gameClient) {
       if (confirm('Are you sure you want to start Final Jeopardy?')) {
-        ws.startFinalJeopardy();
+        gameClient.startFinalJeopardy();
       }
     }
   };
 
   const handleRevealFinalAnswers = () => {
-    if (ws) {
-      ws.revealFinalAnswers();
+    if (gameClient) {
+      gameClient.revealFinalAnswers();
     }
   };
 
   const handleShowFinalJeopardyClue = () => {
-    if (ws) {
-      ws.showFinalJeopardyClue();
+    if (gameClient) {
+      gameClient.showFinalJeopardyClue();
     }
   };
 
   const handleStartFinalJeopardyJudging = () => {
-    if (ws) {
-      ws.startFinalJeopardyJudging();
+    if (gameClient) {
+      gameClient.startFinalJeopardyJudging();
     }
   };
 
   const handleRevealFinalJeopardyWager = () => {
-    if (ws) {
-      ws.revealFinalJeopardyWager();
+    if (gameClient) {
+      gameClient.revealFinalJeopardyWager();
     }
   };
 
   const handleRevealFinalJeopardyAnswer = () => {
-    if (ws) {
-      ws.revealFinalJeopardyAnswer();
+    if (gameClient) {
+      gameClient.revealFinalJeopardyAnswer();
     }
   };
 
@@ -128,20 +125,20 @@ export default function HostPage() {
     playerId: string,
     correct: boolean,
   ) => {
-    if (ws) {
-      ws.judgeFinalJeopardyAnswer(playerId, correct);
+    if (gameClient) {
+      gameClient.judgeFinalJeopardyAnswer(playerId, correct);
     }
   };
 
   const handleReturnToBoard = () => {
-    if (ws) {
-      ws.returnToBoard();
+    if (gameClient) {
+      gameClient.returnToBoard();
     }
   };
 
   const handleStartGame = () => {
-    if (ws) {
-      ws.startGame();
+    if (gameClient) {
+      gameClient.startGame();
     }
   };
 
@@ -407,7 +404,7 @@ export default function HostPage() {
                 {buzzerOrder.length > 0 ? (
                   <>
                     <div className="text-xl font-bold mb-3 text-gray-800">
-                      Buzzed In (Resolved Order):
+                      Buzzed In:
                     </div>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {buzzerOrder.map((player, index) => {

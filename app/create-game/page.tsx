@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { WebSocketClient } from '@/lib/websocket';
-import { getWebSocketUrl } from '@/lib/websocket-url';
+import { createGameClient } from '@/lib/game-client-factory';
+import { IGameClient } from '@/lib/game-client-interface';
 import {
   getSystemInstructions,
   getInitialSamplePrompt,
@@ -19,8 +19,6 @@ import type {
   RoundData,
   Round,
 } from '@/shared/types';
-
-const WS_URL = getWebSocketUrl();
 const JEOPARDY_VALUES = [200, 400, 600, 800, 1000];
 const DOUBLE_VALUES = [400, 800, 1200, 1600, 2000];
 
@@ -52,7 +50,7 @@ export default function CreateGamePage() {
   const [phase, setPhase] = useState<
     'setup' | 'iterating' | 'finalizing' | 'editing' | 'complete'
   >('setup');
-  const [wsClient, setWsClient] = useState<WebSocketClient | null>(null);
+  const [wsClient, setWsClient] = useState<IGameClient | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [finalGameId, setFinalGameId] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -81,7 +79,7 @@ export default function CreateGamePage() {
   useEffect(() => {
     if (!roomId) return;
     let mounted = true;
-    const client = new WebSocketClient(WS_URL);
+    const client = createGameClient();
 
     (async () => {
       try {

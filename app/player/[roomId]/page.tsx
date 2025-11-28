@@ -2,20 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { WebSocketClient } from '@/lib/websocket';
+import { createGameClient } from '@/lib/game-client-factory';
+import { IGameClient } from '@/lib/game-client-interface';
 import { GameState, ServerMessage } from '@/shared/types';
 import Buzzer from '@/components/Buzzer/Buzzer';
 import Scoreboard from '@/components/Scoreboard/Scoreboard';
-
-import { getWebSocketUrl } from '@/lib/websocket-url';
-
-const WS_URL = getWebSocketUrl();
 
 export default function PlayerPage() {
   const params = useParams();
   const router = useRouter();
   const roomId = params.roomId as string;
-  const [ws, setWs] = useState<WebSocketClient | null>(null);
+  const [gameClient, setGameClient] = useState<IGameClient | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [buzzerLocked, setBuzzerLocked] = useState(true);
@@ -57,7 +54,7 @@ export default function PlayerPage() {
     }
 
     connectedRef.current = true;
-    const client = new WebSocketClient(WS_URL, false); // Start with auto-reconnect disabled
+    const client = createGameClient(false); // Start with auto-reconnect disabled
 
     // Listen for connection state changes
     const unsubscribeConnectionState = client.onConnectionStateChange(
@@ -133,7 +130,7 @@ export default function PlayerPage() {
           }
         });
 
-        setWs(client);
+        setGameClient(client);
       })
       .catch((error) => {
         console.warn('Connection error:', error);
@@ -155,19 +152,19 @@ export default function PlayerPage() {
 
   const handleBuzz = () => {
     // Normal buzz - check for early buzz penalty
-    if (ws && !buzzerLocked && !buzzed) {
+    if (gameClient && !buzzerLocked && !buzzed) {
       const delayMs = earlyBuzzPenalty ? 250 : 0;
 
       if (delayMs > 0) {
         // Apply penalty delay
         setTimeout(() => {
           setBuzzed(true);
-          ws.buzz();
+          gameClient.buzz();
         }, delayMs);
       } else {
         // No penalty, buzz immediately
         setBuzzed(true);
-        ws.buzz();
+        gameClient.buzz();
       }
     }
   };
@@ -194,18 +191,18 @@ export default function PlayerPage() {
   };
 
   const handleSubmitWager = () => {
-    if (ws && finalWager) {
+    if (gameClient && finalWager) {
       const wager = parseInt(finalWager);
       if (!isNaN(wager) && wager >= 0) {
-        ws.submitWager(wager);
+        gameClient.submitWager(wager);
         setFinalWager('');
       }
     }
   };
 
   const handleSubmitFinalAnswer = () => {
-    if (ws && finalAnswer) {
-      ws.submitFinalAnswer(finalAnswer);
+    if (gameClient && finalAnswer) {
+      gameClient.submitFinalAnswer(finalAnswer);
       setFinalAnswer('');
     }
   };

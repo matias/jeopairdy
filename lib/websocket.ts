@@ -1,6 +1,12 @@
-import { ClientMessage, ServerMessage, GameState } from '@/shared/types';
+import {
+  ClientMessage,
+  ServerMessage,
+  GameState,
+  GameConfig,
+} from '@/shared/types';
+import { IGameClient } from './game-client-interface';
 
-export class WebSocketClient {
+export class WebSocketClient implements IGameClient {
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 10;
@@ -401,14 +407,14 @@ export class WebSocketClient {
     });
   }
 
-  saveGame(gameConfig: any) {
+  saveGame(gameConfig: GameConfig) {
     this.send({
       type: 'saveGame',
       gameConfig,
     });
   }
 
-  loadGame(gameConfig: any) {
+  loadGame(gameConfig: GameConfig) {
     this.send({
       type: 'loadGame',
       gameConfig,

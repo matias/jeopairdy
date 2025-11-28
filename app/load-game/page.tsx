@@ -2,12 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { WebSocketClient } from '@/lib/websocket';
+import { createGameClient } from '@/lib/game-client-factory';
+import { IGameClient } from '@/lib/game-client-interface';
 import { GameConfig } from '@/shared/types';
 
-import { getWebSocketUrl } from '@/lib/websocket-url';
-
-const WS_URL = getWebSocketUrl();
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export default function LoadGamePage() {
@@ -25,7 +23,7 @@ export default function LoadGamePage() {
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [ws, setWs] = useState<WebSocketClient | null>(null);
+  const [gameClient, setGameClient] = useState<IGameClient | null>(null);
   const [previewGame, setPreviewGame] = useState<GameConfig | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
@@ -77,7 +75,7 @@ export default function LoadGamePage() {
 
       const gameConfig: GameConfig = await response.json();
 
-      const client = new WebSocketClient(WS_URL);
+      const client = createGameClient();
       await client.connect();
       client.joinRoom(roomId, undefined, 'host');
 
@@ -89,7 +87,7 @@ export default function LoadGamePage() {
         setError(message.message);
       });
 
-      setWs(client);
+      setGameClient(client);
 
       // Wait a bit for connection to establish, then send game config
       setTimeout(() => {

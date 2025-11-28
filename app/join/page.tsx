@@ -2,18 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { WebSocketClient } from '@/lib/websocket';
-
-import { getWebSocketUrl } from '@/lib/websocket-url';
-
-const WS_URL = getWebSocketUrl();
+import { createGameClient } from '@/lib/game-client-factory';
+import { IGameClient } from '@/lib/game-client-interface';
 
 export default function JoinPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [roomId, setRoomId] = useState('');
   const [playerName, setPlayerName] = useState('');
-  const [ws, setWs] = useState<WebSocketClient | null>(null);
+  const [gameClient, setGameClient] = useState<IGameClient | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,7 +33,7 @@ export default function JoinPage() {
         return;
       }
 
-      const client = new WebSocketClient(WS_URL, false); // Disable auto-reconnect, we'll handle navigation
+      const client = createGameClient(false); // Disable auto-reconnect, we'll handle navigation
       client
         .connect()
         .then(() => {
@@ -58,7 +55,7 @@ export default function JoinPage() {
           client.on('error', (message: any) => {
             setError(message.message);
           });
-          setWs(client);
+          setGameClient(client);
         })
         .catch((err) => {
           setError('Failed to connect to server');
