@@ -138,8 +138,9 @@ function CreateGamePageContent() {
       body: JSON.stringify({
         model,
         conversationId: resetConversation ? null : conversationId,
-        instructions:
-          !conversationId || resetConversation ? instructions : undefined,
+        // Always include instructions in case the server lost the conversation
+        // (e.g., serverless cold start, conversation expiration)
+        instructions,
         message,
         format,
         useGoogleSearchGrounding:

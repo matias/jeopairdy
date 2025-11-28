@@ -145,10 +145,10 @@ async function handleOpenAIRequest({
     format,
   });
 
-  try {
-    const response = await openai.responses.create({
+  const makeRequest = async (convId: string) => {
+    return await openai.responses.create({
       model: 'gpt-5.1',
-      conversation: activeConversationId,
+      conversation: convId,
       input: [
         {
           type: 'message',
@@ -162,6 +162,47 @@ async function handleOpenAIRequest({
         },
       },
     });
+  };
+
+  try {
+    let response;
+    try {
+      response = await makeRequest(activeConversationId!);
+    } catch (error: any) {
+      // If conversation not found/expired and we have instructions, create a new one
+      if (
+        (error?.status === 404 || error?.message?.includes('not found')) &&
+        instructions
+      ) {
+        console.log('[OpenAI] Conversation expired, creating new one', {
+          oldConversationId: activeConversationId,
+        });
+
+        const conversation = await openai.conversations.create({
+          items: [
+            {
+              type: 'message',
+              role: 'developer',
+              content: [
+                {
+                  type: 'input_text',
+                  text: instructions,
+                },
+              ],
+            },
+          ],
+        });
+
+        activeConversationId = conversation.id;
+        console.log('[OpenAI] New conversation created', {
+          conversationId: activeConversationId,
+        });
+
+        response = await makeRequest(activeConversationId);
+      } else {
+        throw error;
+      }
+    }
 
     const tokenUsage: Record<string, number | undefined> = {};
     if (response.usage) {
@@ -222,9 +263,22 @@ async function handleGeminiRequest({
     ? geminiChats.get(activeConversationId)
     : null;
 
-  // Create new chat if needed
+  // Create new chat if needed (or if conversation was lost due to cold start)
   if (!chat) {
     if (typeof instructions !== 'string' || instructions.trim() === '') {
+      // If we had a conversationId but lost the session, give a more helpful error
+      if (conversationId) {
+        console.warn('[Gemini] Conversation not found (likely cold start)', {
+          conversationId,
+        });
+        return NextResponse.json(
+          {
+            error:
+              'Conversation expired or server restarted. Please include instructions to continue.',
+          },
+          { status: 400 },
+        );
+      }
       return NextResponse.json(
         {
           error: 'instructions are required when creating a new conversation.',
@@ -233,9 +287,14 @@ async function handleGeminiRequest({
       );
     }
 
-    // Generate a conversation ID if not provided
-    if (!activeConversationId) {
-      activeConversationId = `gemini-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    // Generate a new conversation ID (don't reuse old one to avoid confusion)
+    activeConversationId = `gemini-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    if (conversationId) {
+      console.log('[Gemini] Recovering lost conversation', {
+        oldConversationId: conversationId,
+        newConversationId: activeConversationId,
+      });
     }
 
     // Build config with system instruction and optional Google Search tool
