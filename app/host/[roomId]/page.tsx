@@ -395,7 +395,11 @@ export default function HostPage() {
           gameState.status === 'answering' ||
           gameState.status === 'judging') && (
           <div className="mb-6">
-            <ClueDisplay gameState={gameState} showAnswer={true} />
+            <ClueDisplay
+              gameState={gameState}
+              showAnswer={true}
+              isHostView={true}
+            />
 
             {/* Show resolved buzzer order and judging controls for host */}
             {(gameState.status === 'answering' ||
