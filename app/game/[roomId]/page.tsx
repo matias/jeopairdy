@@ -251,63 +251,60 @@ export default function GameDisplayPage() {
   }, [gameState?.status]);
 
   // Handle 20-second timeout for answering clues
+  // Timer starts when buzzers are unlocked (status changes to 'buzzing')
   useEffect(() => {
     if (!gameState) return;
 
     const currentClue = gameState.selectedClue;
-    const clueChanged =
-      currentClue &&
-      (!lastSelectedClueRef.current ||
-        lastSelectedClueRef.current.categoryId !== currentClue.categoryId ||
-        lastSelectedClueRef.current.clueId !== currentClue.clueId);
 
-    // Clear any existing timeout when clue changes or state moves away
+    // Clear any existing timeout when state moves away from buzzing
     if (
-      clueChanged ||
       gameState.status === 'selecting' ||
       gameState.status === 'ready' ||
-      gameState.status === 'finished'
+      gameState.status === 'finished' ||
+      gameState.status === 'clueRevealed'
     ) {
       if (answerTimeoutIdRef.current) {
         clearTimeout(answerTimeoutIdRef.current);
         answerTimeoutIdRef.current = null;
       }
+      lastSelectedClueRef.current = null;
     }
 
-    // Start timer when a new clue is revealed (status is clueRevealed or buzzing)
-    // Timer starts from when clue is first revealed, not when buzzer unlocks
-    if (
-      clueChanged &&
-      currentClue &&
-      (gameState.status === 'clueRevealed' || gameState.status === 'buzzing')
-    ) {
-      lastSelectedClueRef.current = currentClue;
+    // Start timer when status changes to 'buzzing' (host unlocked buzzers)
+    if (gameState.status === 'buzzing' && currentClue) {
+      const clueChanged =
+        !lastSelectedClueRef.current ||
+        lastSelectedClueRef.current.categoryId !== currentClue.categoryId ||
+        lastSelectedClueRef.current.clueId !== currentClue.clueId;
 
-      const timeoutId = setTimeout(() => {
-        // Check current state (not closure) - only play if no one has buzzed
-        // Play times-up only if status is still 'clueRevealed' or 'buzzing' (no buzzes)
-        // Do NOT play if status is 'answering' or 'judging' (someone already buzzed)
-        const currentState = gameStateRef.current;
-        if (
-          currentState &&
-          currentState.selectedClue &&
-          currentState.selectedClue.categoryId === currentClue.categoryId &&
-          currentState.selectedClue.clueId === currentClue.clueId &&
-          (currentState.status === 'clueRevealed' ||
-            currentState.status === 'buzzing')
-        ) {
-          playTimesUp();
+      if (clueChanged) {
+        // Clear any existing timeout first
+        if (answerTimeoutIdRef.current) {
+          clearTimeout(answerTimeoutIdRef.current);
         }
-        answerTimeoutIdRef.current = null;
-      }, ANSWER_TIMEOUT);
 
-      answerTimeoutIdRef.current = timeoutId;
-    } else if (currentClue) {
-      // Update ref even if we didn't start a new timer
-      lastSelectedClueRef.current = currentClue;
-    } else {
-      // No clue selected, reset ref
-      lastSelectedClueRef.current = null;
+        lastSelectedClueRef.current = currentClue;
+
+        const timeoutId = setTimeout(() => {
+          // Check current state (not closure) - only play if no one has buzzed
+          // Play times-up only if status is still 'buzzing' (no buzzes yet)
+          // Do NOT play if status is 'answering' or 'judging' (someone already buzzed)
+          const currentState = gameStateRef.current;
+          if (
+            currentState &&
+            currentState.selectedClue &&
+            currentState.selectedClue.categoryId === currentClue.categoryId &&
+            currentState.selectedClue.clueId === currentClue.clueId &&
+            currentState.status === 'buzzing'
+          ) {
+            playTimesUp();
+          }
+          answerTimeoutIdRef.current = null;
+        }, ANSWER_TIMEOUT);
+
+        answerTimeoutIdRef.current = timeoutId;
+      }
     }
 
     // Cleanup on unmount
@@ -409,7 +406,7 @@ export default function GameDisplayPage() {
 
         {gameState.status === 'finalJeopardyCategory' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white text-center">
-            <p className="text-4xl mb-4">
+            <p className="text-7xl mb-4">
               <span className="category-text">
                 {gameState.config.finalJeopardy.category}
               </span>
@@ -420,7 +417,7 @@ export default function GameDisplayPage() {
 
         {gameState.status === 'finalJeopardyWagering' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white text-center">
-            <p className="text-4xl mb-4">
+            <p className="text-7xl mb-4">
               <span className="category-text">
                 {gameState.config.finalJeopardy.category}
               </span>
@@ -428,6 +425,22 @@ export default function GameDisplayPage() {
             <p className="text-xl">Players are placing their wagers...</p>
           </div>
         )}
+
+        {gameState.status === 'finalJeopardyClueReading' &&
+          gameState.config && (
+            <div className="bg-blue-800 p-8 rounded-lg text-white">
+              <div className="text-center mb-6">
+                <p className="text-4xl mb-4">
+                  <span className="category-text">
+                    {gameState.config.finalJeopardy.category}
+                  </span>
+                </p>
+                <p className="clue-text text-5xl font-bold mb-4">
+                  {gameState.config.finalJeopardy.clue}
+                </p>
+              </div>
+            </div>
+          )}
 
         {gameState.status === 'finalJeopardyAnswering' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white">
@@ -437,7 +450,7 @@ export default function GameDisplayPage() {
                   {gameState.config.finalJeopardy.category}
                 </span>
               </p>
-              <p className="clue-text text-3xl font-bold mb-4">
+              <p className="clue-text text-5xl font-bold mb-4">
                 {gameState.config.finalJeopardy.clue}
               </p>
             </div>
@@ -453,7 +466,7 @@ export default function GameDisplayPage() {
         {gameState.status === 'finalJeopardyJudging' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white">
             <div className="text-center mb-6">
-              <p className="text-4xl mb-4">
+              <p className="text-7xl mb-4">
                 <span className="category-text">
                   {gameState.config.finalJeopardy.category}
                 </span>
@@ -491,7 +504,9 @@ export default function GameDisplayPage() {
                         {gameState.finalJeopardyRevealedAnswer && (
                           <p className="text-xl">
                             Answer:{' '}
-                            {currentPlayer.finalJeopardyAnswer || 'No answer'}
+                            <span className="final-jeopardy-answer">
+                              {currentPlayer.finalJeopardyAnswer || 'No answer'}
+                            </span>
                           </p>
                         )}
                       </div>
@@ -505,7 +520,7 @@ export default function GameDisplayPage() {
         {gameState.status === 'finalJeopardyReveal' && gameState.config && (
           <div className="bg-blue-800 p-8 rounded-lg text-white">
             <div className="text-center mb-6">
-              <p className="text-4xl mb-4">
+              <p className="text-7xl mb-4">
                 <span className="category-text">
                   {gameState.config.finalJeopardy.category}
                 </span>

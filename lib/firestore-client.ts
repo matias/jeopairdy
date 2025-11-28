@@ -525,6 +525,7 @@ export class FirestoreClient implements IGameClient {
       judgedPlayers: stateData.judgedPlayers || [],
       notPickedInTies: stateData.notPickedInTies || [],
       lastCorrectPlayer: stateData.lastCorrectPlayer,
+      buzzerUnlockTime: stateData.buzzerUnlockTime,
       hostId: this.metadata?.hostId || '',
       finalJeopardyInitialScores: stateData.finalJeopardyInitialScores,
       finalJeopardyJudgingOrder: stateData.finalJeopardyJudgingOrder,
@@ -575,6 +576,7 @@ export class FirestoreClient implements IGameClient {
       judgedPlayers: this.gameState?.judgedPlayers || [],
       notPickedInTies: this.gameState?.notPickedInTies || [],
       lastCorrectPlayer: this.gameState?.lastCorrectPlayer || null,
+      buzzerUnlockTime: this.gameState?.buzzerUnlockTime,
       hostId: this.metadata?.hostId || '',
       finalJeopardyInitialScores: this.gameState?.finalJeopardyInitialScores,
       finalJeopardyJudgingOrder: this.gameState?.finalJeopardyJudgingOrder,
@@ -812,8 +814,7 @@ export class FirestoreClient implements IGameClient {
 
     const db = getFirestoreDb();
 
-    // Get the clue to calculate speaking time
-    let speakingTime = 3000;
+    // Mark clue as revealed in config
     if (this.gameConfig) {
       const round =
         this.gameState?.currentRound === 'jeopardy'
@@ -822,8 +823,6 @@ export class FirestoreClient implements IGameClient {
       const category = round?.categories.find((c) => c.id === categoryId);
       const clue = category?.clues.find((c) => c.id === clueId);
       if (clue) {
-        speakingTime = calculateSpeakingTime(clue.clue);
-        // Mark clue as revealed in config
         clue.revealed = true;
         await setDoc(
           doc(db, 'games', this.roomId, 'config', 'current'),
@@ -842,7 +841,7 @@ export class FirestoreClient implements IGameClient {
     });
     await batch.commit();
 
-    // Update game state
+    // Update game state - buzzers stay locked until host clicks unlock
     await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
       selectedClue: { categoryId, clueId },
       status: 'clueRevealed',
@@ -852,24 +851,27 @@ export class FirestoreClient implements IGameClient {
       currentPlayer: null,
       judgedPlayers: [],
       buzzerLocked: true,
-      buzzerUnlockTime: speakingTime,
+      buzzerUnlockTime: null,
     });
+  }
 
-    // Unlock buzzer after speaking time
-    setTimeout(async () => {
-      const stateSnap = await getDoc(
-        doc(db, 'games', this.roomId!, 'state', 'current'),
-      );
-      if (stateSnap.exists()) {
-        const state = stateSnap.data() as FirestoreGameState;
-        if (state.status === 'clueRevealed') {
-          await updateDoc(doc(db, 'games', this.roomId!, 'state', 'current'), {
-            status: 'buzzing',
-            buzzerLocked: false,
-          });
-        }
+  async unlockBuzzers(): Promise<void> {
+    if (!this.roomId || this.role !== 'host') return;
+
+    const db = getFirestoreDb();
+    const stateSnap = await getDoc(
+      doc(db, 'games', this.roomId, 'state', 'current'),
+    );
+    if (stateSnap.exists()) {
+      const state = stateSnap.data() as FirestoreGameState;
+      if (state.status === 'clueRevealed') {
+        await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
+          status: 'buzzing',
+          buzzerLocked: false,
+          buzzerUnlockTime: Date.now(),
+        });
       }
-    }, speakingTime);
+    }
   }
 
   async revealAnswer(): Promise<void> {
@@ -1071,13 +1073,27 @@ export class FirestoreClient implements IGameClient {
     if (!this.roomId || this.role !== 'host') return;
 
     const db = getFirestoreDb();
+
+    // Show the clue but don't start the timer yet - host reads first
+    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
+      status: 'finalJeopardyClueReading',
+      finalJeopardyClueShown: true,
+      finalJeopardyCountdownStart: null,
+      finalJeopardyCountdownEnd: null,
+    });
+  }
+
+  async startFinalJeopardyTimer(): Promise<void> {
+    if (!this.roomId || this.role !== 'host') return;
+
+    const db = getFirestoreDb();
     const now = Date.now();
 
+    // Start the timer and transition to answering
     await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
       status: 'finalJeopardyAnswering',
-      finalJeopardyClueShown: true,
       finalJeopardyCountdownStart: now,
-      finalJeopardyCountdownEnd: now + 30000,
+      finalJeopardyCountdownEnd: now + 60000, // 60 seconds
     });
   }
 

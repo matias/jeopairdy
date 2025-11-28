@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { createGameClient } from '@/lib/game-client-factory';
 import { IGameClient } from '@/lib/game-client-interface';
@@ -8,6 +8,8 @@ import { GameState, ServerMessage, Player } from '@/shared/types';
 import GameBoard from '@/components/GameBoard/GameBoard';
 import ClueDisplay from '@/components/ClueDisplay/ClueDisplay';
 import Scoreboard from '@/components/Scoreboard/Scoreboard';
+
+const BUZZER_TIMEOUT = 20; // 20 seconds
 
 export default function HostPage() {
   const params = useParams();
@@ -19,6 +21,8 @@ export default function HostPage() {
   const [scoreDelta, setScoreDelta] = useState<{ [playerId: string]: string }>(
     {},
   );
+  const [buzzerCountdown, setBuzzerCountdown] = useState<number | null>(null);
+  const buzzerUnlockTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
     const client = createGameClient();
@@ -49,9 +53,47 @@ export default function HostPage() {
     };
   }, [roomId]);
 
+  // Track buzzer unlock time from game state
+  useEffect(() => {
+    if (gameState?.status === 'buzzing' && gameState.buzzerUnlockTime) {
+      buzzerUnlockTimeRef.current = gameState.buzzerUnlockTime;
+    } else if (
+      gameState?.status === 'clueRevealed' ||
+      gameState?.status === 'selecting'
+    ) {
+      buzzerUnlockTimeRef.current = null;
+      setBuzzerCountdown(null);
+    }
+  }, [gameState?.status, gameState?.buzzerUnlockTime]);
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (!buzzerUnlockTimeRef.current || gameState?.status !== 'buzzing') {
+      return;
+    }
+
+    const updateCountdown = () => {
+      if (!buzzerUnlockTimeRef.current) return;
+      const elapsed = (Date.now() - buzzerUnlockTimeRef.current) / 1000;
+      const remaining = Math.max(0, BUZZER_TIMEOUT - elapsed);
+      setBuzzerCountdown(Math.ceil(remaining));
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 100);
+
+    return () => clearInterval(interval);
+  }, [gameState?.status]);
+
   const handleSelectClue = (categoryId: string, clueId: string) => {
     if (gameClient) {
       gameClient.selectClue(categoryId, clueId);
+    }
+  };
+
+  const handleUnlockBuzzers = () => {
+    if (gameClient) {
+      gameClient.unlockBuzzers();
     }
   };
 
@@ -100,6 +142,12 @@ export default function HostPage() {
   const handleShowFinalJeopardyClue = () => {
     if (gameClient) {
       gameClient.showFinalJeopardyClue();
+    }
+  };
+
+  const handleStartFinalJeopardyTimer = () => {
+    if (gameClient) {
+      gameClient.startFinalJeopardyTimer();
     }
   };
 
@@ -492,6 +540,39 @@ export default function HostPage() {
               </div>
             )}
 
+            {/* Unlock Buzzers button - shown during clueRevealed */}
+            {gameState.status === 'clueRevealed' && (
+              <div className="mt-4 bg-white p-4 rounded-lg shadow-lg">
+                <button
+                  onClick={handleUnlockBuzzers}
+                  className="w-full px-6 py-4 bg-yellow-500 text-black rounded hover:bg-yellow-400 font-bold text-xl"
+                >
+                  🔔 Unlock Buzzers
+                </button>
+                <p className="text-gray-500 text-sm mt-2 text-center">
+                  Click when you&apos;ve finished reading the clue
+                </p>
+              </div>
+            )}
+
+            {/* Countdown timer - shown during buzzing */}
+            {gameState.status === 'buzzing' && buzzerCountdown !== null && (
+              <div className="mt-4 bg-white p-4 rounded-lg shadow-lg">
+                <div className="text-center">
+                  <span className="text-lg font-bold text-gray-600">
+                    Time remaining:{' '}
+                  </span>
+                  <span
+                    className={`text-2xl font-bold ${
+                      buzzerCountdown <= 5 ? 'text-red-600' : 'text-blue-600'
+                    }`}
+                  >
+                    {buzzerCountdown}s
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="mt-4 flex gap-4">
               {!showAnswer && (
                 <button
@@ -627,7 +708,7 @@ export default function HostPage() {
                           >
                             <span className="font-bold">{player.name}</span>
                             <span>Score: ${player.score}</span>
-                            {player.finalJeopardyWager !== undefined ? (
+                            {player.finalJeopardyWager != null ? (
                               <span className="text-green-600">
                                 Wagered: ${player.finalJeopardyWager}
                               </span>
@@ -643,12 +724,12 @@ export default function HostPage() {
                     disabled={
                       !players
                         .filter((p) => p.score > 0)
-                        .every((p) => p.finalJeopardyWager !== undefined)
+                        .every((p) => p.finalJeopardyWager != null)
                     }
                     className={`px-6 py-3 rounded ${
                       players
                         .filter((p) => p.score > 0)
-                        .every((p) => p.finalJeopardyWager !== undefined)
+                        .every((p) => p.finalJeopardyWager != null)
                         ? 'bg-green-600 hover:bg-green-700'
                         : 'bg-gray-400 cursor-not-allowed'
                     } text-white font-bold`}
@@ -659,6 +740,31 @@ export default function HostPage() {
               )}
             </div>
           )}
+
+        {gameState.status === 'finalJeopardyClueReading' && (
+          <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
+            <h2 className="text-2xl font-bold mb-4">
+              Final Jeopardy - Read the Clue
+            </h2>
+            <div className="mb-4">
+              <p className="text-lg font-bold">
+                Category: {gameState.config?.finalJeopardy.category}
+              </p>
+              <p className="text-xl mb-4 p-4 bg-blue-50 rounded">
+                {gameState.config?.finalJeopardy.clue}
+              </p>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Read the clue aloud, then click "Start Timer" when ready.
+            </p>
+            <button
+              onClick={handleStartFinalJeopardyTimer}
+              className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-bold"
+            >
+              Start Timer (60 seconds)
+            </button>
+          </div>
+        )}
 
         {gameState.status === 'finalJeopardyAnswering' && (
           <div className="bg-white p-6 rounded-lg shadow-lg mt-6">

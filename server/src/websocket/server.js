@@ -35,6 +35,7 @@ function serializeGameState(gameState) {
     judgedPlayers: gameState.judgedPlayers,
     notPickedInTies: gameState.notPickedInTies,
     lastCorrectPlayer: gameState.lastCorrectPlayer,
+    buzzerUnlockTime: gameState.buzzerUnlockTime,
     hostId: gameState.hostId,
     // Final Jeopardy state
     finalJeopardyInitialScores: gameState.finalJeopardyInitialScores
@@ -106,6 +107,9 @@ function handleMessage(ws, message, conn) {
     case 'selectClue':
       handleSelectClue(ws, message, conn);
       break;
+    case 'unlockBuzzers':
+      handleUnlockBuzzers(ws, message, conn);
+      break;
     case 'revealAnswer':
       handleRevealAnswer(ws, message, conn);
       break;
@@ -132,6 +136,9 @@ function handleMessage(ws, message, conn) {
       break;
     case 'showFinalJeopardyClue':
       handleShowFinalJeopardyClue(ws, message, conn);
+      break;
+    case 'startFinalJeopardyTimer':
+      handleStartFinalJeopardyTimer(ws, message, conn);
       break;
     case 'startFinalJeopardyJudging':
       handleStartFinalJeopardyJudging(ws, message, conn);
@@ -382,24 +389,41 @@ function handleSelectClue(ws, message, conn) {
         gameState: serializeGameState(gameState),
       });
 
-      // Lock buzzer initially
+      // Lock buzzer - host will unlock manually
       broadcastToRoom(conn.roomId, {
         type: 'buzzerLocked',
         locked: true,
       });
+    }
+  }
+}
 
-      // Unlock after calculated delay (based on clue syllable count)
-      // Use the speaking time calculated in game state
-      const speakingTime = gameState.buzzerUnlockTime || 3000; // Fallback to 3s if not set
-      setTimeout(() => {
-        const currentGame = gameManager.getGame(conn.roomId);
-        if (currentGame && currentGame.status === 'buzzing') {
-          broadcastToRoom(conn.roomId, {
-            type: 'buzzerLocked',
-            locked: false,
-          });
-        }
-      }, speakingTime);
+function handleUnlockBuzzers(ws, message, conn) {
+  if (!conn.roomId || conn.role !== 'host') {
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can unlock buzzers',
+      }),
+    );
+    return;
+  }
+
+  const success = gameManager.unlockBuzzers(conn.roomId);
+
+  if (success) {
+    const gameState = gameManager.getGame(conn.roomId);
+    if (gameState) {
+      broadcastToRoom(conn.roomId, {
+        type: 'gameStateUpdate',
+        gameState: serializeGameState(gameState),
+      });
+
+      // Unlock buzzer
+      broadcastToRoom(conn.roomId, {
+        type: 'buzzerLocked',
+        locked: false,
+      });
     }
   }
 }
@@ -623,6 +647,37 @@ function handleShowFinalJeopardyClue(ws, message, conn) {
       JSON.stringify({
         type: 'error',
         message: 'Cannot show clue yet - not all eligible players have wagered',
+      }),
+    );
+  }
+}
+
+function handleStartFinalJeopardyTimer(ws, message, conn) {
+  if (!conn.roomId || conn.role !== 'host') {
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Only host can start Final Jeopardy timer',
+      }),
+    );
+    return;
+  }
+
+  const success = gameManager.startFinalJeopardyTimer(conn.roomId);
+
+  if (success) {
+    const gameState = gameManager.getGame(conn.roomId);
+    if (gameState) {
+      broadcastToRoom(conn.roomId, {
+        type: 'gameStateUpdate',
+        gameState: serializeGameState(gameState),
+      });
+    }
+  } else {
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Cannot start timer - clue must be shown first',
       }),
     );
   }

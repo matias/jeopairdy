@@ -122,23 +122,21 @@ class GameManager {
     game.buzzTimestamps = [];
     game.currentPlayer = null;
     game.judgedPlayers = []; // Reset judged players for new clue
+    game.buzzerUnlockTime = null; // Buzzers stay locked until host unlocks
     if (game.buzzerProcessTimeout) {
       clearTimeout(game.buzzerProcessTimeout);
       game.buzzerProcessTimeout = null;
     }
 
-    // Calculate speaking time based on clue text (syllable count)
-    const speakingTime = calculateSpeakingTime(clue.clue);
-    game.buzzerUnlockTime = speakingTime; // Store for use in server.js timeout
+    return true;
+  }
 
-    // Unlock buzzer after calculated delay (allows host time to read clue)
-    setTimeout(() => {
-      const currentGame = this.games.get(roomId);
-      if (currentGame && currentGame.status === 'clueRevealed') {
-        currentGame.status = 'buzzing';
-      }
-    }, speakingTime);
+  unlockBuzzers(roomId) {
+    const game = this.games.get(roomId);
+    if (!game || game.status !== 'clueRevealed') return false;
 
+    game.status = 'buzzing';
+    game.buzzerUnlockTime = Date.now();
     return true;
   }
 
@@ -601,18 +599,29 @@ class GameManager {
 
     if (!allEligibleWagered) return false;
 
+    // Show clue but don't start timer yet - host reads first
     game.finalJeopardyClueShown = true;
-    game.status = 'finalJeopardyAnswering';
+    game.status = 'finalJeopardyClueReading';
+    game.finalJeopardyCountdownStart = null;
+    game.finalJeopardyCountdownEnd = null;
 
-    // Start countdown timer (30 seconds)
+    return true;
+  }
+
+  startFinalJeopardyTimer(roomId) {
+    const game = this.games.get(roomId);
+    if (!game || game.status !== 'finalJeopardyClueReading') return false;
+
+    // Start countdown timer (60 seconds)
     const now = Date.now();
     game.finalJeopardyCountdownStart = now;
-    game.finalJeopardyCountdownEnd = now + 30000; // 30 seconds
+    game.finalJeopardyCountdownEnd = now + 60000;
+    game.status = 'finalJeopardyAnswering';
 
-    // Set timeout to lock answers after 30 seconds
+    // Set timeout to lock answers after 60 seconds
     setTimeout(() => {
       this.lockFinalJeopardyAnswers(roomId);
-    }, 30000);
+    }, 60000);
 
     return true;
   }

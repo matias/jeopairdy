@@ -246,8 +246,9 @@ export default function PlayerPage() {
   const isFinalJeopardyWagering = gameState.status === 'finalJeopardyWagering';
   const isFinalJeopardyAnswering =
     gameState.status === 'finalJeopardyAnswering';
-  const hasWagered = player?.finalJeopardyWager !== undefined;
-  const hasAnswered = player?.finalJeopardyAnswer !== undefined;
+  // Use != null to check for both null and undefined
+  const hasWagered = player?.finalJeopardyWager != null;
+  const hasAnswered = player?.finalJeopardyAnswer != null;
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-top p-8 bg-gray-100">
@@ -364,6 +365,39 @@ export default function PlayerPage() {
                     Wager submitted: ${player?.finalJeopardyWager}
                   </p>
                 )}
+              </>
+            )}
+          </div>
+        )}
+
+        {gameState.status === 'finalJeopardyClueReading' && (
+          <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
+            <h2 className="text-2xl font-bold mb-4">Final Jeopardy</h2>
+            {player && player.score <= 0 ? (
+              <div className="text-center py-8">
+                <p className="text-xl text-gray-600 mb-2">
+                  Unfortunately, you cannot participate in Final Jeopardy
+                </p>
+                <p className="text-lg text-gray-500">
+                  Your score is ${player.score}
+                </p>
+                <p className="text-lg text-gray-500 mt-4">
+                  Thank you for playing!
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <p className="text-lg mb-2">
+                    Your wager:{' '}
+                    <span className="font-bold text-2xl">
+                      ${player?.finalJeopardyWager || 0}
+                    </span>
+                  </p>
+                </div>
+                <p className="text-lg text-gray-600 text-center py-8">
+                  Listen to the clue... Timer will start soon.
+                </p>
               </>
             )}
           </div>

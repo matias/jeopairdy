@@ -32,6 +32,7 @@ export interface IGameClient {
 
   // Game actions - Host
   selectClue(categoryId: string, clueId: string): void;
+  unlockBuzzers(): void;
   revealAnswer(): void;
   judgeAnswer(correct: boolean, playerId: string): void;
   updateScore(playerId: string, delta: number): void;
@@ -42,6 +43,7 @@ export interface IGameClient {
   // Game actions - Host (Final Jeopardy)
   startFinalJeopardy(): void;
   showFinalJeopardyClue(): void;
+  startFinalJeopardyTimer(): void;
   startFinalJeopardyJudging(): void;
   revealFinalJeopardyWager(): void;
   revealFinalJeopardyAnswer(): void;

@@ -148,6 +148,9 @@ export function getRegenerationPrompt(
   options: RegenerationPromptOptions,
 ): string {
   const {
+    topics,
+    difficulty,
+    sourceMaterial,
     categoryCount = DEFAULT_SAMPLE_CATEGORY_COUNT,
     totalClues = DEFAULT_SAMPLE_CLUE_COUNT,
     values = DEFAULT_SAMPLE_VALUES,
@@ -156,6 +159,11 @@ export function getRegenerationPrompt(
 
   return `Update the sample set again, following the earlier instructions in this conversation.
 
+IMPORTANT: Maintain consistency with the original game parameters:
+Topics / themes: ${topics}
+Requested difficulty: ${difficulty}
+${formatSourceMaterial(sourceMaterial)}
+
 Host feedback to apply:
 ${feedback}
 
@@ -163,6 +171,7 @@ Requirements recap:
 - ${categoryCount} categories, ${totalClues} total clues (sparse, 1–2 per category).
 - Use clue values from ${values.join(', ')}.
 - Return the same JSON structure with "commentary" plus "categories".
+- Every clue must still map back to the original topics/themes provided above.
 
 Highlight the adjustments you made in the commentary.`;
 }

@@ -40,9 +40,52 @@ function CreateGamePageContent() {
   const searchParams = useSearchParams();
   const roomId = searchParams?.get('roomId');
 
-  const [topics, setTopics] = useState('');
-  const [difficulty, setDifficulty] = useState('medium');
-  const [sourceMaterial, setSourceMaterial] = useState('');
+  // Load persisted form data from localStorage on mount
+  const getStorageKey = (key: string) => `create-game-${roomId}-${key}`;
+
+  const loadPersistedFormData = (): {
+    topics: string;
+    difficulty: string;
+    sourceMaterial: string;
+  } | null => {
+    if (!roomId || typeof window === 'undefined') return null;
+    try {
+      const stored = localStorage.getItem(getStorageKey('formData'));
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (err) {
+      console.error('[CreateGame] Failed to load persisted form data', err);
+    }
+    return null;
+  };
+
+  const persistFormData = (data: {
+    topics: string;
+    difficulty: string;
+    sourceMaterial: string;
+  }) => {
+    if (!roomId || typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(getStorageKey('formData'), JSON.stringify(data));
+    } catch (err) {
+      console.error('[CreateGame] Failed to persist form data', err);
+    }
+  };
+
+  // Use lazy initializer to load persisted data only once
+  const [topics, setTopics] = useState(() => {
+    const persisted = loadPersistedFormData();
+    return persisted?.topics || '';
+  });
+  const [difficulty, setDifficulty] = useState(() => {
+    const persisted = loadPersistedFormData();
+    return persisted?.difficulty || 'medium';
+  });
+  const [sourceMaterial, setSourceMaterial] = useState(() => {
+    const persisted = loadPersistedFormData();
+    return persisted?.sourceMaterial || '';
+  });
   const [feedback, setFeedback] = useState('');
   const [samples, setSamples] = useState<SampleCategory[] | null>(null);
   const [commentary, setCommentary] = useState('');
@@ -76,6 +119,25 @@ function CreateGamePageContent() {
   const [failedRound, setFailedRound] = useState<
     'jeopardy' | 'doubleJeopardy' | 'finalJeopardy' | null
   >(null);
+
+  // Load persisted data when roomId changes
+  useEffect(() => {
+    if (roomId) {
+      const persisted = loadPersistedFormData();
+      if (persisted) {
+        setTopics(persisted.topics);
+        setDifficulty(persisted.difficulty);
+        setSourceMaterial(persisted.sourceMaterial);
+      }
+    }
+  }, [roomId]);
+
+  // Persist form data whenever it changes
+  useEffect(() => {
+    if (roomId) {
+      persistFormData({ topics, difficulty, sourceMaterial });
+    }
+  }, [topics, difficulty, sourceMaterial, roomId]);
 
   useEffect(() => {
     if (!roomId) return;

@@ -312,6 +312,12 @@ export class WebSocketClient implements IGameClient {
     });
   }
 
+  unlockBuzzers() {
+    this.send({
+      type: 'unlockBuzzers',
+    });
+  }
+
   revealAnswer() {
     this.send({
       type: 'revealAnswer',
@@ -369,6 +375,12 @@ export class WebSocketClient implements IGameClient {
   showFinalJeopardyClue() {
     this.send({
       type: 'showFinalJeopardyClue',
+    });
+  }
+
+  startFinalJeopardyTimer() {
+    this.send({
+      type: 'startFinalJeopardyTimer',
     });
   }
 

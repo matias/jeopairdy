@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -123,4 +125,8 @@ body {
 .scoreboard-points {
   font-family: 'Univers';
   font-weight: 400 !important;
+}
+
+.final-jeopardy-answer {
+  font-family: 'Caveat', cursive;
 }

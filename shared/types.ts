@@ -27,6 +27,7 @@ export type GameStatus =
   | 'judging'
   | 'finalJeopardyCategory'
   | 'finalJeopardyWagering'
+  | 'finalJeopardyClueReading' // Host reads clue before timer starts
   | 'finalJeopardyAnswering'
   | 'finalJeopardyJudging'
   | 'finalJeopardyReveal'
@@ -92,6 +93,7 @@ export interface GameState {
   judgedPlayers?: string[]; // player IDs that have been judged
   notPickedInTies?: string[]; // player IDs who haven't been picked in ties (for fairness)
   lastCorrectPlayer?: string | null; // player ID who last answered correctly (has control of board)
+  buzzerUnlockTime?: number | null; // timestamp when buzzers were unlocked
   hostId: string;
   // Final Jeopardy state
   finalJeopardyInitialScores?: Map<string, number> | Record<string, number>; // snapshot of scores at Final Jeopardy start (Map on server, object when serialized)
