@@ -23,6 +23,7 @@ import {
   isFirebaseConfigured,
 } from './firebase';
 import { IGameClient } from './game-client-interface';
+import { notifyRoomCreated } from './slack';
 import {
   ServerMessage,
   GameConfig,
@@ -307,6 +308,13 @@ export class FirestoreClient implements IGameClient {
           lastCorrectPlayer: null,
           buzzerLocked: true,
         } as FirestoreGameState);
+
+        // Notify Slack about new room creation
+        notifyRoomCreated({
+          roomId: actualRoomId,
+          hostId: this.userId!,
+          clientType: 'firestore',
+        });
       }
 
       this.setupSubscriptions(actualRoomId);

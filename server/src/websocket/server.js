@@ -1,5 +1,6 @@
 const { gameManager } = require('../game/state');
 const { v4: uuidv4 } = require('uuid');
+const { notifyRoomCreated } = require('../slack');
 
 const connections = new Map();
 
@@ -188,6 +189,13 @@ function handleJoinRoom(ws, message, conn) {
 
     if (!gameState) {
       gameState = gameManager.createRoom(roomId, playerId);
+
+      // Notify Slack about new room creation
+      notifyRoomCreated({
+        roomId,
+        hostId: playerId,
+        clientType: 'websocket',
+      });
     }
 
     conn.roomId = roomId;
