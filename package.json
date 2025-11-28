@@ -12,6 +12,7 @@
     "format:check": "prettier --check .",
     "test-prompt": "tsx scripts/test-prompt.ts",
     "import-games": "tsx scripts/import-games-to-firestore.ts",
+    "cleanup-rooms": "tsx scripts/cleanup-unused-rooms.ts",
     "prepare": "husky"
   },
   "lint-staged": {
