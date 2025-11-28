@@ -1,0 +1,635 @@
+{
+  "id": "game-1764288706487",
+  "jeopardy": {
+    "round": "jeopardy",
+    "categories": [
+      {
+        "id": "cat-jeopardy-0-ups6z0tfkf",
+        "name": "Talk Turkey",
+        "clues": [
+          {
+            "id": "clue-jeopardy-0-0-1goqqjf6t27",
+            "category": "Talk Turkey",
+            "value": 200,
+            "clue": "While Canadians celebrate in October, the U.S. observes Thanksgiving on the fourth Thursday of this month.",
+            "answer": "What is November?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-1-e4emw5mwpyq",
+            "category": "Talk Turkey",
+            "value": 400,
+            "clue": "Benjamin Franklin famously preferred this bird to the bald eagle, calling it \"a bird of courage.\"",
+            "answer": "What is the turkey?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-2-egao4zz8oc4",
+            "category": "Talk Turkey",
+            "value": 600,
+            "clue": "Since 1924, this department store has hosted a massive parade in New York City on Thanksgiving morning.",
+            "answer": "What is Macy's?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-3-w0xzgt2tvci",
+            "category": "Talk Turkey",
+            "value": 800,
+            "clue": "Tradition holds that this NFL team plays a home game every Thanksgiving, a streak dating back to 1934.",
+            "answer": "Who are the Detroit Lions?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-0-4-y6273wmza7",
+            "category": "Talk Turkey",
+            "value": 1000,
+            "clue": "Known as the \"Mother of Thanksgiving,\" she lobbied 5 presidents before Lincoln finally declared it a holiday.",
+            "answer": "Who is Sarah Josepha Hale?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-1-7j56d82lxyl",
+        "name": "Silver Screen Sayings",
+        "clues": [
+          {
+            "id": "clue-jeopardy-1-0-q0pbi5zwgnj",
+            "category": "Silver Screen Sayings",
+            "value": 200,
+            "clue": "Arnold Schwarzenegger promised, \"I'll be back,\" as a cyborg in this 1984 sci-fi thriller.",
+            "answer": "What is The Terminator?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-1-wdch3q4ien",
+            "category": "Silver Screen Sayings",
+            "value": 400,
+            "clue": "While looking at a larger vessel, Chief Brody remarks, \"You're gonna need a bigger boat\" in this film.",
+            "answer": "What is Jaws?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-2-0w9ou6u6ma4r",
+            "category": "Silver Screen Sayings",
+            "value": 600,
+            "clue": "Rick Blaine toasts Ilsa Lund with the line, \"Here's looking at you, kid,\" in this WWII-era classic.",
+            "answer": "What is Casablanca?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-3-yiri775ezb",
+            "category": "Silver Screen Sayings",
+            "value": 800,
+            "clue": "In \"A Few Good Men,\" Jack Nicholson shouts that you \"can't handle\" this.",
+            "answer": "What is the truth?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-1-4-qcvf916dwmh",
+            "category": "Silver Screen Sayings",
+            "value": 1000,
+            "clue": "Norma Desmond insists, \"I am big! It's the pictures that got small,\" in this 1950 noir film.",
+            "answer": "What is Sunset Boulevard?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-2-mdikt4gmc6",
+        "name": "It's All Coming Back To Me",
+        "clues": [
+          {
+            "id": "clue-jeopardy-2-0-xuewr8xctwi",
+            "category": "It's All Coming Back To Me",
+            "value": 200,
+            "clue": "Celine Dion is the best-selling recording artist from this nation.",
+            "answer": "What is Canada?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-1-gb552crgz0d",
+            "category": "It's All Coming Back To Me",
+            "value": 400,
+            "clue": "Celine's ballad \"My Heart Will Go On\" swept the Oscars as the love theme for this blockbuster.",
+            "answer": "What is Titanic?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-2-nhjjzdt6m4",
+            "category": "It's All Coming Back To Me",
+            "value": 600,
+            "clue": "She changed the landscape of Las Vegas entertainment with her long-running residency at this \"Palace.\"",
+            "answer": "What is Caesars Palace?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-3-cxeu7ujcoe8",
+            "category": "It's All Coming Back To Me",
+            "value": 800,
+            "clue": "Before she was a global English-speaking star, Celine won the 1988 Eurovision contest representing this country.",
+            "answer": "What is Switzerland?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-2-4-t8aj07gn4y",
+            "category": "It's All Coming Back To Me",
+            "value": 1000,
+            "clue": "Celine recorded \"Beauty and the Beast\" as a duet with this R&B ballad singer.",
+            "answer": "Who is Peabo Bryson?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-3-t9an32nlus",
+        "name": "Fashion Statements",
+        "clues": [
+          {
+            "id": "clue-jeopardy-3-0-in4fir6ik8d",
+            "category": "Fashion Statements",
+            "value": 200,
+            "clue": "This German sportswear giant is instantly recognizable by its three-stripe logo.",
+            "answer": "What is Adidas?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-1-rb29adsoco",
+            "category": "Fashion Statements",
+            "value": 400,
+            "clue": "This luxury brand's \"interlocking G\" logo represents its founder, Guccio.",
+            "answer": "What is Gucci?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-2-qye01fchk7",
+            "category": "Fashion Statements",
+            "value": 600,
+            "clue": "Named after a British actress, the elusive \"Birkin\" bag is made by this French fashion house.",
+            "answer": "What is Hermès?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-3-6nmxqyvuvyu",
+            "category": "Fashion Statements",
+            "value": 800,
+            "clue": "This designer is credited with inventing the \"wrap dress\" in the 1970s.",
+            "answer": "Who is Diane von Furstenberg?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-3-4-3wmwhaxz7iq",
+            "category": "Fashion Statements",
+            "value": 1000,
+            "clue": "Thomas Burberry invented this water-resistant fabric in 1879 to keep British officers dry.",
+            "answer": "What is gabardine?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-4-shiz1gecebr",
+        "name": "Starts With \"Th\"",
+        "clues": [
+          {
+            "id": "clue-jeopardy-4-0-91m3gzzuzim",
+            "category": "Starts With \"Th\"",
+            "value": 200,
+            "clue": "It is the only day of the week that starts with T-H.",
+            "answer": "What is Thursday?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-1-p3zn8crm4ba",
+            "category": "Starts With \"Th\"",
+            "value": 400,
+            "clue": "This opposable digit distinguishes humans and other primates from most mammals.",
+            "answer": "What is the thumb?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-2-aqoqzbdtjar",
+            "category": "Starts With \"Th\"",
+            "value": 600,
+            "clue": "Often called \"The Old Father,\" this river flows through the heart of London.",
+            "answer": "What is the Thames?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-3-synai8iygb7",
+            "category": "Starts With \"Th\"",
+            "value": 800,
+            "clue": "In medicine, this 10-letter word is the technical term for a blood clot.",
+            "answer": "What is a thrombosis?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-4-4-45wd17cnbkq",
+            "category": "Starts With \"Th\"",
+            "value": 1000,
+            "clue": "It is the academic discipline defined as the study of the nature of God and religious belief.",
+            "answer": "What is theology?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-jeopardy-5-ld8mh3xhtd",
+        "name": "The 17th Century",
+        "clues": [
+          {
+            "id": "clue-jeopardy-5-0-qx1cwt6cisl",
+            "category": "The 17th Century",
+            "value": 200,
+            "clue": "In 1620, the Mayflower Pilgrims landed at this spot in modern-day Massachusetts.",
+            "answer": "What is Plymouth Rock?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-1-en1w9aoyff5",
+            "category": "The 17th Century",
+            "value": 400,
+            "clue": "In 1649, this British King was beheaded for treason following the English Civil War.",
+            "answer": "Who is Charles I?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-2-0meqirmmul2",
+            "category": "The 17th Century",
+            "value": 600,
+            "clue": "Usually remembered for his 72-year reign, he became King of France in 1643 at age four.",
+            "answer": "Who is Louis XIV?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-3-5j8ea7kheug",
+            "category": "The 17th Century",
+            "value": 800,
+            "clue": "The year 1666 is remembered for the \"Great Fire\" that devastated this European capital.",
+            "answer": "What is London?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-jeopardy-5-4-dnjbcek1m2i",
+            "category": "The 17th Century",
+            "value": 1000,
+            "clue": "In 1637, this Dutch geometrician and philosopher published his famous phrase \"Cogito, ergo sum.\"",
+            "answer": "Who is René Descartes?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      }
+    ]
+  },
+  "doubleJeopardy": {
+    "round": "doubleJeopardy",
+    "categories": [
+      {
+        "id": "cat-doubleJeopardy-0-2tejw13ssgg",
+        "name": "Second Helpings",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-0-0-ip4jiljhrm",
+            "category": "Second Helpings",
+            "value": 400,
+            "clue": "It's the busy shopping day immediately following Thanksgiving, named for keeping retailers 'in the black.'",
+            "answer": "What is Black Friday?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-1-me7oodx0fy",
+            "category": "Second Helpings",
+            "value": 800,
+            "clue": "A staple of the modern Thanksgiving table, green bean casserole was invented in 1955 by this soup company.",
+            "answer": "What is Campbell's?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-2-bt350nynthm",
+            "category": "Second Helpings",
+            "value": 1200,
+            "clue": "He was the Patuxet man who served as an interpreter and guide for the Pilgrims during their first winter.",
+            "answer": "Who is Squanto (or Tisquantum)?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-3-8j2in1yhj68",
+            "category": "Second Helpings",
+            "value": 1600,
+            "clue": "In 1939, this president controversially tried to move Thanksgiving up a week to extend the Christmas shopping season.",
+            "answer": "Who is Franklin D. Roosevelt?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-0-4-75q7egag1fm",
+            "category": "Second Helpings",
+            "value": 2000,
+            "clue": "This amino acid found in turkey is often blamed for post-meal sleepiness, though you'd have to eat a ton of it.",
+            "answer": "What is tryptophan?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-1-pfyxuge5l",
+        "name": "Frankly, My Dear",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-1-0-3cmxga8cka7",
+            "category": "Frankly, My Dear",
+            "value": 400,
+            "clue": "Judy Garland whispers, \"Toto, I've a feeling we're not in Kansas anymore,\" in this 1939 musical.",
+            "answer": "What is The Wizard of Oz?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-1-d1kwzzv0oxt",
+            "category": "Frankly, My Dear",
+            "value": 800,
+            "clue": "Robert De Niro improvises the line \"You talkin' to me?\" while facing a mirror in this Martin Scorsese film.",
+            "answer": "What is Taxi Driver?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-2-ql4hncnx6qj",
+            "category": "Frankly, My Dear",
+            "value": 1200,
+            "clue": "Tom Hanks delivers the line \"There's no crying in baseball!\" as manager Jimmy Dugan in this sports movie.",
+            "answer": "What is A League of Their Own?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-3-6bpw0uxsx1",
+            "category": "Frankly, My Dear",
+            "value": 1600,
+            "clue": "Patrick Swayze firmly states, \"Nobody puts Baby in a corner,\" at the climax of this 1987 film.",
+            "answer": "What is Dirty Dancing?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-1-4-qnwuysjbytr",
+            "category": "Frankly, My Dear",
+            "value": 2000,
+            "clue": "Bette Davis warns party guests to \"Fasten your seatbelts. It's going to be a bumpy night\" in this classic.",
+            "answer": "What is All About Eve?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-2-bs5bc9lv9fg",
+        "name": "The Power of Love",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-2-0-w9nzndp84hl",
+            "category": "The Power of Love",
+            "value": 400,
+            "clue": "Though she sings fluently in English, Celine Dion's native language is this.",
+            "answer": "What is French?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-1-w0foewsg4j",
+            "category": "The Power of Love",
+            "value": 800,
+            "clue": "Celine had a massive hit with \"Because You Loved Me,\" the theme song to this 1996 Robert Redford film.",
+            "answer": "What is Up Close & Personal?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-2-xqia9gpxl49",
+            "category": "The Power of Love",
+            "value": 1200,
+            "clue": "Watched by 3.5 billion people, Celine performed \"The Power of the Dream\" at the opening of the 1996 Summer Olympics here.",
+            "answer": "What is Atlanta?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-3-36ebftfe08q",
+            "category": "The Power of Love",
+            "value": 1600,
+            "clue": "In 2022, Celine announced she had been diagnosed with this rare neurological disorder, known as SPS.",
+            "answer": "What is Stiff Person Syndrome?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-2-4-ybc44xkdtch",
+            "category": "The Power of Love",
+            "value": 2000,
+            "clue": "Celine grew up in a very full house; she is the youngest of this many children.",
+            "answer": "What is 14?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-3-r9b3mthkufo",
+        "name": "Material World",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-3-0-pa3yu6y4aib",
+            "category": "Material World",
+            "value": 400,
+            "clue": "Originally a basketball player, his name has graced the ankle patch of Converse All-Stars since the 1930s.",
+            "answer": "Who is Chuck Taylor?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-1-3h793dnizr3",
+            "category": "Material World",
+            "value": 800,
+            "clue": "This French brand, famous for its luxury trunks and luggage, uses a monogram featuring an L and a V.",
+            "answer": "What is Louis Vuitton?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-2-ytgah9qbgq",
+            "category": "Material World",
+            "value": 1200,
+            "clue": "Founded by Gianni in 1978, this Italian luxury house uses the head of Medusa as its logo.",
+            "answer": "What is Versace?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-3-fem3lt0ts6c",
+            "category": "Material World",
+            "value": 1600,
+            "clue": "Known for her high-end bridal wear, this designer was a figure skater before entering the fashion world.",
+            "answer": "Who is Vera Wang?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-3-4-07vc9b4xdxia",
+            "category": "Material World",
+            "value": 2000,
+            "clue": "Carrie Bradshaw in \"Sex and the City\" frequently spent her rent money on this designer's shoes.",
+            "answer": "Who is Manolo Blahnik?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-4-sfcwegnhgs",
+        "name": "The \"Key\" to Success",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-4-0-pmyrmga4ejm",
+            "category": "The \"Key\" to Success",
+            "value": 400,
+            "clue": "One of the 12 animals of the Chinese Zodiac, or a playful primate.",
+            "answer": "What is a monkey?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-1-otndfknbjtn",
+            "category": "The \"Key\" to Success",
+            "value": 800,
+            "clue": "It is the professional sport played by the NHL.",
+            "answer": "What is hockey?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-2-0bpwc0zukprm",
+            "category": "The \"Key\" to Success",
+            "value": 1200,
+            "clue": "Specific term for the athlete who rides a horse in a gallop race.",
+            "answer": "What is a jockey?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-3-lq2wf5syd9l",
+            "category": "The \"Key\" to Success",
+            "value": 1600,
+            "clue": "This dark distilled spirit is made from fermented grain mash; brands include Jameson and Jack Daniel's.",
+            "answer": "What is whiskey?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-4-4-8t5kivbuj2x",
+            "category": "The \"Key\" to Success",
+            "value": 2000,
+            "clue": "Adjective describing a project or system that is fully ready to operate when handed over to the customer.",
+            "answer": "What is turnkey?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      },
+      {
+        "id": "cat-doubleJeopardy-5-oq07csd9h7h",
+        "name": "North American Geography",
+        "clues": [
+          {
+            "id": "clue-doubleJeopardy-5-0-b6mbw8ss09q",
+            "category": "North American Geography",
+            "value": 400,
+            "clue": "Huron, Ontario, Michigan, Erie, and Superior are collectively known as this.",
+            "answer": "What are the Great Lakes?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-1-lmo9wl93qjs",
+            "category": "North American Geography",
+            "value": 800,
+            "clue": "This river, the second longest in North America, flows south from Minnesota to the Gulf of Mexico.",
+            "answer": "What is the Mississippi River?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-2-4vlno8fr2vv",
+            "category": "North American Geography",
+            "value": 1200,
+            "clue": "This mountain range stretches some 3,000 miles from British Columbia down to New Mexico.",
+            "answer": "What are the Rockies (or Rocky Mountains)?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-3-3ubo48aqqzs",
+            "category": "North American Geography",
+            "value": 1600,
+            "clue": "Formerly known as Mount McKinley, this Alaskan peak is the highest point in North America.",
+            "answer": "What is Denali?",
+            "revealed": false,
+            "answered": false
+          },
+          {
+            "id": "clue-doubleJeopardy-5-4-7wsghk2vs8i",
+            "category": "North American Geography",
+            "value": 2000,
+            "clue": "This Canadian territory was the site of the Klondike Gold Rush in the late 1890s.",
+            "answer": "What is the Yukon?",
+            "revealed": false,
+            "answered": false
+          }
+        ]
+      }
+    ]
+  },
+  "finalJeopardy": {
+    "category": "Fashion Legends",
+    "clue": "Of the 100 Most Influential People of the 20th Century named by Time magazine in 1999, she was the only fashion designer on the list.",
+    "answer": "Who is Coco Chanel?"
+  },
+  "createdAt": "2025-11-28T00:11:46.487Z",
+  "metadata": {
+    "topics": "Thanksgiving; Classic movie quotes; Celione Dione; Clothing or shoe brands",
+    "difficulty": "medium"
+  }
+}
