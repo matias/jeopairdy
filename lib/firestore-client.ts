@@ -19,6 +19,7 @@ import {
   getFirestoreDb,
   ensureAuth,
   getCurrentUserId,
+  getCurrentUser,
   isFirebaseConfigured,
 } from './firebase';
 import { IGameClient } from './game-client-interface';
@@ -1078,8 +1079,24 @@ export class FirestoreClient implements IGameClient {
   }
 
   async saveGame(gameConfig: GameConfig): Promise<void> {
-    // In Firebase mode, the game is automatically persisted
-    console.log('Game automatically saved in Firestore');
+    // Save game config to savedGames collection for later reuse
+    const db = getFirestoreDb();
+    const user = getCurrentUser();
+
+    await setDoc(doc(db, 'savedGames', gameConfig.id), {
+      ...gameConfig,
+      savedAt: serverTimestamp(),
+      // Track who saved the game (for filtering/ownership)
+      savedBy: user
+        ? {
+            uid: user.uid,
+            displayName: user.displayName,
+            email: user.email,
+          }
+        : null,
+    });
+
+    console.log('Game saved to Firestore:', gameConfig.id);
     this.emit('gameSaved', { type: 'gameSaved', gameId: gameConfig.id });
   }
 

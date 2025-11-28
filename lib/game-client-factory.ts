@@ -8,11 +8,19 @@ import { isFirebaseConfigured } from './firebase';
  * Determines whether to use Firebase mode based on environment and runtime context.
  */
 export function shouldUseFirebaseMode(): boolean {
+  const envMode = process.env.NEXT_PUBLIC_FIREBASE_MODE;
+
   // 1. Explicit environment variable override
-  if (process.env.NEXT_PUBLIC_FIREBASE_MODE === 'true') {
+  if (envMode === 'true') {
+    console.log(
+      '[GameClient] Firebase mode enabled via NEXT_PUBLIC_FIREBASE_MODE=true',
+    );
     return true;
   }
-  if (process.env.NEXT_PUBLIC_FIREBASE_MODE === 'false') {
+  if (envMode === 'false') {
+    console.log(
+      '[GameClient] WebSocket mode enabled via NEXT_PUBLIC_FIREBASE_MODE=false',
+    );
     return false;
   }
 
@@ -26,11 +34,17 @@ export function shouldUseFirebaseMode(): boolean {
       hostname.includes('web.app') ||
       hostname.includes('firebaseio.com')
     ) {
+      console.log(
+        '[GameClient] Firebase mode enabled (Firebase Hosting domain)',
+      );
       return true;
     }
 
     // Vercel deployment (if Firebase is configured)
     if (hostname.includes('vercel.app') && isFirebaseConfigured()) {
+      console.log(
+        '[GameClient] Firebase mode enabled (Vercel + Firebase configured)',
+      );
       return true;
     }
 
@@ -42,12 +56,17 @@ export function shouldUseFirebaseMode(): boolean {
       !hostname.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./) &&
       isFirebaseConfigured()
     ) {
+      console.log(
+        '[GameClient] Firebase mode enabled (cloud deployment + Firebase configured)',
+      );
       return true;
     }
   }
 
   // 3. Default to WebSocket (local mode)
-  console.log('Using WebSocket mode');
+  console.log(
+    '[GameClient] WebSocket mode (default - NEXT_PUBLIC_FIREBASE_MODE not set or running locally)',
+  );
   return false;
 }
 

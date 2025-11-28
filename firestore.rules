@@ -1,18 +1,104 @@
-rules_version='2'
-
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
-      allow read, write: if request.time < timestamp.date(2025, 12, 28);
+    
+    // Helper function to check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is the host of a game
+    function isHost(roomId) {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/games/$(roomId)/metadata/info).data.hostId == request.auth.uid;
+    }
+    
+    // Saved Games collection - for storing reusable game configurations
+    match /savedGames/{gameId} {
+      // Anyone can read saved games (they're meant to be shared/loaded)
+      // This includes legacy imports (savedBy == null) and others' games
+      allow read: if true;
+      
+      // Anyone authenticated can create saved games (must set their own UID)
+      allow create: if isAuthenticated() && 
+        request.resource.data.savedBy.uid == request.auth.uid;
+      
+      // Only the creator can update their games
+      // Legacy games (savedBy == null) can't be updated (must re-save to claim)
+      allow update: if isAuthenticated() && 
+        resource.data.savedBy != null &&
+        resource.data.savedBy.uid == request.auth.uid;
+      
+      // Only the creator can delete their games
+      // Legacy games (savedBy == null) can't be deleted
+      allow delete: if isAuthenticated() && 
+        resource.data.savedBy != null &&
+        resource.data.savedBy.uid == request.auth.uid;
+    }
+    
+    // Games collection - active game rooms
+    match /games/{roomId} {
+      // Allow reading game root (for checking if room exists)
+      allow read: if true;
+      
+      // Metadata subcollection
+      match /metadata/info {
+        // Anyone authenticated can create a new game (becomes host)
+        allow create: if isAuthenticated();
+        // Only host can update or delete metadata
+        allow update, delete: if isHost(roomId);
+        // Anyone can read metadata (needed to check host)
+        allow read: if true;
+      }
+      
+      // Game config subcollection
+      match /config/{configId} {
+        // Only host can write config
+        allow write: if isHost(roomId);
+        // Anyone with room access can read config
+        allow read: if true;
+      }
+      
+      // Game state subcollection
+      match /state/{stateId} {
+        // Only host can write state
+        allow write: if isHost(roomId);
+        // Anyone with room access can read state
+        allow read: if true;
+      }
+      
+      // Players subcollection
+      match /players/{playerId} {
+        // Anyone can read players (for scoreboard, etc.)
+        allow read: if true;
+        
+        // Players can create their own player doc
+        allow create: if isAuthenticated();
+        
+        // Players can update their own doc (wagers, answers)
+        // Host can also update any player (for score adjustments)
+        allow update: if isAuthenticated() && 
+          (request.auth.uid == playerId || isHost(roomId));
+        
+        // Only host can delete players
+        allow delete: if isHost(roomId);
+      }
+      
+      // Buzzes subcollection
+      match /buzzes/{buzzId} {
+        // Anyone can read buzzes (for UI display)
+        allow read: if true;
+        
+        // Players can create buzzes
+        allow create: if isAuthenticated() && 
+          request.resource.data.playerId == request.auth.uid;
+        
+        // Only host can delete buzzes (for reset between clues)
+        allow delete: if isHost(roomId);
+        
+        // No updates to buzzes (they're immutable)
+        allow update: if false;
+      }
     }
   }
 }

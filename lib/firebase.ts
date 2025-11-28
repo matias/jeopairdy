@@ -3,7 +3,10 @@ import { getFirestore, Firestore } from 'firebase/firestore';
 import {
   getAuth,
   signInAnonymously,
+  signInWithPopup,
+  signOut as firebaseSignOut,
   onAuthStateChanged,
+  GoogleAuthProvider,
   Auth,
   User,
 } from 'firebase/auth';
@@ -102,4 +105,49 @@ export async function ensureAuth(): Promise<string> {
 export function getCurrentUserId(): string | null {
   const authInstance = getFirebaseAuth();
   return authInstance.currentUser?.uid || null;
+}
+
+/**
+ * Get current user info
+ */
+export function getCurrentUser(): User | null {
+  const authInstance = getFirebaseAuth();
+  return authInstance.currentUser;
+}
+
+/**
+ * Sign in with Google
+ */
+export async function signInWithGoogle(): Promise<User> {
+  const authInstance = getFirebaseAuth();
+  const provider = new GoogleAuthProvider();
+  const result = await signInWithPopup(authInstance, provider);
+  return result.user;
+}
+
+/**
+ * Sign out
+ */
+export async function signOut(): Promise<void> {
+  const authInstance = getFirebaseAuth();
+  await firebaseSignOut(authInstance);
+}
+
+/**
+ * Subscribe to auth state changes
+ */
+export function onAuthChange(
+  callback: (user: User | null) => void,
+): () => void {
+  const authInstance = getFirebaseAuth();
+  return onAuthStateChanged(authInstance, callback);
+}
+
+/**
+ * Check if user is signed in with Google (not anonymous)
+ */
+export function isGoogleUser(): boolean {
+  const user = getCurrentUser();
+  if (!user) return false;
+  return user.providerData.some((p) => p.providerId === 'google.com');
 }

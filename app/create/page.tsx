@@ -2,19 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { WebSocketClient } from '@/lib/websocket';
-
-import { getWebSocketUrl } from '@/lib/websocket-url';
-
-const WS_URL = getWebSocketUrl();
+import { createGameClient } from '@/lib/game-client-factory';
+import { IGameClient } from '@/lib/game-client-interface';
 
 export default function CreatePage() {
   const router = useRouter();
   const [roomId, setRoomId] = useState<string | null>(null);
-  const [ws, setWs] = useState<WebSocketClient | null>(null);
+  const [gameClient, setGameClient] = useState<IGameClient | null>(null);
 
   useEffect(() => {
-    const client = new WebSocketClient(WS_URL);
+    const client = createGameClient();
     client
       .connect()
       .then(() => {
@@ -25,7 +22,7 @@ export default function CreatePage() {
           // Redirect to host page immediately
           router.push(`/host/${message.roomId}`);
         });
-        setWs(client);
+        setGameClient(client);
       })
       .catch(console.error);
 

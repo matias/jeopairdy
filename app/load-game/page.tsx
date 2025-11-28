@@ -5,22 +5,26 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { createGameClient } from '@/lib/game-client-factory';
 import { IGameClient } from '@/lib/game-client-interface';
 import { GameConfig } from '@/shared/types';
+import { AuthHeader } from '@/components/AuthHeader';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+interface SavedGame {
+  id: string;
+  createdAt: string;
+  filename?: string;
+  metadata?: { topics: string; difficulty: string };
+  savedBy?: {
+    uid: string;
+    displayName: string | null;
+    email: string | null;
+  } | null;
+}
 
 export default function LoadGamePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomId = searchParams?.get('roomId');
 
-  const [games, setGames] = useState<
-    Array<{
-      id: string;
-      createdAt: string;
-      filename: string;
-      metadata?: { topics: string; difficulty: string };
-    }>
-  >([]);
+  const [games, setGames] = useState<SavedGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [gameClient, setGameClient] = useState<IGameClient | null>(null);
@@ -33,7 +37,7 @@ export default function LoadGamePage() {
 
   const fetchGames = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/games/list`);
+      const response = await fetch('/api/games/list');
       if (response.ok) {
         const data = await response.json();
         setGames(data);
@@ -49,7 +53,7 @@ export default function LoadGamePage() {
   const handlePreviewGame = async (gameId: string) => {
     setPreviewLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/games/${gameId}`);
+      const response = await fetch(`/api/games/${gameId}`);
       if (!response.ok) throw new Error('Failed to load game preview');
       const gameConfig = await response.json();
       setPreviewGame(gameConfig);
@@ -68,7 +72,7 @@ export default function LoadGamePage() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/games/${gameId}`);
+      const response = await fetch(`/api/games/${gameId}`);
       if (!response.ok) {
         throw new Error('Failed to load game');
       }
@@ -109,6 +113,7 @@ export default function LoadGamePage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8 lg:p-24">
+      <AuthHeader />
       <h1 className="text-4xl font-bold mb-8">Load Game</h1>
 
       {loading ? (
@@ -151,6 +156,14 @@ export default function LoadGamePage() {
                           <span className="font-medium">Difficulty:</span>{' '}
                           {game.metadata.difficulty}
                         </p>
+                      </div>
+                    )}
+                    {game.savedBy && (
+                      <div className="text-xs text-gray-400 mt-2">
+                        Saved by{' '}
+                        {game.savedBy.displayName ||
+                          game.savedBy.email ||
+                          'Anonymous'}
                       </div>
                     )}
                   </div>

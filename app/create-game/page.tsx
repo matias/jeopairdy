@@ -19,6 +19,7 @@ import type {
   RoundData,
   Round,
 } from '@/shared/types';
+import { AuthHeader } from '@/components/AuthHeader';
 const JEOPARDY_VALUES = [200, 400, 600, 800, 1000];
 const DOUBLE_VALUES = [400, 800, 1200, 1600, 2000];
 
@@ -631,6 +632,7 @@ export default function CreateGamePage() {
 
     return (
       <main className="flex min-h-screen flex-col gap-8 px-6 py-10 lg:px-20">
+        <AuthHeader />
         <div className="flex flex-col gap-2">
           <p className="text-sm uppercase tracking-wide text-gray-500">
             Room {roomId}
