@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createGameClient } from '@/lib/game-client-factory';
 import { IGameClient } from '@/lib/game-client-interface';
@@ -19,7 +19,7 @@ interface SavedGame {
   } | null;
 }
 
-export default function LoadGamePage() {
+function LoadGamePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomId = searchParams?.get('roomId');
@@ -331,5 +331,20 @@ export default function LoadGamePage() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function LoadGamePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen flex-col items-center justify-center p-8 lg:p-24">
+          <h1 className="text-4xl font-bold mb-8">Load Game</h1>
+          <div>Loading...</div>
+        </main>
+      }
+    >
+      <LoadGamePageContent />
+    </Suspense>
   );
 }

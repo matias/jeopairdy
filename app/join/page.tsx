@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createGameClient } from '@/lib/game-client-factory';
 import { IGameClient } from '@/lib/game-client-interface';
 
-export default function JoinPage() {
+function JoinPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [roomId, setRoomId] = useState('');
@@ -118,5 +118,20 @@ export default function JoinPage() {
         </button>
       </form>
     </main>
+  );
+}
+
+export default function JoinPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen flex-col items-center justify-center p-24">
+          <h1 className="text-4xl font-bold mb-8">Join Game</h1>
+          <div>Loading...</div>
+        </main>
+      }
+    >
+      <JoinPageContent />
+    </Suspense>
   );
 }

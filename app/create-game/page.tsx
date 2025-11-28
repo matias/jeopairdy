@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createGameClient } from '@/lib/game-client-factory';
 import { IGameClient } from '@/lib/game-client-interface';
@@ -35,7 +35,7 @@ type SampleResponse = {
 
 type LoadingState = 'samples' | 'regenerate' | 'finalize' | 'saving' | null;
 
-export default function CreateGamePage() {
+function CreateGamePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomId = searchParams?.get('roomId');
@@ -1393,5 +1393,20 @@ export default function CreateGamePage() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function CreateGamePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen flex-col gap-8 px-6 py-10 lg:px-20">
+          <h1 className="text-3xl font-bold tracking-tight">Create New Game</h1>
+          <div>Loading...</div>
+        </main>
+      }
+    >
+      <CreateGamePageContent />
+    </Suspense>
   );
 }
