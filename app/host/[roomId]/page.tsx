@@ -186,7 +186,7 @@ export default function HostPage() {
           </div>
           <div className="bg-white p-8 rounded-lg shadow-lg text-center">
             <h2 className="text-2xl font-bold mb-4">No Game Loaded</h2>
-            <p className="mb-6">Create a new game to get started.</p>
+            <p className="mb-6">Create or load a game config to get started.</p>
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => {

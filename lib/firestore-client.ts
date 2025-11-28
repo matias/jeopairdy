@@ -138,7 +138,7 @@ export class FirestoreClient implements IGameClient {
 
   async connect(): Promise<void> {
     this.instanceId = ++clientInstanceCounter;
-    console.log(`[FirestoreClient #${this.instanceId}] Connecting...`);
+    console.debug(`[FirestoreClient #${this.instanceId}] Connecting...`);
 
     if (!isFirebaseConfigured()) {
       throw new Error(
@@ -149,7 +149,7 @@ export class FirestoreClient implements IGameClient {
     try {
       this.userId = await ensureAuth();
       this.setConnected(true);
-      console.log(
+      console.debug(
         `[FirestoreClient #${this.instanceId}] Connected, userId:`,
         this.userId,
       );
@@ -160,7 +160,7 @@ export class FirestoreClient implements IGameClient {
   }
 
   disconnect(): void {
-    console.log(`[FirestoreClient #${this.instanceId}] Disconnecting...`);
+    console.debug(`[FirestoreClient #${this.instanceId}] Disconnecting...`);
     this.cleanupSubscriptions();
     this.setConnected(false);
     this.listeners.clear();
@@ -260,7 +260,7 @@ export class FirestoreClient implements IGameClient {
 
   private emit(type: string, data: any): void {
     const listeners = this.listeners.get(type);
-    console.log(
+    console.debug(
       `[FirestoreClient #${this.instanceId}] emit('${type}') - ${listeners?.size || 0} listeners`,
     );
     if (listeners) {
@@ -334,7 +334,7 @@ export class FirestoreClient implements IGameClient {
         });
       }
 
-      console.log(
+      console.debug(
         '[FirestoreClient] Host joined room, setting up subscriptions',
         {
           roomId: actualRoomId,
@@ -494,19 +494,16 @@ export class FirestoreClient implements IGameClient {
     );
 
     // Emit initial roomJoined after subscriptions are set up
-    console.log(
-      `[FirestoreClient #${this.instanceId}] Subscriptions set up, scheduling roomJoined emit`,
-    );
     const instanceId = this.instanceId;
     setTimeout(() => {
       // Check if this client is still valid (not disconnected)
       if (this.instanceId !== instanceId || !this.roomId || !this.role) {
-        console.log(
+        console.debug(
           `[FirestoreClient #${instanceId}] Timeout fired but client is no longer valid, skipping`,
         );
         return;
       }
-      console.log(
+      console.debug(
         `[FirestoreClient #${this.instanceId}] Timeout fired, calling emitRoomJoined`,
       );
       this.emitRoomJoined();
@@ -542,24 +539,11 @@ export class FirestoreClient implements IGameClient {
   }
 
   private emitRoomJoined(): void {
-    console.log(`[FirestoreClient #${this.instanceId}] emitRoomJoined called`, {
-      roomId: this.roomId,
-      playerId: this.playerId,
-      role: this.role,
-      listenerCount: this.listeners.get('roomJoined')?.size || 0,
-    });
-
     if (!this.roomId) {
-      console.log(
-        `[FirestoreClient #${this.instanceId}] emitRoomJoined - no roomId, skipping`,
-      );
       return;
     }
 
     const serializedState = this.serializeGameState();
-    console.log(
-      `[FirestoreClient #${this.instanceId}] Emitting roomJoined event`,
-    );
     this.emit('roomJoined', {
       type: 'roomJoined',
       roomId: this.roomId,
@@ -726,8 +710,8 @@ export class FirestoreClient implements IGameClient {
     const tiedPlayerIds = [...new Set(tiedBuzzes.map((b) => b.playerId))];
     const notPickedInTies = this.gameState?.notPickedInTies || [];
 
-    console.log('tiedPlayerIds', tiedPlayerIds);
-    console.log('notPickedInTies', notPickedInTies);
+    console.debug('tiedPlayerIds', tiedPlayerIds);
+    console.debug('notPickedInTies', notPickedInTies);
 
     // Priority: players who haven't been picked in previous ties
     const priorityPlayers = tiedPlayerIds.filter((id) =>
@@ -756,7 +740,7 @@ export class FirestoreClient implements IGameClient {
       this.gameState.notPickedInTies = updatedNotPicked;
     }
 
-    console.log('selectedPlayerId', selectedPlayerId);
+    console.debug('selectedPlayerId', selectedPlayerId);
     return selectedPlayerId;
   }
 
@@ -772,7 +756,7 @@ export class FirestoreClient implements IGameClient {
       status !== 'buzzing' &&
       status !== 'answering'
     ) {
-      console.log(
+      console.debug(
         '[FirestoreClient] Cannot buzz - invalid game status:',
         status,
       );
@@ -782,7 +766,7 @@ export class FirestoreClient implements IGameClient {
     // Check if player has already buzzed for this clue
     const alreadyBuzzed = this.buzzes.some((b) => b.playerId === this.playerId);
     if (alreadyBuzzed) {
-      console.log(
+      console.debug(
         '[FirestoreClient] Cannot buzz - already buzzed for this clue',
       );
       return;
@@ -1207,7 +1191,7 @@ export class FirestoreClient implements IGameClient {
         : null,
     });
 
-    console.log('Game saved to Firestore:', gameConfig.id);
+    console.debug('Game saved to Firestore:', gameConfig.id);
     this.emit('gameSaved', { type: 'gameSaved', gameId: gameConfig.id });
   }
 

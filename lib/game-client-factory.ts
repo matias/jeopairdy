@@ -12,15 +12,9 @@ export function shouldUseFirebaseMode(): boolean {
 
   // 1. Explicit environment variable override
   if (envMode === 'true') {
-    console.log(
-      '[GameClient] Firebase mode enabled via NEXT_PUBLIC_FIREBASE_MODE=true',
-    );
     return true;
   }
   if (envMode === 'false') {
-    console.log(
-      '[GameClient] WebSocket mode enabled via NEXT_PUBLIC_FIREBASE_MODE=false',
-    );
     return false;
   }
 
