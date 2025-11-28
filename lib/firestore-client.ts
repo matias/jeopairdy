@@ -578,7 +578,18 @@ export class FirestoreClient implements IGameClient {
     if (!this.roomId || this.role !== 'host') return;
 
     const currentDisplayOrder = this.gameState?.displayBuzzerOrder || [];
-    const allBuzzPlayerIds = this.buzzes.map((b) => b.playerId);
+
+    // Deduplicate buzzes - keep only first buzz from each player
+    const seenPlayers = new Set<string>();
+    const uniqueBuzzes = this.buzzes.filter((b) => {
+      if (seenPlayers.has(b.playerId)) {
+        return false;
+      }
+      seenPlayers.add(b.playerId);
+      return true;
+    });
+
+    const allBuzzPlayerIds = uniqueBuzzes.map((b) => b.playerId);
 
     // Check if there are any new buzzes not in displayBuzzerOrder
     const newBuzzes = allBuzzPlayerIds.filter(
@@ -604,21 +615,34 @@ export class FirestoreClient implements IGameClient {
     if (this.gameState?.currentPlayer) return;
 
     const db = getFirestoreDb();
-    const firstBuzzTime = this.buzzes[0].serverTimestamp.toMillis();
+
+    // Deduplicate buzzes - keep only the first buzz from each player
+    const seenPlayers = new Set<string>();
+    const uniqueBuzzes = this.buzzes.filter((b) => {
+      if (seenPlayers.has(b.playerId)) {
+        return false;
+      }
+      seenPlayers.add(b.playerId);
+      return true;
+    });
+
+    if (uniqueBuzzes.length === 0) return;
+
+    const firstBuzzTime = uniqueBuzzes[0].serverTimestamp.toMillis();
 
     // Find all buzzes within tie window
-    const tiedBuzzes = this.buzzes.filter(
+    const tiedBuzzes = uniqueBuzzes.filter(
       (b) => b.serverTimestamp.toMillis() - firstBuzzTime <= TIE_WINDOW_MS,
     );
 
     // Apply tie resolution logic
     const selectedPlayerId = this.selectFromTie(tiedBuzzes);
 
-    // Update buzzer order
-    const buzzerOrder = this.buzzes.map((b) => b.playerId);
+    // Update buzzer order (deduplicated)
+    const buzzerOrder = uniqueBuzzes.map((b) => b.playerId);
     const displayBuzzerOrder = [selectedPlayerId];
     buzzerOrder.forEach((id) => {
-      if (id !== selectedPlayerId) {
+      if (id !== selectedPlayerId && !displayBuzzerOrder.includes(id)) {
         displayBuzzerOrder.push(id);
       }
     });
@@ -635,7 +659,8 @@ export class FirestoreClient implements IGameClient {
   }
 
   private selectFromTie(tiedBuzzes: BuzzRecord[]): string {
-    const tiedPlayerIds = tiedBuzzes.map((b) => b.playerId);
+    // Deduplicate player IDs (should already be deduplicated, but safety check)
+    const tiedPlayerIds = [...new Set(tiedBuzzes.map((b) => b.playerId))];
     const notPickedInTies = this.gameState?.notPickedInTies || [];
 
     console.log('tiedPlayerIds', tiedPlayerIds);
@@ -676,6 +701,29 @@ export class FirestoreClient implements IGameClient {
   async buzz(): Promise<void> {
     if (!this.roomId || !this.playerId) return;
     if (this.role !== 'player') return;
+
+    // Check if game state allows buzzing
+    const status = this.gameState?.status;
+    if (
+      status !== 'clueRevealed' &&
+      status !== 'buzzing' &&
+      status !== 'answering'
+    ) {
+      console.log(
+        '[FirestoreClient] Cannot buzz - invalid game status:',
+        status,
+      );
+      return;
+    }
+
+    // Check if player has already buzzed for this clue
+    const alreadyBuzzed = this.buzzes.some((b) => b.playerId === this.playerId);
+    if (alreadyBuzzed) {
+      console.log(
+        '[FirestoreClient] Cannot buzz - already buzzed for this clue',
+      );
+      return;
+    }
 
     const db = getFirestoreDb();
     await addDoc(collection(db, 'games', this.roomId, 'buzzes'), {
