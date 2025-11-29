@@ -330,7 +330,7 @@ export default function GameDisplayPage() {
           className={`max-w-4xl mx-auto text-center transition-opacity duration-[2000ms] ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
         >
           <h1 className="jeopardy-title text-6xl font-bold mb-8 uppercase tracking-wider text-white">
-            JEOPAIRDY!
+            JEOP<span className="text-red-500">AI</span>RDY!
           </h1>
           <div className="bg-blue-800 p-8 rounded-lg">
             <h2 className="text-4xl font-bold mb-6 text-white">
@@ -364,7 +364,7 @@ export default function GameDisplayPage() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 text-center">
           <h1 className="jeopardy-title text-6xl font-bold mb-2 uppercase tracking-wider">
-            JEOPAIRDY!
+            JEOP<span className="text-red-500">AI</span>RDY!
           </h1>
           <div className="text-3xl text-white font-bold uppercase tracking-wide">
             {gameState.currentRound === 'jeopardy'

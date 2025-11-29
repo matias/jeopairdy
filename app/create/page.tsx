@@ -71,15 +71,17 @@ export default function CreatePage() {
   // Login required
   if (status === 'login') {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-b from-blue-900 to-blue-950">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
-          <h1 className="text-3xl font-bold mb-4 text-gray-900">Host a Game</h1>
-          <p className="text-gray-600 mb-6">
+      <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-blue-900">
+        <div className="bg-blue-800 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
+          <h1 className="jeopardy-title text-4xl font-bold mb-4 text-white uppercase tracking-wider">
+            Host a Game
+          </h1>
+          <p className="text-gray-300 mb-6">
             Sign in with Google to create and host Jeopardy games.
           </p>
           <button
             onClick={signIn}
-            className="w-full px-6 py-3 bg-white border-2 border-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center justify-center gap-3 shadow-sm"
+            className="w-full px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -103,7 +105,7 @@ export default function CreatePage() {
           </button>
           <button
             onClick={() => router.push('/')}
-            className="mt-4 text-gray-500 hover:text-gray-700 text-sm"
+            className="mt-4 text-gray-300 hover:text-white text-sm transition-colors"
           >
             ← Back to home
           </button>
@@ -115,13 +117,13 @@ export default function CreatePage() {
   // Access denied
   if (status === 'denied') {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-b from-red-900 to-red-950">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-blue-900">
+        <div className="bg-blue-800 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
           <div className="text-5xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold mb-4 text-gray-900">
+          <h1 className="text-2xl font-bold mb-4 text-white">
             Access Restricted
           </h1>
-          <p className="text-gray-600 mb-2">
+          <p className="text-gray-300 mb-2">
             Hosting is currently limited to approved accounts.
           </p>
           <p className="text-sm text-gray-400 mb-6">
@@ -130,13 +132,13 @@ export default function CreatePage() {
           <div className="space-y-3">
             <button
               onClick={() => router.push('/join')}
-              className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700"
+              className="w-full px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
             >
               Join a Game Instead
             </button>
             <button
               onClick={() => router.push('/')}
-              className="w-full px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300"
+              className="w-full px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
             >
               Back to Home
             </button>
@@ -149,12 +151,14 @@ export default function CreatePage() {
   // Error
   if (status === 'error') {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-24">
-        <h1 className="text-4xl font-bold mb-8">Create Game</h1>
-        <div className="text-red-600 mb-4">{error}</div>
+      <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-blue-900">
+        <h1 className="jeopardy-title text-4xl font-bold mb-8 text-white uppercase tracking-wider">
+          Create Game
+        </h1>
+        <div className="text-red-500 mb-4">{error}</div>
         <button
           onClick={() => router.push('/')}
-          className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700"
+          className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
         >
           Back to Home
         </button>
@@ -164,14 +168,16 @@ export default function CreatePage() {
 
   // Loading / Creating
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold mb-8">Create Game</h1>
-      <div className="flex items-center gap-3">
-        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-blue-900">
+      <h1 className="jeopardy-title text-4xl font-bold mb-8 text-white uppercase tracking-wider">
+        Create Game
+      </h1>
+      <div className="flex items-center gap-3 text-white">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
         <span>{status === 'checking' ? 'Loading...' : 'Creating room...'}</span>
       </div>
       {user && status === 'creating' && (
-        <div className="mt-4 text-sm text-gray-500">
+        <div className="mt-4 text-sm text-gray-300">
           Hosting as {user.displayName || user.email}
         </div>
       )}

@@ -105,29 +105,31 @@ function LoadGamePageContent() {
 
   if (!roomId) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <div>No room ID provided</div>
+      <main className="flex min-h-screen items-center justify-center bg-blue-900">
+        <div className="text-white">No room ID provided</div>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8 lg:p-24">
+    <main className="flex min-h-screen flex-col items-center justify-center p-8 lg:p-24 bg-blue-900">
       <AuthHeader />
-      <h1 className="text-4xl font-bold mb-8">Load Game</h1>
+      <h1 className="jeopardy-title text-4xl font-bold mb-8 text-white uppercase tracking-wider">
+        Load Game
+      </h1>
 
       {loading ? (
-        <div>Loading games...</div>
+        <div className="text-white">Loading games...</div>
       ) : error ? (
-        <div className="text-red-600">{error}</div>
+        <div className="text-red-500">{error}</div>
       ) : (
         <div className="w-full max-w-4xl">
           {games.length === 0 ? (
             <div className="text-center">
-              <p className="mb-4">No saved games found.</p>
+              <p className="mb-4 text-white">No saved games found.</p>
               <button
                 onClick={() => router.push(`/create-game?roomId=${roomId}`)}
-                className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
               >
                 Create New Game
               </button>
@@ -137,17 +139,19 @@ function LoadGamePageContent() {
               {games.map((game) => (
                 <div
                   key={game.id}
-                  className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="bg-blue-800 p-6 rounded-lg shadow-sm border border-blue-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="font-bold text-lg">{game.id}</div>
-                      <span className="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600">
+                      <div className="font-bold text-lg text-white">
+                        {game.id}
+                      </div>
+                      <span className="text-xs px-2 py-1 bg-blue-900 rounded-full text-gray-300">
                         {new Date(game.createdAt).toLocaleDateString()}
                       </span>
                     </div>
                     {game.metadata && (
-                      <div className="text-sm text-gray-600 space-y-1">
+                      <div className="text-sm text-gray-300 space-y-1">
                         <p>
                           <span className="font-medium">Topics:</span>{' '}
                           {game.metadata.topics}
@@ -170,14 +174,14 @@ function LoadGamePageContent() {
                   <div className="flex gap-2 shrink-0">
                     <button
                       onClick={() => handlePreviewGame(game.id)}
-                      className="px-4 py-2 text-blue-600 border border-blue-200 rounded hover:bg-blue-50 transition-colors"
+                      className="px-4 py-2 text-white border border-blue-600 rounded hover:bg-blue-700 transition-colors"
                       disabled={previewLoading}
                     >
                       Preview
                     </button>
                     <button
                       onClick={() => handleLoadGame(game.id)}
-                      className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 shadow-sm transition-colors"
+                      className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 shadow-sm transition-colors"
                     >
                       Load
                     </button>
@@ -190,13 +194,13 @@ function LoadGamePageContent() {
           <div className="mt-8 flex gap-4 justify-center">
             <button
               onClick={() => router.push(`/host/${roomId}`)}
-              className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700"
+              className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
             >
               Back
             </button>
             <button
               onClick={() => router.push(`/create-game?roomId=${roomId}`)}
-              className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
             >
               Create New Game
             </button>
@@ -207,20 +211,18 @@ function LoadGamePageContent() {
       {/* Preview Modal */}
       {previewGame && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-start bg-gray-50">
+          <div className="bg-blue-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-blue-700">
+            <div className="p-6 border-b border-blue-700 flex justify-between items-start bg-blue-900">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Game Preview
-                </h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <h2 className="text-2xl font-bold text-white">Game Preview</h2>
+                <p className="text-sm text-gray-300 mt-1">
                   {previewGame.id} • Created{' '}
                   {new Date(previewGame.createdAt).toLocaleDateString()}
                 </p>
               </div>
               <button
                 onClick={() => setPreviewGame(null)}
-                className="text-gray-400 hover:text-gray-600 p-1"
+                className="text-gray-300 hover:text-white p-1 transition-colors"
               >
                 <svg
                   className="w-6 h-6"
@@ -240,9 +242,9 @@ function LoadGamePageContent() {
 
             <div className="overflow-y-auto p-6 space-y-8">
               <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                  <h3 className="font-semibold text-blue-900 mb-2">Config</h3>
-                  <div className="space-y-2 text-sm text-blue-800">
+                <div className="bg-blue-900 p-4 rounded-lg border border-blue-700">
+                  <h3 className="font-semibold text-white mb-2">Config</h3>
+                  <div className="space-y-2 text-sm text-gray-300">
                     <p>
                       <span className="font-medium">Topics:</span>{' '}
                       {previewGame.metadata?.topics || 'N/A'}
@@ -253,9 +255,9 @@ function LoadGamePageContent() {
                     </p>
                   </div>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                  <h3 className="font-semibold text-purple-900 mb-2">Stats</h3>
-                  <div className="space-y-2 text-sm text-purple-800">
+                <div className="bg-blue-900 p-4 rounded-lg border border-blue-700">
+                  <h3 className="font-semibold text-white mb-2">Stats</h3>
+                  <div className="space-y-2 text-sm text-gray-300">
                     <p>
                       <span className="font-medium">Jeopardy:</span>{' '}
                       {previewGame.jeopardy.categories.length} categories
@@ -273,28 +275,28 @@ function LoadGamePageContent() {
               </div>
 
               <div>
-                <h3 className="font-bold text-gray-900 mb-4 text-lg border-b pb-2">
+                <h3 className="font-bold text-white mb-4 text-lg border-b border-blue-700 pb-2">
                   Jeopardy Round
                 </h3>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {previewGame.jeopardy.categories.slice(0, 6).map((cat) => (
                     <div
                       key={cat.id}
-                      className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                      className="border border-blue-700 rounded-lg p-4 bg-blue-900"
                     >
-                      <h4 className="font-bold text-center mb-3 text-blue-800 uppercase text-sm tracking-wide h-10 flex items-center justify-center">
+                      <h4 className="font-bold text-center mb-3 text-white uppercase text-sm tracking-wide h-10 flex items-center justify-center">
                         {cat.name}
                       </h4>
                       <div className="space-y-2">
                         {cat.clues.slice(0, 3).map((clue) => (
                           <div
                             key={clue.id}
-                            className="text-xs p-2 bg-white rounded border border-gray-100"
+                            className="text-xs p-2 bg-blue-800 rounded border border-blue-600"
                           >
-                            <span className="font-bold text-blue-600 block mb-1">
+                            <span className="font-bold text-yellow-400 block mb-1">
                               ${clue.value}
                             </span>
-                            <span className="line-clamp-2 text-gray-600">
+                            <span className="line-clamp-2 text-gray-300">
                               {clue.clue}
                             </span>
                           </div>
@@ -311,10 +313,10 @@ function LoadGamePageContent() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+            <div className="p-6 border-t border-blue-700 bg-blue-900 flex justify-end gap-3">
               <button
                 onClick={() => setPreviewGame(null)}
-                className="px-4 py-2 text-gray-700 hover:text-gray-900"
+                className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
               >
                 Close
               </button>
@@ -322,7 +324,7 @@ function LoadGamePageContent() {
                 onClick={() => {
                   if (previewGame) handleLoadGame(previewGame.id);
                 }}
-                className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 shadow-sm"
+                className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 shadow-sm transition-colors"
               >
                 Load This Game
               </button>
@@ -338,9 +340,11 @@ export default function LoadGamePage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen flex-col items-center justify-center p-8 lg:p-24">
-          <h1 className="text-4xl font-bold mb-8">Load Game</h1>
-          <div>Loading...</div>
+        <main className="flex min-h-screen flex-col items-center justify-center p-8 lg:p-24 bg-blue-900">
+          <h1 className="jeopardy-title text-4xl font-bold mb-8 text-white uppercase tracking-wider">
+            Load Game
+          </h1>
+          <div className="text-white">Loading...</div>
         </main>
       }
     >

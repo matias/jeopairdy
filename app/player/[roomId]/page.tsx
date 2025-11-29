@@ -230,8 +230,8 @@ export default function PlayerPage() {
 
   if (!gameState || !playerId) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <div>Connecting...</div>
+      <main className="flex min-h-screen items-center justify-center bg-blue-900">
+        <div className="text-white">Connecting...</div>
       </main>
     );
   }
@@ -251,22 +251,24 @@ export default function PlayerPage() {
   const hasAnswered = player?.finalJeopardyAnswer != null;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-top p-8 bg-gray-100">
+    <main className="flex min-h-screen flex-col items-center justify-top p-8 bg-blue-900">
       <div className="w-full max-w-2xl">
         {!isConnected && (
-          <div className="mb-4 p-4 bg-red-100 border-2 border-red-500 rounded-lg">
-            <p className="text-red-600 font-bold text-lg">
+          <div className="mb-4 p-4 bg-red-900/50 border-2 border-red-500 rounded-lg">
+            <p className="text-red-200 font-bold text-lg">
               ⚠️ Disconnected from server. Attempting to reconnect...
             </p>
           </div>
         )}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4">Room: {roomId}</h1>
+          <h1 className="jeopardy-title text-3xl font-bold mb-4 text-white uppercase tracking-wider">
+            Room: {roomId}
+          </h1>
           {player && (
             <div className="text-2xl">
-              <span className="font-bold">{player.name}</span>
+              <span className="font-bold text-white">{player.name}</span>
               <span
-                className={`ml-4 ${player.score >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                className={`ml-4 ${player.score >= 0 ? 'text-green-300' : 'text-red-500'}`}
               >
                 ${player.score.toLocaleString()}
               </span>
@@ -276,25 +278,25 @@ export default function PlayerPage() {
 
         {(gameState.status === 'finalJeopardyCategory' ||
           isFinalJeopardyWagering) && (
-          <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 className="text-2xl font-bold mb-4">
+          <div className="bg-blue-800 p-6 rounded-lg shadow-lg mb-4 border border-blue-700">
+            <h2 className="text-2xl font-bold mb-4 text-white">
               Final Jeopardy - Place Your Wager
             </h2>
             {player && player.score <= 0 ? (
               <div className="text-center py-8">
-                <p className="text-xl text-gray-600 mb-2">
+                <p className="text-xl text-gray-300 mb-2">
                   Unfortunately, you cannot participate in Final Jeopardy
                 </p>
-                <p className="text-lg text-gray-500">
+                <p className="text-lg text-gray-400">
                   Your score is ${player.score}
                 </p>
-                <p className="text-lg text-gray-500 mt-4">
+                <p className="text-lg text-gray-400 mt-4">
                   Thank you for playing!
                 </p>
               </div>
             ) : (
               <>
-                <p className="mb-4 text-lg">
+                <p className="mb-4 text-lg text-white">
                   Your current score:{' '}
                   <span className="font-bold text-2xl">
                     ${player?.score || 0}
@@ -328,12 +330,12 @@ export default function PlayerPage() {
                         // If negative, don't update (prevent negative values)
                       }}
                       placeholder="Wager amount (0 to your score)"
-                      className={`w-full px-6 py-4 text-2xl border-2 rounded-lg focus:outline-none ${
+                      className={`w-full px-6 py-4 text-2xl border-2 rounded-lg bg-blue-800 text-white placeholder-gray-400 focus:outline-none ${
                         finalWager &&
                         (parseInt(finalWager, 10) < 0 ||
                           parseInt(finalWager, 10) > (player?.score || 0))
                           ? 'border-red-500 focus:border-red-500'
-                          : 'border-gray-300 focus:border-blue-500'
+                          : 'border-blue-600 focus:border-yellow-400'
                       }`}
                       disabled={hasWagered}
                       min="0"
@@ -342,7 +344,7 @@ export default function PlayerPage() {
                     {finalWager &&
                       (parseInt(finalWager, 10) < 0 ||
                         parseInt(finalWager, 10) > (player?.score || 0)) && (
-                        <p className="mt-2 text-sm text-red-600">
+                        <p className="mt-2 text-sm text-red-500">
                           Wager must be between $0 and ${player?.score || 0}
                         </p>
                       )}
@@ -355,13 +357,13 @@ export default function PlayerPage() {
                       parseInt(finalWager, 10) < 0 ||
                       parseInt(finalWager, 10) > (player?.score || 0)
                     }
-                    className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 text-xl font-bold"
+                    className="px-8 py-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:bg-gray-400 text-xl font-bold transition-colors"
                   >
                     {hasWagered ? 'Wager Submitted ✓' : 'Submit Wager'}
                   </button>
                 </div>
                 {hasWagered && (
-                  <p className="mt-4 text-green-600 text-lg font-bold">
+                  <p className="mt-4 text-green-300 text-lg font-bold">
                     Wager submitted: ${player?.finalJeopardyWager}
                   </p>
                 )}
@@ -371,31 +373,33 @@ export default function PlayerPage() {
         )}
 
         {gameState.status === 'finalJeopardyClueReading' && (
-          <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 className="text-2xl font-bold mb-4">Final Jeopardy</h2>
+          <div className="bg-blue-800 p-6 rounded-lg shadow-lg mb-4 border border-blue-700">
+            <h2 className="text-2xl font-bold mb-4 text-white">
+              Final Jeopardy
+            </h2>
             {player && player.score <= 0 ? (
               <div className="text-center py-8">
-                <p className="text-xl text-gray-600 mb-2">
+                <p className="text-xl text-gray-300 mb-2">
                   Unfortunately, you cannot participate in Final Jeopardy
                 </p>
-                <p className="text-lg text-gray-500">
+                <p className="text-lg text-gray-400">
                   Your score is ${player.score}
                 </p>
-                <p className="text-lg text-gray-500 mt-4">
+                <p className="text-lg text-gray-400 mt-4">
                   Thank you for playing!
                 </p>
               </div>
             ) : (
               <>
                 <div className="mb-4">
-                  <p className="text-lg mb-2">
+                  <p className="text-lg mb-2 text-white">
                     Your wager:{' '}
                     <span className="font-bold text-2xl">
                       ${player?.finalJeopardyWager || 0}
                     </span>
                   </p>
                 </div>
-                <p className="text-lg text-gray-600 text-center py-8">
+                <p className="text-lg text-gray-300 text-center py-8">
                   Listen to the clue... Timer will start soon.
                 </p>
               </>
@@ -404,33 +408,33 @@ export default function PlayerPage() {
         )}
 
         {isFinalJeopardyAnswering && (
-          <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 className="text-2xl font-bold mb-4">
+          <div className="bg-blue-800 p-6 rounded-lg shadow-lg mb-4 border border-blue-700">
+            <h2 className="text-2xl font-bold mb-4 text-white">
               Final Jeopardy - Your Answer
             </h2>
             {player && player.score <= 0 ? (
               <div className="text-center py-8">
-                <p className="text-xl text-gray-600 mb-2">
+                <p className="text-xl text-gray-300 mb-2">
                   Unfortunately, you cannot participate in Final Jeopardy
                 </p>
-                <p className="text-lg text-gray-500">
+                <p className="text-lg text-gray-400">
                   Your score is ${player.score}
                 </p>
-                <p className="text-lg text-gray-500 mt-4">
+                <p className="text-lg text-gray-400 mt-4">
                   Thank you for playing!
                 </p>
               </div>
             ) : (
               <>
                 {countdown !== null && (
-                  <div className="mb-4 p-4 bg-red-100 rounded-lg">
-                    <p className="text-xl font-bold text-red-600">
+                  <div className="mb-4 p-4 bg-red-900/50 rounded-lg border border-red-500">
+                    <p className="text-xl font-bold text-red-200">
                       Time remaining: {countdown} seconds
                     </p>
                   </div>
                 )}
                 <div className="mb-4">
-                  <p className="text-lg mb-2">
+                  <p className="text-lg mb-2 text-white">
                     Your wager:{' '}
                     <span className="font-bold text-2xl">
                       ${player?.finalJeopardyWager || 0}
@@ -443,7 +447,7 @@ export default function PlayerPage() {
                     value={finalAnswer}
                     onChange={(e) => setFinalAnswer(e.target.value)}
                     placeholder="Your answer (in the form of a question)"
-                    className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                    className="w-full px-6 py-4 text-xl border-2 border-blue-600 bg-blue-900 text-white placeholder-gray-400 rounded-lg focus:border-yellow-400 focus:outline-none"
                     disabled={
                       hasAnswered || (countdown !== null && countdown <= 0)
                     }
@@ -455,7 +459,7 @@ export default function PlayerPage() {
                       !finalAnswer ||
                       (countdown !== null && countdown <= 0)
                     }
-                    className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 text-xl font-bold"
+                    className="px-8 py-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:bg-gray-400 text-xl font-bold transition-colors"
                   >
                     {hasAnswered
                       ? 'Answer Submitted ✓'
@@ -465,7 +469,7 @@ export default function PlayerPage() {
                   </button>
                 </div>
                 {hasAnswered && (
-                  <p className="mt-4 text-green-600 text-lg font-bold">
+                  <p className="mt-4 text-green-300 text-lg font-bold">
                     Answer submitted!
                   </p>
                 )}
@@ -475,20 +479,20 @@ export default function PlayerPage() {
         )}
 
         {gameState.status === 'finalJeopardyJudging' && (
-          <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 className="text-2xl font-bold mb-4">
+          <div className="bg-blue-800 p-6 rounded-lg shadow-lg mb-4 border border-blue-700">
+            <h2 className="text-2xl font-bold mb-4 text-white">
               Final Jeopardy - Judging
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-300">
               Please wait while the host judges all players...
             </p>
           </div>
         )}
 
         {gameState.status === 'finished' && (
-          <div className="bg-white p-6 rounded-lg shadow-lg mb-4">
-            <h2 className="text-2xl font-bold mb-4">Game Over</h2>
-            <p className="text-lg mb-4">
+          <div className="bg-blue-800 p-6 rounded-lg shadow-lg mb-4 border border-blue-700">
+            <h2 className="text-2xl font-bold mb-4 text-white">Game Over</h2>
+            <p className="text-lg mb-4 text-white">
               Your final score:{' '}
               <span className="font-bold text-2xl">${player?.score || 0}</span>
             </p>

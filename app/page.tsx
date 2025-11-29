@@ -5,21 +5,21 @@ import { AuthHeader } from '@/components/AuthHeader';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-blue-900">
       <AuthHeader />
-      <h1 className="text-7xl text-black font-gyparody mb-8">
-        Jeop<span className="text-red-500">ai</span>rdy!
+      <h1 className="jeopardy-title text-7xl font-bold mb-8 uppercase tracking-wider text-white">
+        JEOP<span className="text-red-500">AI</span>RDY!
       </h1>
       <div className="flex flex-col gap-4">
         <Link
           href="/create"
-          className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
         >
           Host Game
         </Link>
         <Link
           href="/join"
-          className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700"
+          className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
         >
           Join Game
         </Link>

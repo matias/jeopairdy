@@ -65,12 +65,15 @@ function JoinPageContent() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold mb-8">Join Game</h1>
+    <main className="flex min-h-screen flex-col items-center justify-top p-24 bg-blue-900">
+      <h1 className="jeopardy-title text-7xl font-bold mb-8 uppercase tracking-wider text-white">
+        JEOP<span className="text-red-500">AI</span>RDY!
+      </h1>
+      <h2 className="text-4xl font-bold mb-8 text-white">Join Game</h2>
 
       <form onSubmit={handleJoin} className="flex flex-col gap-4 w-80">
         <div>
-          <label htmlFor="roomId" className="block mb-2">
+          <label htmlFor="roomId" className="block mb-2 text-white">
             Room Code
           </label>
           <input
@@ -78,7 +81,7 @@ function JoinPageContent() {
             type="text"
             value={roomId}
             onChange={(e) => setRoomId(e.target.value.toUpperCase())}
-            className="w-full px-4 py-2 border rounded"
+            className="w-full px-4 py-2 border border-gray-600 rounded bg-blue-800 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400"
             placeholder="ABCD"
             maxLength={4}
             required
@@ -86,7 +89,7 @@ function JoinPageContent() {
         </div>
 
         <div>
-          <label htmlFor="playerName" className="block mb-2">
+          <label htmlFor="playerName" className="block mb-2 text-white">
             Your Name
           </label>
           <input
@@ -94,17 +97,17 @@ function JoinPageContent() {
             type="text"
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
-            className="w-full px-4 py-2 border rounded"
+            className="w-full px-4 py-2 border border-gray-600 rounded bg-blue-800 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400"
             placeholder="Enter your name"
             required
           />
         </div>
 
-        {error && <div className="text-red-600 text-sm">{error}</div>}
+        {error && <div className="text-red-500 text-sm">{error}</div>}
 
         <button
           type="submit"
-          className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
         >
           Join
         </button>
@@ -112,7 +115,7 @@ function JoinPageContent() {
         <button
           type="button"
           onClick={() => router.push('/')}
-          className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700"
+          className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
         >
           Back
         </button>
@@ -125,9 +128,9 @@ export default function JoinPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen flex-col items-center justify-center p-24">
-          <h1 className="text-4xl font-bold mb-8">Join Game</h1>
-          <div>Loading...</div>
+        <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-blue-900">
+          <h1 className="text-4xl font-bold mb-8 text-white">Join Game</h1>
+          <div className="text-white">Loading...</div>
         </main>
       }
     >

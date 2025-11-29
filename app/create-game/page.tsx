@@ -172,8 +172,8 @@ function CreateGamePageContent() {
 
   if (!roomId) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <div>No room ID provided</div>
+      <main className="flex min-h-screen items-center justify-center bg-blue-900">
+        <div className="text-white">No room ID provided</div>
       </main>
     );
   }
@@ -694,14 +694,16 @@ function CreateGamePageContent() {
     };
 
     return (
-      <main className="flex min-h-screen flex-col gap-8 px-6 py-10 lg:px-20">
+      <main className="flex min-h-screen flex-col gap-8 px-6 py-10 lg:px-20 bg-blue-900">
         <AuthHeader />
         <div className="flex flex-col gap-2">
-          <p className="text-sm uppercase tracking-wide text-gray-500">
+          <p className="text-sm uppercase tracking-wide text-gray-300">
             Room {roomId}
           </p>
-          <h1 className="text-4xl font-bold">Edit Your Jeopardy! Game</h1>
-          <p className="text-gray-600">
+          <h1 className="jeopardy-title text-4xl font-bold text-white uppercase tracking-wider">
+            Edit Your Jeopardy! Game
+          </h1>
+          <p className="text-gray-300">
             Review and edit clues, then save when ready.
           </p>
         </div>
@@ -712,8 +714,8 @@ function CreateGamePageContent() {
             disabled={getRoundStatus('jeopardy') === 'generating'}
             className={`rounded px-4 py-2 text-sm font-medium transition ${
               currentRound === 'jeopardy'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? 'bg-gray-600 text-white'
+                : 'bg-blue-800 text-white hover:bg-blue-700'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             Jeopardy
@@ -724,8 +726,8 @@ function CreateGamePageContent() {
             disabled={getRoundStatus('doubleJeopardy') === 'generating'}
             className={`rounded px-4 py-2 text-sm font-medium transition ${
               currentRound === 'doubleJeopardy'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? 'bg-gray-600 text-white'
+                : 'bg-blue-800 text-white hover:bg-blue-700'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             Double Jeopardy
@@ -737,8 +739,8 @@ function CreateGamePageContent() {
             disabled={getRoundStatus('finalJeopardy') === 'generating'}
             className={`rounded px-4 py-2 text-sm font-medium transition ${
               currentRound === 'finalJeopardy'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? 'bg-gray-600 text-white'
+                : 'bg-blue-800 text-white hover:bg-blue-700'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             Final Jeopardy
@@ -756,56 +758,56 @@ function CreateGamePageContent() {
               !gameConfig.doubleJeopardy.categories.length ||
               !gameConfig.finalJeopardy.category
             }
-            className="rounded bg-green-600 px-6 py-2 text-white transition disabled:bg-gray-400"
+            className="rounded bg-gray-600 px-6 py-2 text-white hover:bg-gray-700 transition disabled:bg-gray-400"
           >
             {loadingState === 'saving' ? 'Saving…' : 'SAVE GAME'}
           </button>
         </div>
 
         {error && (
-          <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="rounded border border-red-400 bg-red-900/50 px-4 py-3 text-sm text-red-200">
             {error}
           </div>
         )}
 
         {currentRound === 'finalJeopardy' ? (
-          <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-blue-700 bg-blue-800 p-6 shadow-sm">
             {getRoundStatus('finalJeopardy') === 'error' ? (
               <div className="py-8 text-center">
-                <p className="mb-4 text-lg text-red-600">
+                <p className="mb-4 text-lg text-red-500">
                   Failed to generate Final Jeopardy.
                 </p>
                 <button
                   onClick={handleRetry}
-                  className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                  className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 transition-colors"
                 >
                   Retry Generation
                 </button>
               </div>
             ) : getRoundStatus('finalJeopardy') === 'generating' ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-gray-300">
                   Generating game... please wait
                 </p>
               </div>
             ) : getRoundStatus('finalJeopardy') === 'waiting' ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-gray-300">
                   Waiting for previous stage to generate game... please wait
                 </p>
               </div>
             ) : !gameConfig.finalJeopardy.category ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-gray-300">
                   Waiting for previous stage to generate game... please wait
                 </p>
               </div>
             ) : (
               <>
-                <h2 className="mb-4 text-2xl font-semibold">
+                <h2 className="mb-4 text-2xl font-semibold text-white">
                   {gameConfig.finalJeopardy.category}
                 </h2>
-                <div className="group relative rounded-lg border border-gray-200 p-4">
+                <div className="group relative rounded-lg border border-blue-600 bg-blue-900 p-4">
                   {isEditing('final-jeopardy', 'clue') ? (
                     <textarea
                       defaultValue={gameConfig.finalJeopardy.clue}
@@ -819,7 +821,7 @@ function CreateGamePageContent() {
                           setEditingClue(null);
                         }
                       }}
-                      className="w-full rounded border px-3 py-2 text-sm"
+                      className="w-full rounded border border-blue-600 bg-blue-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-yellow-400"
                       autoFocus
                     />
                   ) : (
@@ -832,7 +834,7 @@ function CreateGamePageContent() {
                               field: 'clue',
                             })
                           }
-                          className="rounded bg-gray-100 p-1.5 hover:bg-gray-200"
+                          className="rounded bg-blue-700 p-1.5 hover:bg-blue-600 text-white"
                           title="Edit clue"
                         >
                           <svg
@@ -854,7 +856,7 @@ function CreateGamePageContent() {
                             handleRegenerateClue('', 'final-jeopardy')
                           }
                           disabled={isRegenerating('final-jeopardy')}
-                          className="rounded bg-gray-100 p-1.5 hover:bg-gray-200 disabled:opacity-50"
+                          className="rounded bg-blue-700 p-1.5 hover:bg-blue-600 text-white disabled:opacity-50"
                           title="Regenerate clue"
                         >
                           <svg
@@ -872,13 +874,13 @@ function CreateGamePageContent() {
                           </svg>
                         </button>
                       </div>
-                      <p className="text-sm text-gray-800">
+                      <p className="text-sm text-white">
                         {gameConfig.finalJeopardy.clue}
                       </p>
                     </>
                   )}
                 </div>
-                <div className="group relative mt-4 rounded-lg border border-gray-200 p-4">
+                <div className="group relative mt-4 rounded-lg border border-blue-600 bg-blue-900 p-4">
                   {isEditing('final-jeopardy', 'answer') ? (
                     <textarea
                       defaultValue={gameConfig.finalJeopardy.answer}
@@ -896,7 +898,7 @@ function CreateGamePageContent() {
                           setEditingClue(null);
                         }
                       }}
-                      className="w-full rounded border px-3 py-2 text-sm font-mono"
+                      className="w-full rounded border border-blue-600 bg-blue-800 text-white px-3 py-2 text-sm font-mono focus:outline-none focus:border-yellow-400"
                       autoFocus
                     />
                   ) : (
@@ -909,7 +911,7 @@ function CreateGamePageContent() {
                               field: 'answer',
                             })
                           }
-                          className="rounded bg-gray-100 p-1.5 hover:bg-gray-200"
+                          className="rounded bg-blue-700 p-1.5 hover:bg-blue-600 text-white"
                           title="Edit answer"
                         >
                           <svg
@@ -931,7 +933,7 @@ function CreateGamePageContent() {
                             handleRegenerateClue('', 'final-jeopardy-answer')
                           }
                           disabled={isRegenerating('final-jeopardy-answer')}
-                          className="rounded bg-gray-100 p-1.5 hover:bg-gray-200 disabled:opacity-50"
+                          className="rounded bg-blue-700 p-1.5 hover:bg-blue-600 text-white disabled:opacity-50"
                           title="Regenerate answer"
                         >
                           <svg
@@ -949,7 +951,7 @@ function CreateGamePageContent() {
                           </svg>
                         </button>
                       </div>
-                      <p className="text-xs font-mono text-green-700">
+                      <p className="text-xs font-mono text-green-300">
                         {gameConfig.finalJeopardy.answer}
                       </p>
                     </>
@@ -959,42 +961,42 @@ function CreateGamePageContent() {
             )}
           </section>
         ) : currentRoundData ? (
-          <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-blue-700 bg-blue-800 p-6 shadow-sm">
             {getRoundStatus(currentRound) === 'error' ? (
               <div className="py-8 text-center">
-                <p className="mb-4 text-lg text-red-600">
+                <p className="mb-4 text-lg text-red-500">
                   Failed to generate{' '}
                   {currentRound === 'jeopardy' ? 'Jeopardy' : 'Double Jeopardy'}{' '}
                   Round.
                 </p>
                 <button
                   onClick={handleRetry}
-                  className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                  className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 transition-colors"
                 >
                   Retry Generation
                 </button>
               </div>
             ) : getRoundStatus(currentRound) === 'generating' ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-gray-300">
                   Generating game... please wait
                 </p>
               </div>
             ) : getRoundStatus(currentRound) === 'waiting' ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-gray-300">
                   Waiting for previous stage to generate game... please wait
                 </p>
               </div>
             ) : !currentRoundData || !currentRoundData.categories.length ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-gray-300">
                   Waiting for previous stage to generate game... please wait
                 </p>
               </div>
             ) : (
               <>
-                <h2 className="mb-6 text-2xl font-semibold">
+                <h2 className="mb-6 text-2xl font-semibold text-white">
                   {currentRound === 'jeopardy' ? 'Jeopardy' : 'Double Jeopardy'}{' '}
                   Round
                 </h2>
@@ -1003,9 +1005,9 @@ function CreateGamePageContent() {
                     currentRoundData.categories.map((category) => (
                       <div
                         key={category.id}
-                        className="flex flex-col gap-3 rounded-lg border border-gray-100 p-4 shadow-sm"
+                        className="flex flex-col gap-3 rounded-lg border border-blue-600 bg-blue-900 p-4 shadow-sm"
                       >
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-white">
                           {category.name}
                         </h3>
                         <div className="space-y-3">
@@ -1014,10 +1016,10 @@ function CreateGamePageContent() {
                             .map((clue) => (
                               <div
                                 key={clue.id}
-                                className="group relative rounded border border-gray-200 p-3 hover:border-gray-300"
+                                className="group relative rounded border border-blue-600 bg-blue-800 p-3 hover:border-yellow-400"
                               >
                                 {isRegenerating(clue.id) ? (
-                                  <div className="text-sm text-gray-500">
+                                  <div className="text-sm text-gray-300">
                                     Regenerating...
                                   </div>
                                 ) : (
@@ -1030,7 +1032,7 @@ function CreateGamePageContent() {
                                             field: 'clue',
                                           })
                                         }
-                                        className="rounded bg-gray-100 p-1.5 hover:bg-gray-200"
+                                        className="rounded bg-blue-700 p-1.5 hover:bg-blue-600 text-white"
                                         title="Edit clue"
                                       >
                                         <svg
@@ -1055,7 +1057,7 @@ function CreateGamePageContent() {
                                           )
                                         }
                                         disabled={isRegenerating(clue.id)}
-                                        className="rounded bg-gray-100 p-1.5 hover:bg-gray-200 disabled:opacity-50"
+                                        className="rounded bg-blue-700 p-1.5 hover:bg-blue-600 text-white disabled:opacity-50"
                                         title="Regenerate clue"
                                       >
                                         <svg
@@ -1073,7 +1075,7 @@ function CreateGamePageContent() {
                                         </svg>
                                       </button>
                                     </div>
-                                    <div className="text-xs font-semibold uppercase text-gray-500">
+                                    <div className="text-xs font-semibold uppercase text-gray-300">
                                       Value {clue.value}
                                     </div>
                                     {isEditing(clue.id, 'clue') ? (
@@ -1096,11 +1098,11 @@ function CreateGamePageContent() {
                                             setEditingClue(null);
                                           }
                                         }}
-                                        className="mt-1 w-full rounded border px-2 py-1 text-sm"
+                                        className="mt-1 w-full rounded border border-blue-600 bg-blue-900 text-white px-2 py-1 text-sm focus:outline-none focus:border-yellow-400"
                                         autoFocus
                                       />
                                     ) : (
-                                      <p className="mt-1 text-sm text-gray-800">
+                                      <p className="mt-1 text-sm text-white">
                                         {clue.clue}
                                       </p>
                                     )}
@@ -1138,7 +1140,7 @@ function CreateGamePageContent() {
                                                   field: 'answer',
                                                 })
                                               }
-                                              className="rounded bg-gray-100 p-1 hover:bg-gray-200"
+                                              className="rounded bg-blue-700 p-1 hover:bg-blue-600 text-white"
                                               title="Edit answer"
                                             >
                                               <svg
@@ -1156,7 +1158,7 @@ function CreateGamePageContent() {
                                               </svg>
                                             </button>
                                           </div>
-                                          <p className="cursor-pointer text-xs font-mono text-green-700">
+                                          <p className="cursor-pointer text-xs font-mono text-green-300">
                                             {clue.answer}
                                           </p>
                                         </>
@@ -1180,18 +1182,20 @@ function CreateGamePageContent() {
 
   // Render sample/iteration phase
   return (
-    <main className="flex min-h-screen flex-col gap-8 px-6 py-10 lg:px-20">
+    <main className="flex min-h-screen flex-col gap-8 px-6 py-10 lg:px-20 bg-blue-900">
       <div className="flex flex-col gap-2">
-        <p className="text-sm uppercase tracking-wide text-gray-500">
+        <p className="text-sm uppercase tracking-wide text-gray-300">
           Room {roomId}
         </p>
-        <h1 className="text-4xl font-bold">Co-create a Jeopardy! Game</h1>
-        <p className="text-gray-600">
+        <h1 className="jeopardy-title text-4xl font-bold text-white uppercase tracking-wider">
+          Co-create a Jeopardy! Game
+        </h1>
+        <p className="text-gray-300">
           Guide an AI model through an iterative process—preview categories,
           give feedback, and finalize when ready.
         </p>
         {connectionError && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-red-500">
             {connectionError} The final game cannot be loaded until the
             connection is restored.
           </p>
@@ -1199,15 +1203,17 @@ function CreateGamePageContent() {
       </div>
 
       {hasSamples && phase !== 'editing' && loadingState !== 'finalize' && (
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-2xl border border-blue-700 bg-blue-800 p-6 shadow-sm">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-2xl font-semibold">Sample Categories</h2>
-              <p className="text-sm text-gray-600">
+              <h2 className="text-2xl font-semibold text-white">
+                Sample Categories
+              </h2>
+              <p className="text-sm text-gray-300">
                 Review the structure below, then keep iterating or finalize.
               </p>
             </div>
-            <div className="rounded border border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-900 md:max-w-sm">
+            <div className="rounded border border-blue-600 bg-blue-900 px-4 py-2 text-sm text-gray-300 md:max-w-sm">
               {commentary || 'No commentary returned with this sample.'}
             </div>
           </div>
@@ -1216,22 +1222,22 @@ function CreateGamePageContent() {
             {samples!.map((category) => (
               <div
                 key={category.name}
-                className="flex flex-col gap-3 rounded-lg border border-gray-100 p-4 shadow-sm"
+                className="flex flex-col gap-3 rounded-lg border border-blue-600 bg-blue-900 p-4 shadow-sm"
               >
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-white">
                   {category.name}
                 </h3>
                 <div className="space-y-3">
                   {(category.clues || []).map((clue) => (
                     <div
                       key={`${category.name}-${clue.value}-${clue.clue}`}
-                      className="rounded border border-gray-200 p-3"
+                      className="rounded border border-blue-600 bg-blue-800 p-3"
                     >
-                      <div className="text-xs font-semibold uppercase text-gray-500">
+                      <div className="text-xs font-semibold uppercase text-gray-300">
                         Value {clue.value}
                       </div>
-                      <p className="mt-1 text-sm text-gray-800">{clue.clue}</p>
-                      <p className="mt-2 text-xs font-mono text-green-700">
+                      <p className="mt-1 text-sm text-white">{clue.clue}</p>
+                      <p className="mt-2 text-xs font-mono text-green-300">
                         {clue.answer}
                       </p>
                     </div>
@@ -1245,13 +1251,13 @@ function CreateGamePageContent() {
 
       <section className="grid gap-6 lg:grid-cols-[1fr_auto]">
         {showInitialForm && (
-          <div className="space-y-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="space-y-6 rounded-xl border border-blue-700 bg-blue-800 p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Game Setup</h2>
+              <h2 className="text-xl font-semibold text-white">Game Setup</h2>
               {hasSamples && (
                 <button
                   onClick={() => setShowInitialForm(false)}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
                 >
                   Hide
                 </button>
@@ -1260,7 +1266,7 @@ function CreateGamePageContent() {
             <div>
               <label
                 htmlFor="topics"
-                className="mb-2 block text-sm font-semibold text-gray-700"
+                className="mb-2 block text-sm font-semibold text-white"
               >
                 Topics / Prompt *
               </label>
@@ -1268,10 +1274,10 @@ function CreateGamePageContent() {
                 id="topics"
                 value={topics}
                 onChange={(e) => setTopics(e.target.value)}
-                className="h-32 w-full rounded border px-4 py-2 text-sm"
+                className="h-32 w-full rounded border border-blue-600 bg-blue-900 text-white placeholder-gray-400 px-4 py-2 text-sm focus:outline-none focus:border-yellow-400"
                 placeholder="1990s pop culture, World War II leadership, Shakespeare deep cuts..."
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-300">
                 Describe themes or constraints to ground the clues.
               </p>
             </div>
@@ -1279,7 +1285,7 @@ function CreateGamePageContent() {
             <div>
               <label
                 htmlFor="difficulty"
-                className="mb-2 block text-sm font-semibold text-gray-700"
+                className="mb-2 block text-sm font-semibold text-white"
               >
                 Difficulty Level
               </label>
@@ -1287,7 +1293,7 @@ function CreateGamePageContent() {
                 id="difficulty"
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full rounded border px-4 py-2 text-sm"
+                className="w-full rounded border border-blue-600 bg-blue-900 text-white px-4 py-2 text-sm focus:outline-none focus:border-yellow-400"
               >
                 <option value="easy">Easy – family friendly</option>
                 <option value="medium">
@@ -1300,7 +1306,7 @@ function CreateGamePageContent() {
             <div>
               <label
                 htmlFor="sourceMaterial"
-                className="mb-2 block text-sm font-semibold text-gray-700"
+                className="mb-2 block text-sm font-semibold text-white"
               >
                 Source Material (optional)
               </label>
@@ -1308,13 +1314,13 @@ function CreateGamePageContent() {
                 id="sourceMaterial"
                 value={sourceMaterial}
                 onChange={(e) => setSourceMaterial(e.target.value)}
-                className="h-32 w-full rounded border px-4 py-2 text-sm"
+                className="h-32 w-full rounded border border-blue-600 bg-blue-900 text-white placeholder-gray-400 px-4 py-2 text-sm focus:outline-none focus:border-yellow-400"
                 placeholder="Paste excerpts, reference notes, or context the model should read first."
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
+              <label className="mb-2 block text-sm font-semibold text-white">
                 AI Model
               </label>
               <div className="flex gap-4">
@@ -1331,7 +1337,7 @@ function CreateGamePageContent() {
                     }}
                     className="cursor-pointer"
                   />
-                  <span className="text-sm">ChatGPT 5.1</span>
+                  <span className="text-sm text-white">ChatGPT 5.1</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -1345,7 +1351,7 @@ function CreateGamePageContent() {
                     }}
                     className="cursor-pointer"
                   />
-                  <span className="text-sm">Gemini 3.0 Pro</span>
+                  <span className="text-sm text-white">Gemini 3.0 Pro</span>
                 </label>
               </div>
             </div>
@@ -1361,11 +1367,11 @@ function CreateGamePageContent() {
                     }
                     className="cursor-pointer"
                   />
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-white">
                     Enable Google Search Grounding
                   </span>
                 </label>
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-300">
                   Allow Gemini to search the web for real-time information when
                   generating clues.
                 </p>
@@ -1376,7 +1382,7 @@ function CreateGamePageContent() {
               <button
                 onClick={() => handleSampleGeneration('initial')}
                 disabled={disabled}
-                className="rounded bg-blue-600 px-5 py-2 text-white transition disabled:bg-gray-400"
+                className="rounded bg-gray-600 px-5 py-2 text-white hover:bg-gray-700 transition disabled:bg-gray-400"
               >
                 {loadingState === 'samples'
                   ? 'Generating samples…'
@@ -1384,7 +1390,7 @@ function CreateGamePageContent() {
               </button>
               <button
                 onClick={() => router.push(`/host/${roomId}`)}
-                className="rounded border border-gray-300 px-5 py-2 text-gray-700 transition hover:bg-gray-50"
+                className="rounded border border-blue-600 bg-blue-800 px-5 py-2 text-white hover:bg-blue-700 transition"
               >
                 Cancel
               </button>
@@ -1393,16 +1399,18 @@ function CreateGamePageContent() {
         )}
 
         {hasSamples && phase !== 'editing' && loadingState !== 'finalize' && (
-          <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold">Feedback & Controls</h2>
-            <p className="text-sm text-gray-600">
+          <div className="space-y-4 rounded-xl border border-blue-700 bg-blue-800 p-6 shadow-sm">
+            <h2 className="text-xl font-semibold text-white">
+              Feedback & Controls
+            </h2>
+            <p className="text-sm text-gray-300">
               Each iteration overwrites the panel above. Leave targeted notes
               (e.g., "shift harder" or "add more science").
             </p>
             <textarea
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              className="h-36 w-full rounded border px-3 py-2 text-sm"
+              className="h-36 w-full rounded border border-blue-600 bg-blue-900 text-white placeholder-gray-400 px-3 py-2 text-sm focus:outline-none focus:border-yellow-400"
               placeholder="Example: Lean into 90s TV, fewer sports clues, and make 1000-point clues trickier."
             />
             <div className="flex flex-wrap gap-3">
@@ -1413,7 +1421,7 @@ function CreateGamePageContent() {
                   !feedback.trim() ||
                   loadingState === 'regenerate'
                 }
-                className="rounded bg-purple-600 px-5 py-2 text-white transition disabled:bg-gray-400"
+                className="rounded bg-gray-600 px-5 py-2 text-white hover:bg-gray-700 transition disabled:bg-gray-400"
               >
                 {loadingState === 'regenerate'
                   ? 'Updating samples…'
@@ -1422,13 +1430,13 @@ function CreateGamePageContent() {
               <button
                 onClick={handleFinalize}
                 disabled={!hasSamples || !!connectionError}
-                className="rounded bg-green-600 px-5 py-2 text-white transition disabled:bg-gray-400"
+                className="rounded bg-gray-600 px-5 py-2 text-white hover:bg-gray-700 transition disabled:bg-gray-400"
               >
                 Finalize Game
               </button>
             </div>
             {finalGameId && (
-              <p className="text-sm text-emerald-600">
+              <p className="text-sm text-green-300">
                 Game {finalGameId} ready—redirecting you to the host screen.
               </p>
             )}
@@ -1438,12 +1446,12 @@ function CreateGamePageContent() {
         {!showInitialForm && hasSamples && (
           <button
             onClick={() => setShowInitialForm(true)}
-            className="h-fit rounded-lg border border-gray-200 bg-white p-3 text-left shadow-sm hover:bg-gray-50"
+            className="h-fit rounded-lg border border-blue-600 bg-blue-800 p-3 text-left shadow-sm hover:bg-blue-700 transition-colors"
           >
-            <div className="text-xs font-semibold text-gray-700">
+            <div className="text-xs font-semibold text-white">
               Show Game Setup
             </div>
-            <div className="mt-0.5 text-[10px] text-gray-500">
+            <div className="mt-0.5 text-[10px] text-gray-300">
               Edit topics, difficulty, or source material
             </div>
           </button>
@@ -1451,7 +1459,7 @@ function CreateGamePageContent() {
       </section>
 
       {error && (
-        <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded border border-red-400 bg-red-900/50 px-4 py-3 text-sm text-red-200">
           {error}
         </div>
       )}
@@ -1463,9 +1471,11 @@ export default function CreateGamePage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen flex-col gap-8 px-6 py-10 lg:px-20">
-          <h1 className="text-3xl font-bold tracking-tight">Create New Game</h1>
-          <div>Loading...</div>
+        <main className="flex min-h-screen flex-col gap-8 px-6 py-10 lg:px-20 bg-blue-900">
+          <h1 className="jeopardy-title text-3xl font-bold tracking-tight text-white uppercase">
+            Create New Game
+          </h1>
+          <div className="text-white">Loading...</div>
         </main>
       }
     >

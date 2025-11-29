@@ -8,7 +8,7 @@ export function AuthHeader() {
   if (loading) {
     return (
       <div className="fixed top-4 right-4 z-50">
-        <div className="text-sm text-gray-600">Loading...</div>
+        <div className="text-sm text-gray-300">Loading...</div>
       </div>
     );
   }
@@ -21,15 +21,15 @@ export function AuthHeader() {
             <img
               src={user.photoURL}
               alt={user.displayName || 'User'}
-              className="w-8 h-8 rounded-full border-2 border-black-400"
+              className="w-8 h-8 rounded-full border-2 border-yellow-400"
             />
           )}
-          <span className="text-sm text-black-700">
+          <span className="text-sm text-white">
             {user?.displayName || user?.email || 'Signed in'}
           </span>
           <button
             onClick={signOut}
-            className="px-3 py-1.5 text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
           >
             Sign out
           </button>
@@ -37,7 +37,7 @@ export function AuthHeader() {
       ) : (
         <button
           onClick={signIn}
-          className="px-4 py-2 text-sm bg-white text-gray-800 hover:bg-gray-100 rounded-lg font-medium transition-colors flex items-center gap-2"
+          className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
