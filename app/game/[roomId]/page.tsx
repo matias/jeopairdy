@@ -9,6 +9,7 @@ import { GameState, ServerMessage } from '@/shared/types';
 import GameBoard from '@/components/GameBoard/GameBoard';
 import ClueDisplay from '@/components/ClueDisplay/ClueDisplay';
 import Scoreboard from '@/components/Scoreboard/Scoreboard';
+import { JeopardyTitle } from '@/components/JeopardyTitle';
 
 import {
   playBoardFill,
@@ -329,9 +330,7 @@ export default function GameDisplayPage() {
         <div
           className={`max-w-4xl mx-auto text-center transition-opacity duration-[2000ms] ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
         >
-          <h1 className="jeopardy-title text-6xl font-bold mb-8 uppercase tracking-wider text-white">
-            JEOP<span className="text-red-500">AI</span>RDY!
-          </h1>
+          <JeopardyTitle className="mb-8" />
           <div className="bg-blue-800 p-8 rounded-lg">
             <h2 className="text-4xl font-bold mb-6 text-white">
               Join the Game
@@ -363,9 +362,7 @@ export default function GameDisplayPage() {
     <main className="min-h-screen p-8 bg-blue-900">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 text-center">
-          <h1 className="jeopardy-title text-6xl font-bold mb-2 uppercase tracking-wider">
-            JEOP<span className="text-red-500">AI</span>RDY!
-          </h1>
+          <JeopardyTitle className="mb-2" />
           <div className="text-3xl text-white font-bold uppercase tracking-wide">
             {gameState.currentRound === 'jeopardy'
               ? 'FIRST ROUND'

@@ -88,14 +88,10 @@ body {
 
 .jeopardy-title {
   font-family: 'Gyparody' !important;
-  font-size: 48px !important;
   font-weight: 400 !important;
   line-height: 48px !important;
   text-transform: uppercase;
   color: white !important;
-  text-shadow:
-    1px 1px 4px #fff,
-    1px 1px 4px #ccc;
 }
 
 .clue-text {

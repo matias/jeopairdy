@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createGameClient } from '@/lib/game-client-factory';
 import { IGameClient } from '@/lib/game-client-interface';
+import { JeopardyTitle } from '@/components/JeopardyTitle';
 
 function JoinPageContent() {
   const router = useRouter();
@@ -66,9 +67,7 @@ function JoinPageContent() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-top p-24 bg-blue-900">
-      <h1 className="jeopardy-title text-7xl font-bold mb-8 uppercase tracking-wider text-white">
-        JEOP<span className="text-red-500">AI</span>RDY!
-      </h1>
+      <JeopardyTitle className="mb-8" />
       <h2 className="text-4xl font-bold mb-8 text-white">Join Game</h2>
 
       <form onSubmit={handleJoin} className="flex flex-col gap-4 w-80">

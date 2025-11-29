@@ -2,14 +2,13 @@
 
 import Link from 'next/link';
 import { AuthHeader } from '@/components/AuthHeader';
+import { JeopardyTitle } from '@/components/JeopardyTitle';
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-blue-900">
       <AuthHeader />
-      <h1 className="jeopardy-title text-7xl font-bold mb-8 uppercase tracking-wider text-white">
-        JEOP<span className="text-red-500">AI</span>RDY!
-      </h1>
+      <JeopardyTitle className="mb-8" />
       <div className="flex flex-col gap-4">
         <Link
           href="/create"
