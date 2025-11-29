@@ -713,7 +713,9 @@ export default function HostPage() {
                                 Wagered: ${player.finalJeopardyWager}
                               </span>
                             ) : (
-                              <span className="text-gray-500">Waiting...</span>
+                              <span className="text-red-500 font-bold">
+                                Waiting...
+                              </span>
                             )}
                           </div>
                         ))}
@@ -721,17 +723,12 @@ export default function HostPage() {
                   </div>
                   <button
                     onClick={handleShowFinalJeopardyClue}
-                    disabled={
-                      !players
-                        .filter((p) => p.score > 0)
-                        .every((p) => p.finalJeopardyWager != null)
-                    }
                     className={`px-6 py-3 rounded ${
                       players
                         .filter((p) => p.score > 0)
                         .every((p) => p.finalJeopardyWager != null)
                         ? 'bg-green-600 hover:bg-green-700'
-                        : 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-red-400 hover:bg-red-500'
                     } text-white font-bold`}
                   >
                     Show Clue
