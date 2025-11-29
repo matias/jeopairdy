@@ -19,27 +19,29 @@ Currently implements the basic game flow of an initial round, a double Jeopardy 
 - **Live Gameplay**: Play in real-time with a host and multiple players
 - **AI-Generated Questions**: Uses OpenAI GPT-5.1 or Google Gemini 3.0 Pro (bring your own API keys) to generate custom games through an interactive co-creation flow
 - **Three Rounds**: Jeopardy, Double Jeopardy, and Final Jeopardy
-- **Real-time Buzzer System**: Client-side timestamping for accurate buzzer order, with a fair(ish) tie-breaking mechanism.
+- **Real-time Buzzer System**: Server-timestamped buzzes for accurate buzzer order, with a fair(ish) tie-breaking mechanism
 - **Multiple Views**:
   - Host control view for managing the game
   - Game display view for TV/screen projection
   - Player buzzer view for mobile devices
 - **QR Code Joining**: Players can scan QR codes to join games
-- **Game Persistence**: Save and load game configs (clues and answers) as JSON files
+- **Game Persistence**: Save and load game configs (clues and answers)
+- **Cloud-Native**: Runs entirely on Firebase/Firestore with no separate server needed
 
 ## Tech Stack
 
 - **Frontend**: Next.js 15 (React + TypeScript)
-- **Backend**: Node.js + Express
-- **Real-time**: WebSockets (native `ws` library)
+- **Backend**: Firebase Firestore (real-time database)
+- **Authentication**: Firebase Anonymous Auth + Google Sign-In (for hosts)
 - **AI**: OpenAI GPT-5.1 API (Conversations API) or Google Gemini 3.0 Pro API
 - **Styling**: Tailwind CSS
+- **Hosting**: Vercel (recommended) or any Next.js-compatible host
 
 ## Requirements
 
 - **Minimum 3 players**: 1 host + 2+ competitors
 - **Each player needs their own device**: Host uses a computer/tablet, players use phones/tablets, and a separate screen/TV for the game display
-- **All devices must be on the same network** (for local play) or have internet access (for cloud deployment)
+- **Internet access**: All devices need internet connectivity
 
 ## Setup
 
@@ -61,70 +63,77 @@ npm install
 3. Set up environment variables:
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-Add your API keys (at least one is required):
+Add your configuration:
 
-```
+```env
+# AI API Keys (at least one is required)
 OPENAI_API_KEY=your_key_here
 GEMINI_API_KEY=your_key_here
+
+# Firebase Configuration (get from Firebase Console)
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+
+# Optional: Restrict who can host games (comma-separated emails)
+NEXT_PUBLIC_HOST_ALLOWLIST=host1@example.com,host2@example.com
 ```
 
 You can use either OpenAI or Gemini, or both. The create-game interface allows you to choose which model to use.
 
+### Firebase Setup
+
+1. Create a Firebase project at https://console.firebase.google.com
+2. Enable **Firestore Database** in production mode
+3. Enable **Anonymous Authentication** under Authentication > Sign-in method
+4. Enable **Google Sign-In** under Authentication > Sign-in method (for host authentication)
+5. Add a Web App and copy the config values to `.env.local`
+6. Deploy security rules:
+
+```bash
+firebase deploy --only firestore:rules
+```
+
 ### Running Locally
 
-1. Start the development server (in one terminal):
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-2. Start the backend server (in a separate terminal):
+The app will be available at `http://localhost:3000`.
 
-```bash
-npm run server
-```
+### Deployment
 
-The app will be available at `http://localhost:3000` and the backend at `http://localhost:3001`.
+The app is designed to be deployed on Vercel:
 
-### Running on Local Network
+1. Connect your GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy
 
-To allow players on the same Wi-Fi network to join:
-
-1. Find your computer's local IP address:
-   - **macOS/Linux**: Run `ifconfig` or `ip addr` and look for your Wi-Fi adapter's IP (usually starts with `192.168.` or `10.`)
-   - **Windows**: Run `ipconfig` and look for "IPv4 Address"
-
-2. Update environment variables (or set them when running):
-   - `NEXT_PUBLIC_WS_URL=ws://YOUR_LOCAL_IP:3001`
-   - `NEXT_PUBLIC_API_URL=http://YOUR_LOCAL_IP:3001`
-
-3. Start both servers as described above
-
-4. Players can access the game at `http://YOUR_LOCAL_IP:3000`
-
-### Cloud Deployment
-
-The app can be deployed to cloud hosting, but specific deployment instructions are not yet documented. Requirements for cloud deployment:
-
-- **WebSocket support**: The hosting provider must support WebSocket connections (e.g., Render, Railway, Fly.io)
-- **Environment variables**: Set `OPENAI_API_KEY` (and/or `GEMINI_API_KEY`), `NEXT_PUBLIC_WS_URL`, and `NEXT_PUBLIC_API_URL` in your hosting dashboard
-- **Port configuration**: Ensure both frontend and backend ports are properly configured
-
-Note: The app is designed to work on Render's free tier, which supports WebSockets.
+The app works with any Next.js-compatible hosting platform.
 
 ## Usage
 
 ### Hosting a Game
 
-1. **Create a Game Room**:
-   - Go to `/create` (or click "Host Game" on the home page)
+1. **Sign In**:
+   - Go to the home page and sign in with Google
+   - Only users on the allowlist (if configured) can host games
+
+2. **Create a Game Room**:
+   - Click "Host Game" on the home page
    - You'll be automatically redirected to `/host/[roomId]` with a 4-character room code
    - Share the room code or QR code with players
 
-2. **Create a Game (Co-Creation Flow)**:
+3. **Create a Game (Co-Creation Flow)**:
    - From the host page, click "Create New Game" to go to `/create-game`
    - **Enter game parameters**:
      - Topics/Prompt: Describe themes or constraints (e.g., "1990s pop culture", "World War II leadership")
@@ -142,8 +151,8 @@ Note: The app is designed to work on Render's free tier, which supports WebSocke
    - **Edit (optional)**: Review and edit individual clues/answers before saving
    - **Save**: Click "SAVE GAME" to load it into the game room
 
-3. **Load a Saved Game**:
-   - From the host page, click "Load Game" to load a previously saved game from JSON files
+4. **Load a Saved Game**:
+   - From the host page, click "Load Game" to load a previously saved game
 
 ### Playing a Game
 
@@ -160,6 +169,7 @@ Note: The app is designed to work on Render's free tier, which supports WebSocke
 
 3. **Gameplay**:
    - Host selects clues from the board
+   - Host reads the clue, then clicks "Unlock Buzzers"
    - Players buzz in when they know the answer
    - Host judges answers and manages scores
    - Game progresses through Jeopardy → Double Jeopardy → Final Jeopardy
@@ -168,37 +178,41 @@ Note: The app is designed to work on Render's free tier, which supports WebSocke
 
 ### Setup Phase
 
-1. Host creates a room and generates/loads a game
-2. Players join the room using the room code
-3. Host opens the game display view on a separate screen/TV
+1. Host signs in and creates a room
+2. Host generates or loads a game
+3. Players join the room using the room code
+4. Host opens the game display view on a separate screen/TV
 
 ### Regular Rounds (Jeopardy & Double Jeopardy)
 
 1. Host selects a clue from the board
-2. Clue is revealed with a 3-second buzzer lock
-3. Buzzer unlocks and players can buzz in
-4. Server resolves ties (250ms window) using fairness algorithm
-5. Selected player answers
-6. Host judges (Correct/Incorrect)
-7. If incorrect, next player in buzzer order gets a chance
-8. Host returns to board for next clue
-9. Host advances to next round when ready
+2. Clue is revealed with buzzers locked
+3. Host reads the clue aloud, then clicks "Unlock Buzzers"
+4. 20-second timer starts for players to buzz in
+5. Server resolves ties (250ms window) using fairness algorithm
+6. Selected player answers
+7. Host judges (Correct/Incorrect)
+8. If incorrect, next player in buzzer order gets a chance
+9. Host returns to board for next clue
+10. Host advances to next round when ready
 
 ### Final Jeopardy
 
 1. Host initializes Final Jeopardy (only players with score > 0 participate)
 2. Players submit wagers (0 to their current score)
-3. Host shows the clue and starts 30-second countdown
-4. Players submit answers within the countdown
-5. Host judges players sequentially (lowest score first)
-6. For each player: reveal wager → reveal answer → judge → next player
-7. Game ends when all players are judged
+3. Host shows the clue (reads it aloud)
+4. Host clicks "Start Timer" to begin 60-second countdown
+5. Players submit answers within the countdown
+6. Host judges players sequentially (lowest score first)
+7. For each player: reveal wager → reveal answer → judge → next player
+8. Game ends when all players are judged
 
 ## Project Structure
 
 ```
 jeopairdy/
 ├── app/                    # Next.js app router pages
+│   ├── api/               # API routes (AI generation, game loading)
 │   ├── create/            # Create game room (redirects to host)
 │   ├── create-game/       # Interactive game co-creation interface
 │   ├── load-game/         # Load saved game
@@ -211,28 +225,23 @@ jeopairdy/
 │   ├── ClueDisplay/       # Clue/question display
 │   ├── Buzzer/           # Player buzzer
 │   └── Scoreboard/       # Score display
-├── server/                # Backend server
-│   ├── src/
-│   │   ├── game/         # Game state management (GameManager)
-│   │   ├── websocket/    # WebSocket handlers
-│   │   ├── ai/           # AI question generation (legacy, unused)
-│   │   └── routes/       # REST API routes
-│   └── test-data/        # Saved game JSON files
+├── lib/                   # Client-side utilities
+│   ├── firestore-client.ts # Firestore game client
+│   ├── firebase.ts        # Firebase initialization
+│   ├── game-client-interface.ts # Client interface
+│   └── prompts.ts        # AI prompt builders for co-creation
 ├── shared/                # Shared TypeScript types
 │   └── types.ts          # Game state and message types
-└── lib/                   # Client-side utilities
-    ├── websocket.ts      # WebSocket client
-    ├── websocket-url.ts  # WebSocket URL configuration
-    └── prompts.ts        # AI prompt builders for co-creation
+└── firestore.rules       # Firebase security rules
 ```
 
 ## Environment Variables
 
 - `OPENAI_API_KEY`: Your OpenAI API key (required for ChatGPT 5.1)
 - `GEMINI_API_KEY`: Your Google Gemini API key (required for Gemini 3.0 Pro)
-- `PORT`: Backend server port (default: 3001)
-- `NEXT_PUBLIC_WS_URL`: WebSocket URL (default: `ws://localhost:3001` for local, or `ws://YOUR_IP:3001` for local network)
-- `NEXT_PUBLIC_API_URL`: API URL (default: `http://localhost:3001` for local, or `http://YOUR_IP:3001` for local network)
+- `NEXT_PUBLIC_FIREBASE_*`: Firebase configuration (required)
+- `NEXT_PUBLIC_HOST_ALLOWLIST`: Comma-separated list of emails allowed to host (optional)
+- `SLACK_WEBHOOK_URL`: Slack webhook for game notifications (optional)
 
 **Note**: At least one API key (`OPENAI_API_KEY` or `GEMINI_API_KEY`) is required. You can use both if you want to switch between models.
 
@@ -251,19 +260,9 @@ The game uses an **interactive co-creation flow** with either ChatGPT 5.1 or Gem
 
 4. **Editing**: Host can review and edit individual clues/answers before saving.
 
-5. **Deployment**: The completed game config is sent to the game server and loaded into the room.
+5. **Deployment**: The completed game config is saved to Firestore and loaded into the game room.
 
-All iterative samples remain client-side for rapid experimentation; only the final `GameConfig` is sent to the server.
-
-## Deployment
-
-The app is designed to be deployed on Render:
-
-- Frontend and backend can run on the same Render web service
-- WebSocket support is available on Render's free tier
-- Set environment variables in Render dashboard
-
-**Note**: Specific cloud deployment instructions are not yet documented. The server must support WebSocket connections for real-time gameplay.
+All iterative samples remain client-side for rapid experimentation; only the final `GameConfig` is saved to Firestore.
 
 ## License
 

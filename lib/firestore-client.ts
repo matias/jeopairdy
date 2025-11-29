@@ -330,7 +330,6 @@ export class FirestoreClient implements IGameClient {
           hostId: this.userId!,
           hostName: currentUser?.displayName,
           hostEmail: currentUser?.email,
-          clientType: 'firestore',
         });
       }
 

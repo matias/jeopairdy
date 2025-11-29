@@ -50,9 +50,7 @@ export function notifyRoomCreated(data: {
   hostId: string;
   hostName?: string | null;
   hostEmail?: string | null;
-  clientType?: 'firestore' | 'websocket';
 }) {
-  const clientType = data.clientType || 'unknown';
   const hostDisplay = data.hostName || data.hostEmail || data.hostId;
 
   const fields = [
@@ -73,11 +71,6 @@ export function notifyRoomCreated(data: {
       text: `*Email:*\n${data.hostEmail}`,
     });
   }
-
-  fields.push({
-    type: 'mrkdwn',
-    text: `*Client Type:*\n${clientType}`,
-  });
 
   sendSlackNotification({
     text: `🎮 New game room created: ${data.roomId} by ${hostDisplay}`,

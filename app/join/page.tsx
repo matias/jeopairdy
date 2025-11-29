@@ -33,7 +33,7 @@ function JoinPageContent() {
         return;
       }
 
-      const client = createGameClient(false); // Disable auto-reconnect, we'll handle navigation
+      const client = createGameClient();
       client
         .connect()
         .then(() => {

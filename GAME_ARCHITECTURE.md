@@ -2,14 +2,9 @@
 
 ## Overview
 
-Jeopairdy is a Jeopardy!-style trivia game built with Next.js (React) frontend. The game supports multiple players competing in real-time with a host controlling the game flow.
+Jeopairdy is a Jeopardy!-style trivia game built with Next.js (React) frontend and Firebase Firestore for real-time synchronization. The game supports multiple players competing in real-time with a host controlling the game flow.
 
-**The game supports two modes:**
-
-- **Local Mode (WebSocket)**: Uses a local Node.js WebSocket server for real-time communication. Best for local network play where the host runs the server.
-- **Online Mode (Firebase)**: Uses Firebase Firestore for real-time synchronization. Best for online play without running a server.
-
-## Dual-Mode Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -20,37 +15,26 @@ Jeopairdy is a Jeopardy!-style trivia game built with Next.js (React) frontend. 
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              createGameClient() Factory                     │
-│  (lib/game-client-factory.ts - auto-detects mode)           │
+│  (lib/game-client-factory.ts)                               │
 └─────────────────────────────────────────────────────────────┘
-                    │                     │
-          ┌─────────┴─────────┐   ┌───────┴────────┐
-          ▼                   ▼   ▼                ▼
-┌──────────────────┐  ┌──────────────────────────────┐
-│  WebSocketClient │  │     FirestoreClient          │
-│  (lib/websocket) │  │  (lib/firestore-client.ts)   │
-└──────────────────┘  └──────────────────────────────┘
-          │                         │
-          ▼                         ▼
-┌──────────────────┐  ┌──────────────────────────────┐
-│  Local WS Server │  │       Firebase Firestore     │
-│  (server/)       │  │  (Cloud-hosted database)     │
-└──────────────────┘  └──────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   FirestoreClient                           │
+│  (lib/firestore-client.ts - real-time sync via Firestore)   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Firebase Firestore                         │
+│  (Cloud-hosted real-time database)                          │
+└─────────────────────────────────────────────────────────────┘
 ```
-
-### Mode Auto-Detection
-
-The `createGameClient()` factory automatically detects which mode to use:
-
-1. **Explicit override**: Set `NEXT_PUBLIC_FIREBASE_MODE=true` or `false` in environment
-2. **Firebase Hosting**: If running on `*.firebaseapp.com` or `*.web.app` domains
-3. **Cloud deployment**: If running on non-local hostname with Firebase configured
-4. **Default**: Uses WebSocket mode for localhost and local network IPs
 
 ### Key Files
 
-- **`lib/game-client-interface.ts`** - Common interface (`IGameClient`) for both clients
-- **`lib/game-client-factory.ts`** - Factory that creates the appropriate client
-- **`lib/websocket.ts`** - WebSocket client implementation
+- **`lib/game-client-interface.ts`** - Common interface (`IGameClient`) for the game client
+- **`lib/game-client-factory.ts`** - Factory that creates the FirestoreClient
 - **`lib/firestore-client.ts`** - Firestore client implementation
 - **`lib/firebase.ts`** - Firebase initialization and authentication
 - **`firestore.rules`** - Security rules for Firestore
@@ -60,20 +44,20 @@ The `createGameClient()` factory automatically detects which mode to use:
 Add these to your `.env.local` file:
 
 ```env
-# Mode selection (optional - auto-detects if not set)
-NEXT_PUBLIC_FIREBASE_MODE=false
-
-# WebSocket mode
-NEXT_PUBLIC_WS_PORT=3001
-NEXT_PUBLIC_API_URL=http://localhost:3001
-
-# Firebase mode (get from Firebase Console)
+# Firebase configuration (get from Firebase Console)
 NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
 NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+
+# Optional: Restrict who can host games
+NEXT_PUBLIC_HOST_ALLOWLIST=host1@example.com,host2@example.com
+
+# AI API keys (at least one required)
+OPENAI_API_KEY=your-openai-key
+GEMINI_API_KEY=your-gemini-key
 ```
 
 ### Firebase Setup
@@ -81,8 +65,9 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
 1. Create a Firebase project at https://console.firebase.google.com
 2. Enable **Firestore Database** in production mode
 3. Enable **Anonymous Authentication** under Authentication > Sign-in method
-4. Add a Web App and copy the config values to `.env.local`
-5. Deploy security rules: `firebase deploy --only firestore:rules`
+4. Enable **Google Sign-In** under Authentication > Sign-in method (for host authentication)
+5. Add a Web App and copy the config values to `.env.local`
+6. Deploy security rules: `firebase deploy --only firestore:rules`
 
 ### Firestore Data Model
 
@@ -99,6 +84,12 @@ games/
     │   └── {playerId}/   # Player data (name, score, wagers, etc.)
     └── buzzes/
         └── {buzzId}/     # Buzz records with serverTimestamp
+
+savedGames/
+└── {gameId}/             # Saved game configs for reuse
+    ├── ...gameConfig
+    ├── savedAt
+    └── savedBy           # User who saved the game
 ```
 
 ## Core Components
@@ -114,24 +105,19 @@ games/
 
 #### Interactive Game Creation Flow
 
-The create-game page now orchestrates an iterative chat-driven workflow with GPT-5.1:
+The create-game page orchestrates an iterative chat-driven workflow with GPT-5.1 or Gemini:
 
 1. **Parameter entry:** Host supplies topics, difficulty, and optional source text.
-2. **Sample iteration:** Client-side calls to `/api/generate` (which proxies to OpenAI) request sparse sample categories using prompt builders in `lib/prompts.ts`. The host can review rendered categories/clues plus the model's commentary, then submit feedback for additional iterations.
+2. **Sample iteration:** Client-side calls to `/api/generate` request sparse sample categories using prompt builders in `lib/prompts.ts`. The host can review rendered categories/clues plus the model's commentary, then submit feedback for additional iterations.
 3. **Finalization:** When satisfied, the host requests full rounds. The client sequentially generates Jeopardy, Double Jeopardy (excluding prior answers), and Final Jeopardy JSON payloads, then converts them into a `GameConfig`.
-4. **Deployment:** The completed config is sent to the game server via `WebSocketClient.loadGame()`, after which the host UI redirects to `/host/[roomId]`.
+4. **Deployment:** The completed config is saved to Firestore and loaded into the game room.
 
-Only the final `GameConfig` touches the server; iterative samples remain client-side for rapid experimentation.
+Only the final `GameConfig` touches Firestore; iterative samples remain client-side for rapid experimentation.
 
 ##### Conversation state
 
-- `/api/generate` now creates and manages an OpenAI **Conversation** (via the Responses + Conversations APIs). The first sample request spins up a conversation with the system instructions from `lib/prompts.ts`; every subsequent regeneration, round build, or Final Jeopardy request sends only the incremental user message while reusing that conversation ID.
-- Because the model retains state, feedback supplied during the sample loop directly influences the final Jeopardy rounds without manually restating previous prompts. Developers can reset the flow by issuing a new "Generate Samples" request, which starts a fresh conversation ID in the client state.
-
-### Server Components
-
-- **`server/src/game/state.js`** - Game state management (GameManager class)
-- **`server/src/websocket/server.js`** - WebSocket message handling
+- `/api/generate` creates and manages an OpenAI **Conversation** (via the Responses + Conversations APIs). The first sample request spins up a conversation with the system instructions from `lib/prompts.ts`; every subsequent regeneration, round build, or Final Jeopardy request sends only the incremental user message while reusing that conversation ID.
+- Because the model retains state, feedback supplied during the sample loop directly influences the final Jeopardy rounds without manually restating previous prompts.
 
 ### Shared Types
 
@@ -146,14 +132,15 @@ The game progresses through these states:
 1. **`waiting`** - Room created, no game loaded
 2. **`ready`** - Game loaded, waiting to start
 3. **`selecting`** - Host selecting clues from board
-4. **`clueRevealed`** - Clue displayed, buzzer locked (3 second delay)
-5. **`buzzing`** - Buzzer unlocked, players can buzz
+4. **`clueRevealed`** - Clue displayed, buzzer locked (host reads clue)
+5. **`buzzing`** - Buzzer unlocked (host clicked "Unlock Buzzers"), players can buzz
 6. **`answering`** - Player selected (after tie resolution), waiting for answer
 7. **`judging`** - Host can judge answer (after revealing answer to players)
 8. **`finalJeopardyWagering`** - Final Jeopardy: players placing wagers
-9. **`finalJeopardyAnswering`** - Final Jeopardy: players writing answers (30s countdown)
-10. **`finalJeopardyJudging`** - Final Jeopardy: host judging players sequentially
-11. **`finished`** - Game complete
+9. **`finalJeopardyClueReading`** - Final Jeopardy: host reading clue (before timer)
+10. **`finalJeopardyAnswering`** - Final Jeopardy: players writing answers (60s countdown)
+11. **`finalJeopardyJudging`** - Final Jeopardy: host judging players sequentially
+12. **`finished`** - Game complete
 
 ### GameState Object
 
@@ -172,13 +159,14 @@ interface GameState {
   displayBuzzerOrder?: string[]; // Static display order (never changes after tie resolution)
   currentPlayer: string | null; // Player currently answering
   judgedPlayers?: string[]; // Players who have been judged for current clue
+  buzzerUnlockTime?: number; // Timestamp when buzzers were unlocked
 
   // Final Jeopardy state
   finalJeopardyInitialScores?: Map<string, number> | Record<string, number>;
   finalJeopardyJudgingOrder?: string[]; // Player IDs sorted by initial score (ascending)
   finalJeopardyClueShown?: boolean;
   finalJeopardyCountdownStart?: number;
-  finalJeopardyCountdownEnd?: number; // Server timestamp when countdown expires
+  finalJeopardyCountdownEnd?: number; // Timestamp when countdown expires
   finalJeopardyJudgingPlayerIndex?: number;
   finalJeopardyRevealedWager?: boolean;
   finalJeopardyRevealedAnswer?: boolean;
@@ -196,16 +184,18 @@ interface GameState {
 
 1. **Host selects clue** → `selectClue(categoryId, clueId)`
    - Status: `clueRevealed`
-   - Buzzer locked for 3 seconds
+   - Buzzer locked
    - Clue displayed on all screens
 
-2. **Buzzer unlocks** → Status: `buzzing`
+2. **Host reads clue, then unlocks buzzers** → `unlockBuzzers()`
+   - Status: `buzzing`
    - Players can buzz in
-   - Server tracks all buzzes with timestamps
+   - 20-second timer starts
+   - Firestore tracks all buzzes with server timestamps
 
 3. **Tie resolution** (250ms window)
    - All buzzes within 250ms are considered "tied"
-   - Server selects one player using fairness algorithm
+   - Host client selects one player using fairness algorithm
    - `currentPlayer` set, `displayBuzzerOrder` created (static)
    - Status: `answering`
 
@@ -232,17 +222,17 @@ interface GameState {
 
 - Buzzes after 250ms window are "late" but still shown in UI
 - Added to `displayBuzzerOrder` when they arrive
-- Not eligible to answer (only tied players can answer)
+- Can answer if earlier players are judged incorrect
 
 **Judging Multiple Players:**
 
-- When first player judged incorrect, server finds next unjudged player in `displayBuzzerOrder`
+- When first player judged incorrect, client finds next unjudged player in `displayBuzzerOrder`
 - Sets that player as `currentPlayer`
 - Host can judge them, repeat until all judged or someone correct
 
 ### Final Jeopardy Flow
 
-1. **Initialize Final Jeopardy** → `initializeFinalJeopardy(roomId)`
+1. **Initialize Final Jeopardy** → `startFinalJeopardy()`
    - Captures snapshot of player scores → `finalJeopardyInitialScores`
    - Creates judging order (ascending by score) → `finalJeopardyJudgingOrder`
    - Status: `finalJeopardyWagering`
@@ -250,25 +240,29 @@ interface GameState {
 
 2. **Players wager** → `submitWager(wager)`
    - Client validates: 0 ≤ wager ≤ player.score
-   - Server validates: player.score > 0 required
    - No auto-advance (host manually shows clue)
 
 3. **Host shows clue** → `showFinalJeopardyClue()`
    - Requires all eligible players to have wagered
+   - Status: `finalJeopardyClueReading`
+   - Clue displayed, no timer yet
+   - Host reads clue aloud
+
+4. **Host starts timer** → `startFinalJeopardyTimer()`
    - Status: `finalJeopardyAnswering`
-   - Starts 30-second countdown (server-authoritative)
+   - Starts 60-second countdown
    - Sets `finalJeopardyCountdownEnd` timestamp
 
-4. **Players answer** → `submitFinalAnswer(answer)`
-   - Server checks if countdown expired
+5. **Players answer** → `submitFinalAnswer(answer)`
+   - Client checks if countdown expired
    - Rejects submissions after `finalJeopardyCountdownEnd`
    - No auto-advance (host manually starts judging)
 
-5. **Host starts judging** → `startFinalJeopardyJudging()`
+6. **Host starts judging** → `startFinalJeopardyJudging()`
    - Status: `finalJeopardyJudging`
    - Sets `finalJeopardyJudgingPlayerIndex = 0` (lowest score first)
 
-6. **Sequential judging** (for each player in order):
+7. **Sequential judging** (for each player in order):
    - `revealFinalJeopardyWager()` - Shows player's wager on game display
    - `revealFinalJeopardyAnswer()` - Shows player's answer on game display
    - `judgeFinalJeopardyAnswer(playerId, correct)` - Applies wager, moves to next player
@@ -279,6 +273,7 @@ interface GameState {
 ### Main Game Controls
 
 - **Select Clue** - Click on game board clue
+- **Unlock Buzzers** - Allow players to buzz in (after reading clue)
 - **Reveal Answer** - Show answer to players (optional, doesn't block judging)
 - **Judge Answer** - Mark current player Correct/Incorrect
 - **Back to Board** - Return to clue selection
@@ -288,79 +283,55 @@ interface GameState {
 
 ### Final Jeopardy Controls
 
-- **Show Clue** - Reveal clue and start 30s countdown (requires all eligible players wagered)
+- **Show Clue** - Reveal clue (requires all eligible players wagered)
+- **Start Timer** - Begin 60-second countdown (after reading clue)
 - **Start Judging** - Begin sequential judging process
 - **Reveal Wager** - Show current player's wager on game display
 - **Reveal Answer** - Show current player's answer on game display
 - **Correct/Incorrect** - Judge current player, auto-advance to next
 
-## Server-Side Game State Management
+## FirestoreClient Implementation
 
-### GameManager Class (`server/src/game/state.js`)
+### Key Methods
 
-**Key Methods:**
+- `connect()` - Authenticate with Firebase (anonymous auth)
+- `joinRoom(roomId, playerName, role)` - Join as host/player/viewer
+- `selectClue(categoryId, clueId)` - Select and reveal clue
+- `unlockBuzzers()` - Manually unlock buzzers for players
+- `buzz()` - Player buzzes in (writes to buzzes subcollection)
+- `judgeAnswer(playerId, correct)` - Judge player, move to next if incorrect
+- `returnToBoard()` - Reset to clue selection
+- `nextRound()` - Advance round
+- `startFinalJeopardy()` - Start Final Jeopardy
+- `showFinalJeopardyClue()` - Show clue (no timer)
+- `startFinalJeopardyTimer()` - Start 60-second countdown
+- `startFinalJeopardyJudging()` - Begin judging
+- `judgeFinalJeopardyAnswer(playerId, correct)` - Judge and advance
 
-- `createRoom(roomId, hostId)` - Initialize new game room
-- `selectClue(roomId, categoryId, clueId)` - Select and reveal clue
-- `handleBuzz(roomId, playerId, clientTimestamp, serverTimestamp)` - Process player buzz
-- `processBuzzerOrder(roomId)` - Resolve ties, set current player
-- `judgeAnswer(roomId, playerId, correct)` - Judge player, move to next if incorrect
-- `returnToBoard(roomId)` - Reset to clue selection
-- `nextRound(roomId)` - Advance round
-- `initializeFinalJeopardy(roomId)` - Start Final Jeopardy
-- `showFinalJeopardyClue(roomId)` - Show clue, start countdown
-- `startFinalJeopardyJudging(roomId)` - Begin judging
-- `judgeFinalJeopardyAnswer(roomId, playerId, correct)` - Judge and advance
+### Real-time Subscriptions
 
-**State Persistence:**
+The FirestoreClient uses `onSnapshot()` listeners for real-time updates:
 
-- Game state stored in memory (`games` Map)
-- No database (ephemeral)
-- Game config can be saved/loaded as JSON files
+- **metadata** - Host info, room creation time
+- **config** - Game configuration (categories, clues)
+- **state** - Current game state (status, current player, etc.)
+- **players** - Player collection (scores, wagers, answers)
+- **buzzes** - Buzz records for tie resolution
 
-## WebSocket Communication
+### Buzzer Processing (Host Client)
 
-### Message Types
+The host's FirestoreClient processes buzzes:
 
-**Client → Server:**
-
-- `joinRoom` - Join as host/player/viewer
-- `selectClue` - Host selects clue
-- `buzz` - Player buzzes in
-- `revealAnswer` - Host reveals answer to players
-- `judgeAnswer` - Host judges player
-- `showFinalJeopardyClue` - Host shows Final Jeopardy clue
-- `startFinalJeopardyJudging` - Host starts judging
-- `revealFinalJeopardyWager` - Host reveals wager
-- `revealFinalJeopardyAnswer` - Host reveals answer
-- `judgeFinalJeopardyAnswer` - Host judges Final Jeopardy answer
-- `submitWager` - Player submits Final Jeopardy wager
-- `submitFinalAnswer` - Player submits Final Jeopardy answer
-- `returnToBoard` - Host returns to board
-- `updateScore` - Host manually adjusts score
-
-**Server → Client:**
-
-- `roomJoined` - Confirmation of room join
-- `gameStateUpdate` - Broadcast of game state changes
-- `buzzerLocked` - Buzzer lock/unlock status
-- `buzzReceived` - Notification of buzz (for UI feedback)
-- `error` - Error messages
-
-### State Serialization
-
-`serializeGameState()` in `server.js` converts server game state to JSON:
-
-- Maps converted to arrays
-- Internal server-only fields excluded (timeouts, callbacks)
-- `finalJeopardyInitialScores` Map → plain object
+1. Listens to `buzzes` subcollection ordered by `serverTimestamp`
+2. When new buzzes arrive, waits 300ms (tie window + buffer)
+3. Applies tie resolution algorithm
+4. Updates game state with selected player
 
 ## Key Technical Details
 
 ### Buzzer Timing
 
-- **Client timestamp**: When player's browser detected buzz
-- **Server timestamp**: When server received buzz
+- **Server timestamp**: Firestore `serverTimestamp()` for accurate ordering
 - **Tie window**: 250ms from first server timestamp
 - **Selection**: Uses server timestamps for accuracy (accounts for network latency)
 
@@ -405,9 +376,9 @@ This ensures fair rotation among players who frequently tie, rather than always 
 
 ### Countdown Timer
 
-- **Server-authoritative**: Server sets `finalJeopardyCountdownEnd` timestamp
+- **Server-authoritative**: Firestore stores `finalJeopardyCountdownEnd` timestamp
 - **Client calculation**: Clients calculate remaining time: `countdownEnd - Date.now()`
-- **Locking**: Server rejects submissions after countdown expires
+- **Locking**: Client rejects submissions after countdown expires
 - **Display**: Updates every 100ms on client
 
 ### Final Jeopardy Judging Order
@@ -422,10 +393,15 @@ This ensures fair rotation among players who frequently tie, rather than always 
 ```
 jeopairdy/
 ├── app/                         # Next.js pages
+│   ├── api/                    # API routes
+│   │   ├── games/             # Game CRUD endpoints
+│   │   ├── generate/          # AI generation endpoint
+│   │   └── slack/             # Slack notifications
 │   ├── host/[roomId]/          # Host control page
 │   ├── player/[roomId]/        # Player page
 │   ├── game/[roomId]/          # Game display page
 │   ├── join/                   # Join page
+│   ├── create/                 # Create room page
 │   ├── create-game/            # Game creation
 │   └── load-game/              # Load saved game
 ├── components/                  # React components
@@ -433,18 +409,14 @@ jeopairdy/
 │   ├── ClueDisplay/            # Clue/question display
 │   ├── GameBoard/              # Jeopardy board
 │   └── Scoreboard/             # Player scores
-├── server/                      # Node.js backend (WebSocket mode)
-│   ├── src/
-│   │   ├── game/               # Game state management
-│   │   └── websocket/          # WebSocket server
-│   └── test-data/              # Saved game configs
 ├── lib/                         # Client utilities
 │   ├── game-client-interface.ts # IGameClient interface
-│   ├── game-client-factory.ts   # Factory for creating clients
-│   ├── websocket.ts             # WebSocket client implementation
-│   ├── firestore-client.ts      # Firebase/Firestore client implementation
+│   ├── game-client-factory.ts   # Factory for creating client
+│   ├── firestore-client.ts      # Firebase/Firestore client
 │   ├── firebase.ts              # Firebase initialization
-│   └── websocket-url.ts         # WebSocket URL config
+│   ├── host-allowlist.ts        # Host access control
+│   ├── prompts.ts               # AI prompt builders
+│   └── slack.ts                 # Slack notifications
 ├── shared/                      # Shared types
 │   └── types.ts                 # TypeScript definitions
 └── firestore.rules              # Firebase security rules
@@ -454,55 +426,53 @@ jeopairdy/
 
 ### State Updates
 
-- All state changes happen server-side
-- Server broadcasts `gameStateUpdate` to all clients
-- Clients update local state from broadcasts
+- All state changes happen via Firestore writes
+- Firestore `onSnapshot()` broadcasts changes to all clients
+- Clients update local state from snapshots
 - No client-side state mutations (except UI-only state like form inputs)
 
 ### Role-Based Access
 
-- **Host**: Can control game flow, judge answers, adjust scores
-- **Player**: Can buzz, submit wagers/answers
-- **Viewer**: Read-only, sees game display
+- **Host**: Can control game flow, judge answers, adjust scores (requires Google sign-in)
+- **Player**: Can buzz, submit wagers/answers (anonymous auth)
+- **Viewer**: Read-only, sees game display (anonymous auth)
 
-### Error Handling
+### Security Rules
 
-- Server validates all actions (role, game state, permissions)
-- Returns `error` messages via WebSocket
-- Client shows errors to user
+Firestore security rules enforce:
+
+- Only authenticated users can read/write game data
+- Only the host can modify game state and config
+- Players can only modify their own player document
+- Players can only create buzz records, not modify or delete
 
 ### Reconnection
 
-- Players can reconnect with stored `playerId`
-- Server recognizes reconnection and restores player state
-- WebSocket client has auto-reconnect logic
+- Players can reconnect with stored `playerId` from localStorage
+- Firestore listeners automatically resume on reconnection
+- Player state persists in Firestore
 
 ## Common Operations
 
 ### Adding a New Game Action
 
-1. Add message type to `ClientMessage` in `shared/types.ts`
+1. Add message type to interface if needed
 2. Add method to `IGameClient` interface in `lib/game-client-interface.ts`
-3. **WebSocket mode:**
-   - Add handler in `server/src/websocket/server.js` `handleMessage()`
-   - Implement handler function (e.g., `handleNewAction()`)
-   - Add method to `GameManager` class if state change needed
-   - Add client method to `lib/websocket.ts`
-4. **Firebase mode:**
-   - Add method to `FirestoreClient` class in `lib/firestore-client.ts`
-   - Update Firestore writes/reads as needed
-5. Update UI components to call new method via `IGameClient`
+3. Implement method in `FirestoreClient` class in `lib/firestore-client.ts`
+4. Update Firestore writes/reads as needed
+5. Update security rules if needed
+6. Update UI components to call new method via `IGameClient`
 
 ### Modifying Game Flow
 
-- Check `server/src/game/state.js` for state transition logic
+- Check `lib/firestore-client.ts` for state transition logic
 - Update status checks in relevant methods
-- Ensure WebSocket broadcasts state updates
+- Ensure Firestore writes update state correctly
 - Update client UI to handle new states
 
 ### Debugging
 
-- Server logs buzzer debug info (tie resolution, timestamps)
-- Game state can be dumped to console via "Dump Game Config" button
-- Check browser console for WebSocket messages
-- Server console shows all game state changes
+- Game state visible in Firebase Console
+- Console logs in FirestoreClient for event tracing
+- Browser console shows Firestore operations
+- "Dump Game Config" button exports current config

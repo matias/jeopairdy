@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createGameClient } from '@/lib/game-client-factory';
 import { useAuth } from '@/lib/useAuth';
-import { shouldUseFirebaseMode } from '@/lib/game-client-factory';
 import { isHostAllowed } from '@/lib/host-allowlist';
 
 export default function CreatePage() {
@@ -16,7 +15,6 @@ export default function CreatePage() {
   >('checking');
   const hasStartedRef = useRef(false);
 
-  const isFirebaseMode = shouldUseFirebaseMode();
   const userAllowed = isHostAllowed(user?.email);
 
   // Determine what to show
@@ -26,12 +24,12 @@ export default function CreatePage() {
       return;
     }
 
-    if (isFirebaseMode && !isGoogleUser) {
+    if (!isGoogleUser) {
       setStatus('login');
       return;
     }
 
-    if (isFirebaseMode && !userAllowed) {
+    if (!userAllowed) {
       setStatus('denied');
       return;
     }
@@ -68,7 +66,7 @@ export default function CreatePage() {
       });
 
     // Don't disconnect on cleanup - let the navigation happen
-  }, [loading, isGoogleUser, isFirebaseMode, userAllowed, router]);
+  }, [loading, isGoogleUser, userAllowed, router]);
 
   // Login required
   if (status === 'login') {
@@ -172,7 +170,7 @@ export default function CreatePage() {
         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
         <span>{status === 'checking' ? 'Loading...' : 'Creating room...'}</span>
       </div>
-      {isFirebaseMode && user && status === 'creating' && (
+      {user && status === 'creating' && (
         <div className="mt-4 text-sm text-gray-500">
           Hosting as {user.displayName || user.email}
         </div>

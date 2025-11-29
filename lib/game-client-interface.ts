@@ -1,9 +1,7 @@
 import { ServerMessage, GameConfig } from '@/shared/types';
 
 /**
- * Common interface for game clients (WebSocket and Firestore implementations).
- * This abstraction allows the app to work with both local WebSocket-based
- * gameplay and Firebase Firestore-based online gameplay.
+ * Interface for game clients using Firebase Firestore for real-time sync.
  */
 export interface IGameClient {
   // Connection management

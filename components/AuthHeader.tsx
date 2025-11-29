@@ -1,15 +1,9 @@
 'use client';
 
 import { useAuth } from '@/lib/useAuth';
-import { shouldUseFirebaseMode } from '@/lib/game-client-factory';
 
 export function AuthHeader() {
   const { user, loading, isSignedIn, signIn, signOut } = useAuth();
-
-  // Don't show auth UI in local/WebSocket mode
-  if (!shouldUseFirebaseMode()) {
-    return null;
-  }
 
   if (loading) {
     return (

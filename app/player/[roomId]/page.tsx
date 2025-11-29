@@ -54,7 +54,7 @@ export default function PlayerPage() {
     }
 
     connectedRef.current = true;
-    const client = createGameClient(false); // Start with auto-reconnect disabled
+    const client = createGameClient();
 
     // Listen for connection state changes
     const unsubscribeConnectionState = client.onConnectionStateChange(
