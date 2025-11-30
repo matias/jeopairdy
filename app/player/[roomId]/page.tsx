@@ -250,8 +250,37 @@ export default function PlayerPage() {
   const hasWagered = player?.finalJeopardyWager != null;
   const hasAnswered = player?.finalJeopardyAnswer != null;
 
+  // Check if a clue is revealed (for regular rounds, not Final Jeopardy)
+  const isClueRevealed =
+    gameState.status === 'clueRevealed' ||
+    gameState.status === 'buzzing' ||
+    gameState.status === 'answering' ||
+    gameState.status === 'judging';
+
+  // Get clue information if revealed
+  let selectedCategory = null;
+  let selectedClue = null;
+  if (
+    isClueRevealed &&
+    gameState.config &&
+    gameState.selectedClue &&
+    gameState.currentRound !== 'finalJeopardy'
+  ) {
+    const round =
+      gameState.currentRound === 'jeopardy'
+        ? gameState.config.jeopardy
+        : gameState.config.doubleJeopardy;
+
+    selectedCategory = round.categories.find(
+      (c) => c.id === gameState.selectedClue!.categoryId,
+    );
+    selectedClue = selectedCategory?.clues.find(
+      (c) => c.id === gameState.selectedClue!.clueId,
+    );
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-top p-8 bg-blue-900">
+    <main className="flex min-h-screen flex-col items-center justify-top p-4 bg-blue-900">
       <div className="w-full max-w-2xl">
         {!isConnected && (
           <div className="mb-4 p-4 bg-red-900/50 border-2 border-red-500 rounded-lg">
@@ -260,8 +289,8 @@ export default function PlayerPage() {
             </p>
           </div>
         )}
-        <div className="mb-8">
-          <h1 className="jeopardy-title text-3xl font-bold mb-4 text-white uppercase tracking-wider">
+        <div className={`${isClueRevealed ? 'mb-4' : 'mb-8'}`}>
+          <h1 className="text-sm font-bold mb-4 text-white uppercase tracking-wider">
             Room: {roomId}
           </h1>
           {player && (
@@ -504,13 +533,36 @@ export default function PlayerPage() {
           gameState.status !== 'finalJeopardyCategory' &&
           gameState.status !== 'finalJeopardyJudging' &&
           gameState.status !== 'finished' && (
-            <Buzzer
-              locked={buzzerLocked}
-              onBuzz={handleBuzz}
-              onEarlyBuzz={handleEarlyBuzz}
-              buzzed={buzzed}
-              showTooSoonMessage={showTooSoonMessage}
-            />
+            <>
+              <div className={isClueRevealed ? 'mb-6' : ''}>
+                <Buzzer
+                  locked={buzzerLocked}
+                  onBuzz={handleBuzz}
+                  onEarlyBuzz={handleEarlyBuzz}
+                  buzzed={buzzed}
+                  showTooSoonMessage={showTooSoonMessage}
+                />
+              </div>
+
+              {isClueRevealed && selectedClue && selectedCategory && (
+                <div className="bg-blue-800 p-6 rounded-lg shadow-lg border border-blue-700">
+                  <div className="mb-4 text-center">
+                    <div className="text-xl font-bold text-yellow-300 uppercase tracking-wide mb-2">
+                      <span className="category-text">
+                        {selectedCategory.name}
+                      </span>
+                    </div>
+                    <div className="text-xl font-bold text-yellow-400">
+                      ${selectedClue.value.toLocaleString()}
+                    </div>
+                  </div>
+
+                  <div className="clue-text text-2xl font-bold text-white text-center leading-tight min-h-[150px] flex items-center justify-center px-4">
+                    {selectedClue.clue}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
         {/* <div className="mt-8">

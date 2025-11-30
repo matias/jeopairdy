@@ -75,7 +75,7 @@ export default function Buzzer({
           <p className="text-red-600 font-bold animate-pulse">Too soon!</p>
         )}
         {!showTooSoonMessage && locked && (
-          <p className="text-gray-600">Wait for the clue...</p>
+          <p className="text-white">Wait for the clue...</p>
         )}
         {!showTooSoonMessage && buzzed && (
           <p className="text-green-600">You buzzed in!</p>
