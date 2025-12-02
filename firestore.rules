@@ -1,6 +1,66 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Helper function to check if user is host of a room
+    function isKaraokeHost(roomCode) {
+      return get(/databases/$(database)/documents/karaoke_rooms/$(roomCode)).data.hostId == request.auth.uid;
+    }
+    
+    // User documents
+    match /karaoke_users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Room documents
+    match /karaoke_rooms/{roomCode} {
+      // Anyone authenticated can read room data (for guests)
+      allow read: if request.auth != null;
+      
+      // Only authenticated users can create rooms, and must set themselves as host
+      // Anonymous users cannot create rooms (only Google auth)
+      allow create: if request.auth != null 
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.resource.data.hostId == request.auth.uid;
+      
+      // Guests can update the queue field (to add songs)
+      // Host can update any field
+      allow update: if request.auth != null && (
+        // Host can update anything
+        isKaraokeHost(roomCode) ||
+        // Guests can update queue - verify other critical fields haven't changed
+        (request.resource.data.queue != null &&
+         request.resource.data.hostId == resource.data.hostId &&
+         request.resource.data.hostEmail == resource.data.hostEmail &&
+         request.resource.data.hostName == resource.data.hostName)
+      );
+      
+      // Only host can delete their room
+      allow delete: if request.auth != null && isKaraokeHost(roomCode);
+      
+      // Guest subcollection
+      match /karaoke_guests/{guestId} {
+        // Anyone authenticated can read guest list
+        allow read: if request.auth != null;
+        
+        // Anyone authenticated can add themselves as a guest
+        allow create: if request.auth != null 
+          && request.resource.data.uid == request.auth.uid;
+        
+        // Guest can update their own lastSeen, host can update any guest
+        allow update: if request.auth != null && (
+          request.auth.uid == guestId ||
+          isKaraokeHost(roomCode)
+        );
+        
+        // Guest can delete themselves, host can delete any guest
+        allow delete: if request.auth != null && (
+          request.auth.uid == guestId ||
+          isKaraokeHost(roomCode)
+        );
+      }
+    }
     
     // Helper function to check if the user is authenticated
     function isAuthenticated() {
@@ -8,7 +68,7 @@ service cloud.firestore {
     }
     
     // Helper function to check if user is the host of a game
-    function isHost(roomId) {
+    function isJeopairdyHost(roomId) {
       return isAuthenticated() && 
         get(/databases/$(database)/documents/games/$(roomId)/metadata/info).data.hostId == request.auth.uid;
     }
@@ -46,7 +106,7 @@ service cloud.firestore {
         // Anyone authenticated can create a new game (becomes host)
         allow create: if isAuthenticated();
         // Only host can update or delete metadata
-        allow update, delete: if isHost(roomId);
+        allow update, delete: if isJeopairdyHost(roomId);
         // Anyone can read metadata (needed to check host)
         allow read: if true;
       }
@@ -54,7 +114,7 @@ service cloud.firestore {
       // Game config subcollection
       match /config/{configId} {
         // Only host can write config
-        allow write: if isHost(roomId);
+        allow write: if isJeopairdyHost(roomId);
         // Anyone with room access can read config
         allow read: if true;
       }
@@ -62,7 +122,7 @@ service cloud.firestore {
       // Game state subcollection
       match /state/{stateId} {
         // Only host can write state
-        allow write: if isHost(roomId);
+        allow write: if isJeopairdyHost(roomId);
         // Anyone with room access can read state
         allow read: if true;
       }
@@ -78,10 +138,10 @@ service cloud.firestore {
         // Players can update their own doc (wagers, answers)
         // Host can also update any player (for score adjustments)
         allow update: if isAuthenticated() && 
-          (request.auth.uid == playerId || isHost(roomId));
+          (request.auth.uid == playerId || isJeopairdyHost(roomId));
         
         // Only host can delete players
-        allow delete: if isHost(roomId);
+        allow delete: if isJeopairdyHost(roomId);
       }
       
       // Buzzes subcollection
@@ -94,7 +154,7 @@ service cloud.firestore {
           request.resource.data.playerId == request.auth.uid;
         
         // Only host can delete buzzes (for reset between clues)
-        allow delete: if isHost(roomId);
+        allow delete: if isJeopairdyHost(roomId);
         
         // No updates to buzzes (they're immutable)
         allow update: if false;
