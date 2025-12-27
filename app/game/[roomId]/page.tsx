@@ -22,6 +22,105 @@ import {
 } from '@/lib/audio';
 const ANSWER_TIMEOUT = 20000; // 20 seconds
 
+// Check if current date is Dec 24 or 25 in US/Eastern timezone
+function isChristmasTime(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  const now = new Date();
+  // Convert to US/Eastern timezone
+  const easternTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const month = easternTime.getMonth() + 1; // getMonth() returns 0-11
+  const date = easternTime.getDate();
+  
+  return month === 12 && (date === 24 || date === 25);
+}
+
+// Snowflake component for falling snow effect
+function Snowflake({ left, delay, duration }: { left: string; delay: number; duration: number }) {
+  return (
+    <div
+      className="absolute text-white text-2xl pointer-events-none select-none"
+      style={{
+        left: `${left}%`,
+        animation: `snowfall ${duration}s linear ${delay}s infinite`,
+        top: '-50px',
+      }}
+    >
+      ❄
+    </div>
+  );
+}
+
+// Christmas emoji component
+function ChristmasEmoji({ emoji, left, top }: { emoji: string; left: string; top: string }) {
+  return (
+    <div
+      className="absolute text-4xl pointer-events-none select-none animate-bounce"
+      style={{
+        left: `${left}%`,
+        top: `${top}%`,
+        animationDuration: '3s',
+        animationDelay: `${Math.random() * 2}s`,
+      }}
+    >
+      {emoji}
+    </div>
+  );
+}
+
+// Snow effect overlay component
+function SnowEffect() {
+  const snowflakes = Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 5,
+    duration: 5 + Math.random() * 5, // 5-10 seconds
+  }));
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-10">
+      {snowflakes.map((flake) => (
+        <Snowflake
+          key={flake.id}
+          left={flake.left.toString()}
+          delay={flake.delay}
+          duration={flake.duration}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Christmas emojis overlay component (positioned to avoid QR code area)
+function ChristmasEmojis() {
+  const emojis = ['🎄', '🎁', '🎅', '❄️', '☃️', '🦌', '🔔', '🌟', '⭐', '✨'];
+  const positions = Array.from({ length: 20 }, () => ({
+    emoji: emojis[Math.floor(Math.random() * emojis.length)],
+    left: Math.random() * 100,
+    top: Math.random() * 100,
+  }));
+
+  // Filter out positions that would overlap with QR code area (roughly center of screen)
+  // QR code is roughly centered, so avoid positions between 30-70% horizontally and 35-65% vertically
+  const filteredPositions = positions.filter(
+    (pos) =>
+      !(pos.left > 30 && pos.left < 70 && pos.top > 35 && pos.top < 65)
+  );
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-10">
+      {filteredPositions.map((pos, i) => (
+        <ChristmasEmoji
+          key={i}
+          emoji={pos.emoji}
+          left={pos.left.toString()}
+          top={pos.top.toString()}
+        />
+      ))}
+    </div>
+  );
+}
+
 function CountdownTimer({
   countdownEnd,
 }: {
@@ -325,10 +424,18 @@ export default function GameDisplayPage() {
   }
 
   if (gameState.status === 'ready' || isTransitioning) {
+    const showChristmas = isChristmasTime();
+    
     return (
-      <main className="flex min-h-screen items-center justify-center bg-blue-900">
+      <main className="flex min-h-screen items-center justify-center bg-blue-900 relative">
+        {showChristmas && (
+          <>
+            <SnowEffect />
+            <ChristmasEmojis />
+          </>
+        )}
         <div
-          className={`max-w-4xl mx-auto text-center transition-opacity duration-[2000ms] ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
+          className={`max-w-4xl mx-auto text-center transition-opacity duration-[2000ms] relative z-20 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
         >
           <JeopardyTitle className="mb-8" />
           <div className="bg-blue-800 p-8 rounded-lg">
@@ -340,7 +447,7 @@ export default function GameDisplayPage() {
                 <img
                   src={qrCodeUrl}
                   alt="QR Code"
-                  className="w-96 h-96 bg-white p-4 rounded"
+                  className="w-96 h-96 bg-white p-4 rounded relative z-30"
                 />
                 <p className="text-xl text-white">Scan to join Room {roomId}</p>
                 {typeof window !== 'undefined' && (
