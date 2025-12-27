@@ -87,6 +87,7 @@ function CreateGamePageContent() {
     return persisted?.sourceMaterial || '';
   });
   const [feedback, setFeedback] = useState('');
+  const [feedbackHistory, setFeedbackHistory] = useState<string[]>([]);
   const [samples, setSamples] = useState<SampleCategory[] | null>(null);
   const [commentary, setCommentary] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -109,7 +110,7 @@ function CreateGamePageContent() {
     null,
   );
   const [model, setModel] = useState<'chatgpt-5.1' | 'gemini-3-pro'>(
-    'chatgpt-5.1',
+    'gemini-3-pro',
   );
   const [useGoogleSearchGrounding, setUseGoogleSearchGrounding] =
     useState(false);
@@ -252,6 +253,11 @@ function CreateGamePageContent() {
       setCommentary(parsed.commentary || '');
       setPhase('iterating');
       setShowInitialForm(false);
+
+      // Store feedback in history if this was a regeneration
+      if (mode === 'regenerate' && feedback.trim()) {
+        setFeedbackHistory((prev) => [...prev, feedback.trim()]);
+      }
     } catch (err: any) {
       console.error('[CreateGame] Sample generation failed', err);
       setError(err?.message || 'Failed to generate samples.');
@@ -310,6 +316,7 @@ function CreateGamePageContent() {
       round,
       values,
       excludedAnswers,
+      feedbackHistory,
     });
     const outputText = await sendConversationMessage({ message: prompt });
     const parsed = JSON.parse(outputText);
@@ -322,6 +329,7 @@ function CreateGamePageContent() {
       difficulty,
       sourceMaterial,
       excludedAnswers,
+      feedbackHistory,
     });
 
     const outputText = await sendConversationMessage({ message: prompt });

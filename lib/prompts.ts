@@ -24,10 +24,12 @@ interface RoundPromptOptions extends BasePromptOptions {
   round: Round;
   values: number[];
   excludedAnswers?: string[];
+  feedbackHistory?: string[];
 }
 
 interface FinalJeopardyPromptOptions extends BasePromptOptions {
   excludedAnswers?: string[];
+  feedbackHistory?: string[];
 }
 
 interface SingleClueRegenerationPromptOptions extends BasePromptOptions {
@@ -80,9 +82,18 @@ function formatSourceMaterial(sourceMaterial?: string) {
 
 function formatExcludedAnswers(excludedAnswers?: string[]) {
   if (!excludedAnswers || excludedAnswers.length === 0) return '';
-  return `Do NOT reuse any of these answers:\n${excludedAnswers
+  return `\nCRITICAL: Do NOT reuse any of these answers from previous rounds. Each answer must be completely unique across all rounds:\n${excludedAnswers
     .map((answer) => `- ${answer}`)
-    .join('\n')}\n`;
+    .join(
+      '\n',
+    )}\n\nAdditionally, ensure that your clues are substantially different from previous rounds—avoid similar phrasing, topics, or approaches even if the answers differ.`;
+}
+
+function formatFeedbackHistory(feedbackHistory?: string[]) {
+  if (!feedbackHistory || feedbackHistory.length === 0) return '';
+  return `\nIMPORTANT: During the sample clue generation phase, the host provided the following feedback. Please keep these preferences in mind when creating the full game:\n\n${feedbackHistory
+    .map((feedback, index) => `Feedback ${index + 1}: ${feedback}`)
+    .join('\n\n')}\n`;
 }
 
 export function getSystemInstructions(): string {
@@ -177,14 +188,26 @@ Highlight the adjustments you made in the commentary.`;
 }
 
 export function getFullRoundPrompt(options: RoundPromptOptions): string {
-  const { topics, difficulty, sourceMaterial, round, values, excludedAnswers } =
-    options;
+  const {
+    topics,
+    difficulty,
+    sourceMaterial,
+    round,
+    values,
+    excludedAnswers,
+    feedbackHistory,
+  } = options;
   const roundName =
     round === 'doubleJeopardy'
       ? 'Double Jeopardy'
       : round === 'finalJeopardy'
         ? 'Final Jeopardy'
         : 'Jeopardy';
+
+  const uniquenessNote =
+    excludedAnswers && excludedAnswers.length > 0
+      ? `\nIMPORTANT: This is the ${roundName} round. All answers and clues must be completely unique from previous rounds. Do not reuse answers, and ensure clues cover different aspects, angles, or details than those already used.`
+      : '';
 
   return `Generate a complete ${roundName} round (${values.length} clues per category, ${values.join(
     ', ',
@@ -200,11 +223,12 @@ Board & clue guardrails:
 - Each category must contain exactly ${values.length} clues with steadily increasing difficulty/value.
 - Clues read as answers; responses stay in question form ("What/who is...?").
 - Every clue has one unambiguous correct response, verified facts, and enough context for deduction.
+${uniquenessNote}
 
 Topics / themes: ${topics}
 Requested difficulty: ${difficulty}
 ${formatSourceMaterial(sourceMaterial)}
-${formatExcludedAnswers(excludedAnswers)}
+${formatExcludedAnswers(excludedAnswers)}${formatFeedbackHistory(feedbackHistory)}
 
 Output JSON:
 {
@@ -224,13 +248,25 @@ Do not include commentary. Focus on balanced, television-ready material.`;
 export function getFinalJeopardyPrompt(
   options: FinalJeopardyPromptOptions,
 ): string {
-  const { topics, difficulty, sourceMaterial, excludedAnswers } = options;
+  const {
+    topics,
+    difficulty,
+    sourceMaterial,
+    excludedAnswers,
+    feedbackHistory,
+  } = options;
+  const uniquenessNote =
+    excludedAnswers && excludedAnswers.length > 0
+      ? `\nCRITICAL: The Final Jeopardy answer must be completely unique from all previous rounds. Do not reuse any answers from the Jeopardy or Double Jeopardy rounds, and ensure the clue approaches the topic from a distinct angle.`
+      : '';
+
   return `Generate a Final Jeopardy prompt.
+${uniquenessNote}
 
 Topics / themes: ${topics}
 Requested difficulty: ${difficulty}
 ${formatSourceMaterial(sourceMaterial)}
-${formatExcludedAnswers(excludedAnswers)}
+${formatExcludedAnswers(excludedAnswers)}${formatFeedbackHistory(feedbackHistory)}
 
 JSON format:
 {
@@ -243,6 +279,7 @@ Final Jeopardy guardrails:
 - Keep the category resonant with the provided topics but styled like classic show material.
 - Phrase the clue as an answer, keep it concise, accurate, and challenging.
 - Provide a single definitive response in question form ("What/who is...?").
+- The answer and clue must be completely unique from all previous rounds.
 
 Ensure the clue ties to the topics and meets Final Jeopardy gravitas.`;
 }
