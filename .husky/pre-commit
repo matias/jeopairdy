@@ -1,1 +1,6 @@
+#!/usr/bin/env sh
+
+# Ensure PATH includes common node/npm locations (for Cursor's git integration)
+export PATH="$PATH:/usr/local/bin:/opt/homebrew/bin"
+
 npx lint-staged
