@@ -1,0 +1,1 @@
+- Read GAME_ARCHITECTURE.md to understand how the app works. Keep it updated as you make changes.
