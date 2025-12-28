@@ -169,6 +169,6 @@ export const fadeOutIntroMusic = (duration?: number) =>
 export const playTimesUp = () =>
   audioManager.play('/jeopardy/jeopardy-times-up.mp3');
 export const playThinkMusic = () =>
-  audioManager.play('/jeopardy/jeopardy-think.mp3');
+  audioManager.play('/jeopardy/jeopardy-think.mp3', { loop: true });
 export const stopThinkMusic = () =>
   audioManager.stop('/jeopardy/jeopardy-think.mp3');
