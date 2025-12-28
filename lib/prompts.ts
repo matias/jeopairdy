@@ -66,11 +66,15 @@ const CLUE_GUIDELINES = `Clue writing expectations:
 * Escalate difficulty with each value and keep clues concise but information-rich.
 * Verify every fact; give enough context for contestants to reason to the response.
 * Do NOT include any part of the category or of the clue in the answer.
+* Do NOT include the answer (or parts of it) in the category name.
 * Do NOT use swear words or offensive language.`;
 
-const CATEGORY_RULES = `Invent interesting, fun categories inspired by the host's topics without mapping topics 1:1.
-Honor the requested themes while still feeling like classic Jeopardy categories—puns and playful framing welcome.
-Every clue must remain grounded in the provided topics or source material.`;
+const CATEGORY_RULES = `Category Creation Rules:
+1.  **NO 1:1 MAPPING**: Do NOT simply create one category per provided topic. This is critical.
+2.  **MIX & BLEND**: Use the provided topics as a palette. A single category should ideally touch on multiple themes or blend a theme with general knowledge (e.g., "Chemistry in Movies", "Kings of Chess", "Pokemon Etymology").
+3.  **GENERAL KNOWLEDGE BALANCE**: The game should be accessible. Avoid deep specialist knowledge unless the difficulty is set very high. The topics are flavor/inspiration, not a syllabus.
+4.  **CLASSIC STYLING**: Use puns, wordplay, and clever titles ("Potent Potables", "Before & After").
+5.  **VARIETY**: Ensure the board has a mix of academic, pop culture, and wordplay categories.`;
 
 function formatSourceMaterial(sourceMaterial?: string) {
   if (!sourceMaterial?.trim()) return '';
@@ -111,7 +115,10 @@ ${CLUE_GUIDELINES}
 
 ${CATEGORY_RULES}
 
-Always respond with JSON that can be parsed reliably.`;
+IMPORTANT:
+- Return ONLY plain text for all categories, clues, and answers. 
+- Do NOT use Markdown formatting (no bolding, no italics, etc.) within the JSON values.
+- Always respond with JSON that can be parsed reliably.`;
 }
 
 export function getInitialSamplePrompt(options: SamplePromptOptions): string {
@@ -133,7 +140,9 @@ Goals:
 
 Remember:
 - Balance the sample board the way a Jeopardy head writer would (mix subjects, punny titles, tight focus).
+- NO 1:1 MAPPING: Do NOT simply create one category per provided topic. Use topics as inspiration/flavor.
 - Every clue must follow the clue-writing expectations outlined above (single definitive response, escalating difficulty, concise phrasing).
+- CRITICAL: Answers must NOT appear in the category names or clues, and vice versa.
 
 Topics / themes: ${topics}
 Requested difficulty: ${difficulty}
@@ -209,12 +218,24 @@ export function getFullRoundPrompt(options: RoundPromptOptions): string {
       ? `\nIMPORTANT: This is the ${roundName} round. All answers and clues must be completely unique from previous rounds. Do not reuse answers, and ensure clues cover different aspects, angles, or details than those already used.`
       : '';
 
+  const roundSpecificInstructions =
+    round === 'doubleJeopardy'
+      ? `\nROUND 2 (DOUBLE JEOPARDY) FOCUS:
+- This round must feel DISTINCT from Round 1.
+- Avoid reusing standard/obvious categories derived from the themes.
+- Focus on more clever, lateral, or "second-degree" connections to the topics.
+- Increase the complexity of the category themes (e.g., more wordplay or cross-referencing topics).`
+      : `\nROUND 1 (JEOPARDY) FOCUS:
+- Establish a fun, accessible board.
+- Mix the provided topics into broader general knowledge categories.`;
+
   return `Generate a complete ${roundName} round (${values.length} clues per category, ${values.join(
     ', ',
   )} values).
 
-Core specs:
-- 6 categories, each with ${values.length} clues.
+  Core specs:
+  ${roundSpecificInstructions}
+  - 6 categories, each with ${values.length} clues.
 - Maintain strict clue difficulty progression with the provided values.
 - Follow Jeopardy formatting (clue = answer; answer = question).
 
@@ -277,6 +298,7 @@ JSON format:
 
 Final Jeopardy guardrails:
 - Keep the category resonant with the provided topics but styled like classic show material.
+- The Final Jeopardy category should ideally tie together multiple themes or focus on a major one in a new way.
 - Phrase the clue as an answer, keep it concise, accurate, and challenging.
 - Provide a single definitive response in question form ("What/who is...?").
 - The answer and clue must be completely unique from all previous rounds.
