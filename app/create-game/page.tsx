@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, Suspense } from 'react';
+import { useEffect, useMemo, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createGameClient } from '@/lib/game-client-factory';
 import { IGameClient } from '@/lib/game-client-interface';
@@ -22,6 +22,7 @@ import type {
 import { AuthHeader } from '@/components/AuthHeader';
 const JEOPARDY_VALUES = [200, 400, 600, 800, 1000];
 const DOUBLE_VALUES = [400, 800, 1200, 1600, 2000];
+const GENERATION_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes per round
 
 const randomId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -120,6 +121,7 @@ function CreateGamePageContent() {
   const [failedRound, setFailedRound] = useState<
     'jeopardy' | 'doubleJeopardy' | 'finalJeopardy' | null
   >(null);
+  const generationAbortRef = useRef<AbortController | null>(null);
 
   // Load persisted data when roomId changes
   useEffect(() => {
@@ -190,10 +192,12 @@ function CreateGamePageContent() {
     message,
     format = 'json_object',
     resetConversation = false,
+    signal,
   }: {
     message: string;
     format?: 'json_object' | 'text';
     resetConversation?: boolean;
+    signal?: AbortSignal;
   }) => {
     const response = await fetch('/api/generate', {
       method: 'POST',
@@ -209,6 +213,7 @@ function CreateGamePageContent() {
         useGoogleSearchGrounding:
           model === 'gemini-3-pro' ? useGoogleSearchGrounding : false,
       }),
+      signal,
     });
 
     if (!response.ok) {
@@ -304,10 +309,12 @@ function CreateGamePageContent() {
     round,
     values,
     excludedAnswers,
+    signal,
   }: {
     round: Round;
     values: number[];
     excludedAnswers?: string[];
+    signal?: AbortSignal;
   }) => {
     const prompt = getFullRoundPrompt({
       topics,
@@ -318,12 +325,18 @@ function CreateGamePageContent() {
       excludedAnswers,
       feedbackHistory,
     });
-    const outputText = await sendConversationMessage({ message: prompt });
+    const outputText = await sendConversationMessage({
+      message: prompt,
+      signal,
+    });
     const parsed = JSON.parse(outputText);
     return mapCategoriesToRound(round, parsed.categories || []);
   };
 
-  const generateFinalJeopardy = async (excludedAnswers: string[]) => {
+  const generateFinalJeopardy = async (
+    excludedAnswers: string[],
+    signal?: AbortSignal,
+  ) => {
     const prompt = getFinalJeopardyPrompt({
       topics,
       difficulty,
@@ -332,7 +345,10 @@ function CreateGamePageContent() {
       feedbackHistory,
     });
 
-    const outputText = await sendConversationMessage({ message: prompt });
+    const outputText = await sendConversationMessage({
+      message: prompt,
+      signal,
+    });
     return JSON.parse(outputText);
   };
 
@@ -545,10 +561,36 @@ function CreateGamePageContent() {
     }
   };
 
+  const cleanupGeneration = () => {
+    if (generationAbortRef.current) {
+      generationAbortRef.current.abort();
+      generationAbortRef.current = null;
+    }
+  };
+
   const processGameGeneration = async (initialConfig: GameConfig) => {
     let currentConfig = initialConfig;
     let currentStep: 'jeopardy' | 'doubleJeopardy' | 'finalJeopardy' =
       'jeopardy';
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const makeSignal = () => {
+      cleanupGeneration();
+      const controller = new AbortController();
+      generationAbortRef.current = controller;
+      timeoutId = setTimeout(() => {
+        controller.abort();
+      }, GENERATION_TIMEOUT_MS);
+      return controller.signal;
+    };
+
+    const clearCurrentTimeout = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      generationAbortRef.current = null;
+    };
 
     try {
       // 1. Jeopardy
@@ -558,7 +600,9 @@ function CreateGamePageContent() {
         const jeopardyRound = await generateRound({
           round: 'jeopardy',
           values: JEOPARDY_VALUES,
+          signal: makeSignal(),
         });
+        clearCurrentTimeout();
 
         currentConfig = {
           ...currentConfig,
@@ -576,7 +620,9 @@ function CreateGamePageContent() {
           round: 'doubleJeopardy',
           values: DOUBLE_VALUES,
           excludedAnswers: jeopardyAnswers,
+          signal: makeSignal(),
         });
+        clearCurrentTimeout();
 
         currentConfig = {
           ...currentConfig,
@@ -593,7 +639,11 @@ function CreateGamePageContent() {
           ...extractAnswers(currentConfig.jeopardy),
           ...extractAnswers(currentConfig.doubleJeopardy),
         ];
-        const finalJeopardy = await generateFinalJeopardy(allAnswers);
+        const finalJeopardy = await generateFinalJeopardy(
+          allAnswers,
+          makeSignal(),
+        );
+        clearCurrentTimeout();
 
         currentConfig = {
           ...currentConfig,
@@ -608,17 +658,25 @@ function CreateGamePageContent() {
 
       setFinalizingRound(null);
     } catch (err: any) {
+      clearCurrentTimeout();
+      const isAborted = err?.name === 'AbortError';
       console.error(`[CreateGame] Finalization failed at ${currentStep}`, err);
-      setError(err?.message || 'Failed to generate round.');
+      setError(
+        isAborted
+          ? 'Generation timed out or was cancelled. You can retry.'
+          : err?.message || 'Failed to generate round.',
+      );
       setFailedRound(currentStep);
       setFinalizingRound(null);
     } finally {
+      clearCurrentTimeout();
       setLoadingState(null);
     }
   };
 
-  const handleRetry = async () => {
+  const handleRetryRound = async () => {
     if (!gameConfig) return;
+    cleanupGeneration();
     setError(null);
     setFailedRound(null);
     setLoadingState('finalize');
@@ -786,29 +844,56 @@ function CreateGamePageContent() {
                   Failed to generate Final Jeopardy.
                 </p>
                 <button
-                  onClick={handleRetry}
+                  onClick={handleRetryRound}
                   className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 transition-colors"
                 >
-                  Retry Generation
+                  Retry Final Jeopardy
                 </button>
               </div>
             ) : getRoundStatus('finalJeopardy') === 'generating' ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-300">
-                  Generating game... please wait
+                <p className="mb-4 text-lg text-gray-300">
+                  Generating Final Jeopardy... please wait
                 </p>
+                <p className="mb-4 text-sm text-gray-400">
+                  Taking too long? You can retry this stage.
+                </p>
+                <button
+                  onClick={handleRetryRound}
+                  className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 transition-colors"
+                >
+                  Retry Final Jeopardy
+                </button>
               </div>
             ) : getRoundStatus('finalJeopardy') === 'waiting' ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-300">
-                  Waiting for previous stage to generate game... please wait
+                <p className="mb-4 text-lg text-gray-300">
+                  Waiting for previous stage to generate...
                 </p>
+                <p className="mb-4 text-sm text-gray-400">
+                  Stuck? You can retry the current stage.
+                </p>
+                <button
+                  onClick={handleRetryRound}
+                  className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 transition-colors"
+                >
+                  Retry{' '}
+                  {finalizingRound === 'jeopardy'
+                    ? 'Jeopardy'
+                    : 'Double Jeopardy'}
+                </button>
               </div>
             ) : !gameConfig.finalJeopardy.category ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-300">
-                  Waiting for previous stage to generate game... please wait
+                <p className="mb-4 text-lg text-gray-300">
+                  Final Jeopardy was not generated.
                 </p>
+                <button
+                  onClick={handleRetryRound}
+                  className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 transition-colors"
+                >
+                  Retry Final Jeopardy
+                </button>
               </div>
             ) : (
               <>
@@ -978,29 +1063,62 @@ function CreateGamePageContent() {
                   Round.
                 </p>
                 <button
-                  onClick={handleRetry}
+                  onClick={handleRetryRound}
                   className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 transition-colors"
                 >
-                  Retry Generation
+                  Retry{' '}
+                  {currentRound === 'jeopardy' ? 'Jeopardy' : 'Double Jeopardy'}
                 </button>
               </div>
             ) : getRoundStatus(currentRound) === 'generating' ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-300">
-                  Generating game... please wait
+                <p className="mb-4 text-lg text-gray-300">
+                  Generating{' '}
+                  {currentRound === 'jeopardy' ? 'Jeopardy' : 'Double Jeopardy'}
+                  ... please wait
                 </p>
+                <p className="mb-4 text-sm text-gray-400">
+                  Taking too long? You can retry this stage.
+                </p>
+                <button
+                  onClick={handleRetryRound}
+                  className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 transition-colors"
+                >
+                  Retry{' '}
+                  {currentRound === 'jeopardy' ? 'Jeopardy' : 'Double Jeopardy'}
+                </button>
               </div>
             ) : getRoundStatus(currentRound) === 'waiting' ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-300">
-                  Waiting for previous stage to generate game... please wait
+                <p className="mb-4 text-lg text-gray-300">
+                  Waiting for previous stage to generate...
                 </p>
+                <p className="mb-4 text-sm text-gray-400">
+                  Stuck? You can retry the current stage.
+                </p>
+                <button
+                  onClick={handleRetryRound}
+                  className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 transition-colors"
+                >
+                  Retry{' '}
+                  {finalizingRound === 'jeopardy'
+                    ? 'Jeopardy'
+                    : 'Double Jeopardy'}
+                </button>
               </div>
             ) : !currentRoundData || !currentRoundData.categories.length ? (
               <div className="py-8 text-center">
-                <p className="text-lg text-gray-300">
-                  Waiting for previous stage to generate game... please wait
+                <p className="mb-4 text-lg text-gray-300">
+                  {currentRound === 'jeopardy' ? 'Jeopardy' : 'Double Jeopardy'}{' '}
+                  was not generated.
                 </p>
+                <button
+                  onClick={handleRetryRound}
+                  className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 transition-colors"
+                >
+                  Retry{' '}
+                  {currentRound === 'jeopardy' ? 'Jeopardy' : 'Double Jeopardy'}
+                </button>
               </div>
             ) : (
               <>

@@ -109,7 +109,7 @@ The create-game page orchestrates an iterative chat-driven workflow with GPT-5.1
 
 1. **Parameter entry:** Host supplies topics, difficulty, and optional source text.
 2. **Sample iteration:** Client-side calls to `/api/generate` request sparse sample categories using prompt builders in `lib/prompts.ts`. The host can review rendered categories/clues plus the model's commentary, then submit feedback for additional iterations.
-3. **Finalization:** When satisfied, the host requests full rounds. The client sequentially generates Jeopardy, Double Jeopardy (excluding prior answers), and Final Jeopardy JSON payloads, then converts them into a `GameConfig`.
+3. **Finalization:** When satisfied, the host requests full rounds. The client sequentially generates Jeopardy, Double Jeopardy (excluding prior answers), and Final Jeopardy JSON payloads, then converts them into a `GameConfig`. Each round generation has a 5-minute timeout; if a stage fails or hangs, the host can use "Retry [stage]" to redo that stage without losing completed rounds.
 4. **Deployment:** The completed config is saved to Firestore and loaded into the game room.
 
 Only the final `GameConfig` touches Firestore; iterative samples remain client-side for rapid experimentation.
