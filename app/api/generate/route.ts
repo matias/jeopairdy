@@ -308,13 +308,13 @@ async function handleGeminiRequest({
 
     console.log('[Gemini] Creating new chat', {
       conversationId: activeConversationId,
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3.1-pro-preview',
       useGoogleSearchGrounding,
     });
 
     // Create new chat with system instructions
     chat = gemini.chats.create({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3.1-pro-preview',
       config,
     });
 
