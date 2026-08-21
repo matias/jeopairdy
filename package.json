@@ -30,7 +30,8 @@
     "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "vercel": "^59.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

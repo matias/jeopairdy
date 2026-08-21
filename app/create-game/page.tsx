@@ -110,8 +110,8 @@ function CreateGamePageContent() {
   const [regeneratingClueId, setRegeneratingClueId] = useState<string | null>(
     null,
   );
-  const [model, setModel] = useState<'chatgpt-5.1' | 'gemini-3-pro'>(
-    'gemini-3-pro',
+  const [model, setModel] = useState<'chatgpt-5.1' | 'gemini-3.7-flash'>(
+    'gemini-3.7-flash',
   );
   const [useGoogleSearchGrounding, setUseGoogleSearchGrounding] =
     useState(false);
@@ -211,7 +211,7 @@ function CreateGamePageContent() {
         message,
         format,
         useGoogleSearchGrounding:
-          model === 'gemini-3-pro' ? useGoogleSearchGrounding : false,
+          model === 'gemini-3.7-flash' ? useGoogleSearchGrounding : false,
       }),
       signal,
     });
@@ -1469,20 +1469,20 @@ function CreateGamePageContent() {
                   <input
                     type="radio"
                     name="model"
-                    value="gemini-3-pro"
-                    checked={model === 'gemini-3-pro'}
+                    value="gemini-3.7-flash"
+                    checked={model === 'gemini-3.7-flash'}
                     onChange={(e) => {
-                      setModel('gemini-3-pro');
+                      setModel('gemini-3.7-flash');
                       setConversationId(null);
                     }}
                     className="cursor-pointer"
                   />
-                  <span className="text-sm text-white">Gemini 3.0 Pro</span>
+                  <span className="text-sm text-white">Gemini 3.7 Flash</span>
                 </label>
               </div>
             </div>
 
-            {model === 'gemini-3-pro' && (
+            {model === 'gemini-3.7-flash' && (
               <div>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input

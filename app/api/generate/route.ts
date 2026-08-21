@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       format = 'json_object',
       useGoogleSearchGrounding = false,
     }: {
-      model?: 'chatgpt-5.1' | 'gemini-3-pro';
+      model?: 'chatgpt-5.1' | 'gemini-3.7-flash';
       conversationId?: string | null;
       instructions?: string;
       message?: string;
@@ -44,12 +44,12 @@ export async function POST(req: Request) {
       conversationId: conversationId || 'new',
       format,
       useGoogleSearchGrounding:
-        model === 'gemini-3-pro' ? useGoogleSearchGrounding : false,
+        model === 'gemini-3.7-flash' ? useGoogleSearchGrounding : false,
       messageLength: message.length,
     });
 
     // Route to appropriate model
-    if (model === 'gemini-3-pro') {
+    if (model === 'gemini-3.7-flash') {
       return await handleGeminiRequest({
         conversationId,
         instructions,
@@ -308,13 +308,13 @@ async function handleGeminiRequest({
 
     console.log('[Gemini] Creating new chat', {
       conversationId: activeConversationId,
-      model: 'gemini-3.1-pro-preview',
+      model: 'gemini-3.7-flash',
       useGoogleSearchGrounding,
     });
 
     // Create new chat with system instructions
     chat = gemini.chats.create({
-      model: 'gemini-3.1-pro-preview',
+      model: 'gemini-3.7-flash',
       config,
     });
 
