@@ -1,10 +1,5 @@
-import OpenAI from 'openai';
 import { GoogleGenAI } from '@google/genai';
 import { NextResponse } from 'next/server';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 const gemini = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -17,14 +12,12 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const {
-      model = 'chatgpt-5.1',
       conversationId,
       instructions,
       message,
       format = 'json_object',
       useGoogleSearchGrounding = false,
     }: {
-      model?: 'chatgpt-5.1' | 'gemini-3.7-flash';
       conversationId?: string | null;
       instructions?: string;
       message?: string;
@@ -40,31 +33,19 @@ export async function POST(req: Request) {
     }
 
     console.log('[Generate API] Request received', {
-      model,
       conversationId: conversationId || 'new',
       format,
-      useGoogleSearchGrounding:
-        model === 'gemini-3.7-flash' ? useGoogleSearchGrounding : false,
+      useGoogleSearchGrounding,
       messageLength: message.length,
     });
 
-    // Route to appropriate model
-    if (model === 'gemini-3.7-flash') {
-      return await handleGeminiRequest({
-        conversationId,
-        instructions,
-        message,
-        format,
-        useGoogleSearchGrounding,
-      });
-    } else {
-      return await handleOpenAIRequest({
-        conversationId,
-        instructions,
-        message,
-        format,
-      });
-    }
+    return await handleGeminiRequest({
+      conversationId,
+      instructions,
+      message,
+      format,
+      useGoogleSearchGrounding,
+    });
   } catch (error: any) {
     console.error('[Generate API] Top-level error', {
       error: error?.message || 'Unknown error',
@@ -73,168 +54,10 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(
       {
-        error:
-          error?.response?.data?.error?.message ||
-          error?.message ||
-          'Failed to generate content.',
+        error: error?.message || 'Failed to generate content.',
       },
       { status: 500 },
     );
-  }
-}
-
-async function handleOpenAIRequest({
-  conversationId,
-  instructions,
-  message,
-  format,
-}: {
-  conversationId?: string | null;
-  instructions?: string;
-  message: string;
-  format: 'json_object' | 'text';
-}) {
-  if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json(
-      { error: 'Missing OPENAI_API_KEY environment variable.' },
-      { status: 500 },
-    );
-  }
-
-  let activeConversationId = conversationId;
-
-  if (!activeConversationId) {
-    if (typeof instructions !== 'string' || instructions.trim() === '') {
-      return NextResponse.json(
-        {
-          error: 'instructions are required when creating a new conversation.',
-        },
-        { status: 400 },
-      );
-    }
-
-    console.log('[OpenAI] Creating new conversation');
-    const conversation = await openai.conversations.create({
-      items: [
-        {
-          type: 'message',
-          role: 'developer',
-          content: [
-            {
-              type: 'input_text',
-              text: instructions,
-            },
-          ],
-        },
-      ],
-    });
-
-    activeConversationId = conversation.id;
-    console.log('[OpenAI] Conversation created', {
-      conversationId: activeConversationId,
-    });
-  } else {
-    console.log('[OpenAI] Using existing conversation', {
-      conversationId: activeConversationId,
-    });
-  }
-
-  console.log('[OpenAI] Sending request', {
-    model: 'gpt-5.1',
-    conversationId: activeConversationId,
-    format,
-  });
-
-  const makeRequest = async (convId: string) => {
-    return await openai.responses.create({
-      model: 'gpt-5.1',
-      conversation: convId,
-      input: [
-        {
-          type: 'message',
-          role: 'user',
-          content: message,
-        },
-      ],
-      text: {
-        format: {
-          type: format === 'text' ? 'text' : 'json_object',
-        },
-      },
-    });
-  };
-
-  try {
-    let response;
-    try {
-      response = await makeRequest(activeConversationId!);
-    } catch (error: any) {
-      // If conversation not found/expired and we have instructions, create a new one
-      if (
-        (error?.status === 404 || error?.message?.includes('not found')) &&
-        instructions
-      ) {
-        console.log('[OpenAI] Conversation expired, creating new one', {
-          oldConversationId: activeConversationId,
-        });
-
-        const conversation = await openai.conversations.create({
-          items: [
-            {
-              type: 'message',
-              role: 'developer',
-              content: [
-                {
-                  type: 'input_text',
-                  text: instructions,
-                },
-              ],
-            },
-          ],
-        });
-
-        activeConversationId = conversation.id;
-        console.log('[OpenAI] New conversation created', {
-          conversationId: activeConversationId,
-        });
-
-        response = await makeRequest(activeConversationId);
-      } else {
-        throw error;
-      }
-    }
-
-    const tokenUsage: Record<string, number | undefined> = {};
-    if (response.usage) {
-      // Handle different possible property names
-      tokenUsage.promptTokens =
-        (response.usage as any).prompt_tokens ||
-        (response.usage as any).promptTokens;
-      tokenUsage.completionTokens =
-        (response.usage as any).completion_tokens ||
-        (response.usage as any).completionTokens;
-      tokenUsage.totalTokens =
-        (response.usage as any).total_tokens ||
-        (response.usage as any).totalTokens;
-    }
-
-    console.log('[OpenAI] Response received', {
-      conversationId: activeConversationId,
-      ...tokenUsage,
-      outputLength: response.output_text?.length || 0,
-    });
-
-    return NextResponse.json({
-      conversationId: activeConversationId,
-      output_text: response.output_text,
-    });
-  } catch (error: any) {
-    console.error('[OpenAI] Request failed', {
-      conversationId: activeConversationId,
-      error: error?.message || 'Unknown error',
-      status: error?.status,
-    });
-    throw error;
   }
 }
 

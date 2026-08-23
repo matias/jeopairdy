@@ -110,9 +110,6 @@ function CreateGamePageContent() {
   const [regeneratingClueId, setRegeneratingClueId] = useState<string | null>(
     null,
   );
-  const [model, setModel] = useState<'chatgpt-5.1' | 'gemini-3.7-flash'>(
-    'gemini-3.7-flash',
-  );
   const [useGoogleSearchGrounding, setUseGoogleSearchGrounding] =
     useState(false);
   const [finalizingRound, setFinalizingRound] = useState<
@@ -203,15 +200,13 @@ function CreateGamePageContent() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model,
         conversationId: resetConversation ? null : conversationId,
         // Always include instructions in case the server lost the conversation
         // (e.g., serverless cold start, conversation expiration)
         instructions,
         message,
         format,
-        useGoogleSearchGrounding:
-          model === 'gemini-3.7-flash' ? useGoogleSearchGrounding : false,
+        useGoogleSearchGrounding,
       }),
       signal,
     });
@@ -1316,10 +1311,6 @@ function CreateGamePageContent() {
         <h1 className="jeopardy-title text-4xl font-bold text-white uppercase tracking-wider">
           Co-create a Jeopardy! Game
         </h1>
-        <p className="text-gray-300">
-          Guide an AI model through an iterative process—preview categories,
-          give feedback, and finalize when ready.
-        </p>
         {connectionError && (
           <p className="text-sm text-red-500">
             {connectionError} The final game cannot be loaded until the
@@ -1446,63 +1437,24 @@ function CreateGamePageContent() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-white">
-                AI Model
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={useGoogleSearchGrounding}
+                  onChange={(e) =>
+                    setUseGoogleSearchGrounding(e.target.checked)
+                  }
+                  className="cursor-pointer"
+                />
+                <span className="text-sm text-white">
+                  Enable Google Search Grounding
+                </span>
               </label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="model"
-                    value="chatgpt-5.1"
-                    checked={model === 'chatgpt-5.1'}
-                    onChange={(e) => {
-                      setModel('chatgpt-5.1');
-                      setUseGoogleSearchGrounding(false);
-                      setConversationId(null);
-                    }}
-                    className="cursor-pointer"
-                  />
-                  <span className="text-sm text-white">ChatGPT 5.1</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="model"
-                    value="gemini-3.7-flash"
-                    checked={model === 'gemini-3.7-flash'}
-                    onChange={(e) => {
-                      setModel('gemini-3.7-flash');
-                      setConversationId(null);
-                    }}
-                    className="cursor-pointer"
-                  />
-                  <span className="text-sm text-white">Gemini 3.7 Flash</span>
-                </label>
-              </div>
+              <p className="mt-1 text-xs text-gray-300">
+                Allow Gemini to search the web for real-time information when
+                generating clues.
+              </p>
             </div>
-
-            {model === 'gemini-3.7-flash' && (
-              <div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={useGoogleSearchGrounding}
-                    onChange={(e) =>
-                      setUseGoogleSearchGrounding(e.target.checked)
-                    }
-                    className="cursor-pointer"
-                  />
-                  <span className="text-sm text-white">
-                    Enable Google Search Grounding
-                  </span>
-                </label>
-                <p className="mt-1 text-xs text-gray-300">
-                  Allow Gemini to search the web for real-time information when
-                  generating clues.
-                </p>
-              </div>
-            )}
 
             <div className="flex flex-wrap gap-3">
               <button
