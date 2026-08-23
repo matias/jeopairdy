@@ -17,7 +17,7 @@ Currently implements the basic game flow of an initial round, a double Jeopardy 
 ## Features
 
 - **Live Gameplay**: Play in real-time with a host and multiple players
-- **AI-Generated Questions**: Uses OpenAI GPT-5.1 or Google Gemini 3.0 Pro (bring your own API keys) to generate custom games through an interactive co-creation flow
+- **AI-Generated Questions**: Uses Google Gemini 3.7 Flash (bring your own API key) to generate custom games through an interactive co-creation flow
 - **Three Rounds**: Jeopardy, Double Jeopardy, and Final Jeopardy
 - **Real-time Buzzer System**: Server-timestamped buzzes for accurate buzzer order, with a fair(ish) tie-breaking mechanism
 - **Multiple Views**:
@@ -33,9 +33,9 @@ Currently implements the basic game flow of an initial round, a double Jeopardy 
 - **Frontend**: Next.js 15 (React + TypeScript)
 - **Backend**: Firebase Firestore (real-time database)
 - **Authentication**: Firebase Anonymous Auth + Google Sign-In (for hosts)
-- **AI**: OpenAI GPT-5.1 API (Conversations API) or Google Gemini 3.0 Pro API
+- **AI**: Google Gemini 3.7 Flash API
 - **Styling**: Tailwind CSS
-- **Hosting**: Vercel (recommended) or any Next.js-compatible host
+- **Hosting**: Cloudflare Workers (via OpenNext)
 
 ## Requirements
 
@@ -57,7 +57,7 @@ cd jeopairdy
 2. Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 3. Set up environment variables:
@@ -69,8 +69,7 @@ cp .env.example .env.local
 Add your configuration:
 
 ```env
-# AI API Keys (at least one is required)
-OPENAI_API_KEY=your_key_here
+# AI API Key (required for game creation)
 GEMINI_API_KEY=your_key_here
 
 # Firebase Configuration (get from Firebase Console)
@@ -84,8 +83,6 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
 # Optional: Restrict who can host games (comma-separated emails)
 NEXT_PUBLIC_HOST_ALLOWLIST=host1@example.com,host2@example.com
 ```
-
-You can use either OpenAI or Gemini, or both. The create-game interface allows you to choose which model to use.
 
 ### Firebase Setup
 
@@ -105,20 +102,31 @@ firebase deploy --only firestore:rules
 Start the development server:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 The app will be available at `http://localhost:3000`.
 
 ### Deployment
 
-The app is designed to be deployed on Vercel:
+The app deploys to Cloudflare Workers via [OpenNext](https://opennext.js.org/cloudflare):
 
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy
+1. Copy env vars to `.dev.vars` for local preview (see `.env.example`)
+2. Set production secrets: `pnpm wrangler secret put GEMINI_API_KEY` (and other vars as needed)
+3. Add `jeopairdy.good-fairy.workers.dev` to Firebase Auth authorized domains
+4. Deploy: `pnpm run deploy`
 
-The app works with any Next.js-compatible hosting platform.
+Local Cloudflare preview (Worker runtime):
+
+```bash
+pnpm run preview
+```
+
+Day-to-day Next.js dev (without Worker bindings):
+
+```bash
+pnpm run dev
+```
 
 ## Usage
 
@@ -139,8 +147,7 @@ The app works with any Next.js-compatible hosting platform.
      - Topics/Prompt: Describe themes or constraints (e.g., "1990s pop culture", "World War II leadership")
      - Difficulty: Easy, Medium, or Hard
      - Source Material (optional): Paste reference text or context
-     - AI Model: Choose between ChatGPT 5.1 or Gemini 3.0 Pro
-     - Google Search Grounding (Gemini only): Enable web search for real-time information
+     - Google Search Grounding (optional): Enable web search for real-time information
    - **Generate samples**: Click "Generate Samples" to see sample categories and clues
    - **Iterate with feedback**:
      - Review the AI's commentary and sample categories
@@ -237,17 +244,14 @@ jeopairdy/
 
 ## Environment Variables
 
-- `OPENAI_API_KEY`: Your OpenAI API key (required for ChatGPT 5.1)
-- `GEMINI_API_KEY`: Your Google Gemini API key (required for Gemini 3.0 Pro)
+- `GEMINI_API_KEY`: Your Google Gemini API key (required for game creation)
 - `NEXT_PUBLIC_FIREBASE_*`: Firebase configuration (required)
 - `NEXT_PUBLIC_HOST_ALLOWLIST`: Comma-separated list of emails allowed to host (optional)
 - `SLACK_WEBHOOK_URL`: Slack webhook for game notifications (optional)
 
-**Note**: At least one API key (`OPENAI_API_KEY` or `GEMINI_API_KEY`) is required. You can use both if you want to switch between models.
-
 ## How Game Creation Works
 
-The game uses an **interactive co-creation flow** with either ChatGPT 5.1 or Gemini 3.0 Pro:
+The game uses an **interactive co-creation flow** with Gemini 3.7 Flash:
 
 1. **Sample Generation**: Host provides topics, difficulty, and optional source material. The AI generates sample categories with a few example clues.
 

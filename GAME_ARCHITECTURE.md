@@ -41,7 +41,7 @@ Jeopairdy is a Jeopardy!-style trivia game built with Next.js (React) frontend a
 
 ### Environment Variables
 
-Add these to your `.env.local` file:
+Add these to your `.env.local` file (local dev) or `.dev.vars` (Wrangler preview/deploy):
 
 ```env
 # Firebase configuration (get from Firebase Console)
@@ -55,10 +55,22 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
 # Optional: Restrict who can host games
 NEXT_PUBLIC_HOST_ALLOWLIST=host1@example.com,host2@example.com
 
-# AI API keys (at least one required)
-OPENAI_API_KEY=your-openai-key
+# AI API key (required for game creation)
 GEMINI_API_KEY=your-gemini-key
+
+# Optional: Slack notifications
+SLACK_WEBHOOK_URL=
 ```
+
+### Hosting
+
+The app deploys to **Cloudflare Workers** via [OpenNext](https://opennext.js.org/cloudflare) at `https://jeopairdy.good-fairy.workers.dev`.
+
+- `pnpm run deploy` — build and deploy
+- `pnpm run preview` — local Worker preview
+- `pnpm run dev` — standard Next.js dev server
+
+Set production secrets with `pnpm wrangler secret put GEMINI_API_KEY` (and other vars as needed). Add the workers.dev hostname to Firebase Auth authorized domains for Google host sign-in.
 
 ### Firebase Setup
 
@@ -105,7 +117,7 @@ savedGames/
 
 #### Interactive Game Creation Flow
 
-The create-game page orchestrates an iterative chat-driven workflow with GPT-5.1 or Gemini:
+The create-game page orchestrates an iterative chat-driven workflow with Gemini 3.7 Flash:
 
 1. **Parameter entry:** Host supplies topics, difficulty, and optional source text.
 2. **Sample iteration:** Client-side calls to `/api/generate` request sparse sample categories using prompt builders in `lib/prompts.ts`. The host can review rendered categories/clues plus the model's commentary, then submit feedback for additional iterations.
@@ -116,8 +128,13 @@ Only the final `GameConfig` touches Firestore; iterative samples remain client-s
 
 ##### Conversation state
 
-- `/api/generate` creates and manages an OpenAI **Conversation** (via the Responses + Conversations APIs). The first sample request spins up a conversation with the system instructions from `lib/prompts.ts`; every subsequent regeneration, round build, or Final Jeopardy request sends only the incremental user message while reusing that conversation ID.
-- Because the model retains state, feedback supplied during the sample loop directly influences the final Jeopardy rounds without manually restating previous prompts.
+- `/api/generate` creates and manages Gemini chat sessions keyed by a conversation ID. The first sample request spins up a chat with the system instructions from `lib/prompts.ts`; every subsequent regeneration, round build, or Final Jeopardy request sends only the incremental user message while reusing that conversation ID when the server isolate is still warm.
+- The client always resends `instructions` on each request so a cold start or Worker restart can recover by creating a new chat session.
+- Because the model retains state within a warm session, feedback supplied during the sample loop directly influences the final Jeopardy rounds without manually restating previous prompts.
+
+##### Firebase on Cloudflare Workers
+
+Firebase SDK uses protobufjs, which calls `new Function()` at module load time and crashes on Workers (`EvalError: Code generation from strings disallowed`). Client-side Firebase code in `lib/firebase.ts`, `lib/firestore-client.ts`, and `lib/game-client-factory.ts` uses lazy `require()` inside functions so Firebase is only loaded in the browser when game/auth methods run, not during Worker SSR.
 
 ### Shared Types
 
@@ -394,7 +411,6 @@ This ensures fair rotation among players who frequently tie, rather than always 
 jeopairdy/
 ├── app/                         # Next.js pages
 │   ├── api/                    # API routes
-│   │   ├── games/             # Game CRUD endpoints
 │   │   ├── generate/          # AI generation endpoint
 │   │   └── slack/             # Slack notifications
 │   ├── host/[roomId]/          # Host control page
