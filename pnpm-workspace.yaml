@@ -9,4 +9,10 @@ allowBuilds:
   protobufjs: true
   sharp: true
   unrs-resolver: true
-  workerd: set this to true or false
+  workerd: true
+
+overrides:
+  '@aws-sdk/signature-v4-multi-region': 3.996.39
+
+patchedDependencies:
+  '@opennextjs/cloudflare@1.20.2': patches/@opennextjs__cloudflare@1.20.2.patch

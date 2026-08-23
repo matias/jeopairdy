@@ -1,20 +1,4 @@
-import {
-  collection,
-  doc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  onSnapshot,
-  addDoc,
-  getDocs,
-  getDoc,
-  serverTimestamp,
-  query,
-  orderBy,
-  Timestamp,
-  writeBatch,
-  Unsubscribe,
-} from 'firebase/firestore';
+import type { Unsubscribe, Timestamp } from 'firebase/firestore';
 import {
   getFirestoreDb,
   ensureAuth,
@@ -32,6 +16,10 @@ import {
   GameStatus,
   Round,
 } from '@/shared/types';
+
+function fs() {
+  return require('firebase/firestore') as typeof import('firebase/firestore');
+}
 
 // Constants
 const TIE_WINDOW_MS = 250;
@@ -285,8 +273,8 @@ export class FirestoreClient implements IGameClient {
         // Generate unique room ID
         do {
           actualRoomId = generateRoomId();
-          const existingRoom = await getDoc(
-            doc(db, 'games', actualRoomId, 'metadata', 'info'),
+          const existingRoom = await fs().getDoc(
+            fs().doc(db, 'games', actualRoomId, 'metadata', 'info'),
           );
           if (existingRoom.exists()) {
             actualRoomId = null;
@@ -298,30 +286,39 @@ export class FirestoreClient implements IGameClient {
       this.playerId = this.userId!;
 
       // Check if room already exists
-      const metadataRef = doc(db, 'games', actualRoomId, 'metadata', 'info');
-      const existingMetadata = await getDoc(metadataRef);
+      const metadataRef = fs().doc(
+        db,
+        'games',
+        actualRoomId,
+        'metadata',
+        'info',
+      );
+      const existingMetadata = await fs().getDoc(metadataRef);
 
       if (!existingMetadata.exists()) {
         // Create new room
-        await setDoc(metadataRef, {
+        await fs().setDoc(metadataRef, {
           hostId: this.userId,
-          createdAt: serverTimestamp(),
+          createdAt: fs().serverTimestamp(),
         });
 
         // Initialize game state
-        await setDoc(doc(db, 'games', actualRoomId, 'state', 'current'), {
-          status: 'waiting',
-          currentRound: 'jeopardy',
-          selectedClue: null,
-          buzzerOrder: [],
-          resolvedBuzzerOrder: [],
-          displayBuzzerOrder: [],
-          currentPlayer: null,
-          judgedPlayers: [],
-          notPickedInTies: [],
-          lastCorrectPlayer: null,
-          buzzerLocked: true,
-        } as FirestoreGameState);
+        await fs().setDoc(
+          fs().doc(db, 'games', actualRoomId, 'state', 'current'),
+          {
+            status: 'waiting',
+            currentRound: 'jeopardy',
+            selectedClue: null,
+            buzzerOrder: [],
+            resolvedBuzzerOrder: [],
+            displayBuzzerOrder: [],
+            currentPlayer: null,
+            judgedPlayers: [],
+            notPickedInTies: [],
+            lastCorrectPlayer: null,
+            buzzerLocked: true,
+          } as FirestoreGameState,
+        );
 
         // Notify Slack about new room creation
         const currentUser = getCurrentUser();
@@ -351,8 +348,8 @@ export class FirestoreClient implements IGameClient {
       this.roomId = roomId;
 
       // Check if room exists
-      const metadataRef = doc(db, 'games', roomId, 'metadata', 'info');
-      const metadataSnap = await getDoc(metadataRef);
+      const metadataRef = fs().doc(db, 'games', roomId, 'metadata', 'info');
+      const metadataSnap = await fs().getDoc(metadataRef);
       if (!metadataSnap.exists()) {
         this.emit('error', { type: 'error', message: 'Room not found' });
         return;
@@ -362,13 +359,13 @@ export class FirestoreClient implements IGameClient {
       this.playerId = existingPlayerId || this.userId!;
 
       // Check if reconnecting
-      const playerRef = doc(db, 'games', roomId, 'players', this.playerId);
-      const existingPlayer = await getDoc(playerRef);
+      const playerRef = fs().doc(db, 'games', roomId, 'players', this.playerId);
+      const existingPlayer = await fs().getDoc(playerRef);
 
       if (!existingPlayer.exists()) {
         // New player - create player document
         const name = playerName || `Player ${Math.floor(Math.random() * 1000)}`;
-        await setDoc(playerRef, {
+        await fs().setDoc(playerRef, {
           id: this.playerId,
           name,
           score: 0,
@@ -386,8 +383,8 @@ export class FirestoreClient implements IGameClient {
       this.roomId = roomId;
 
       // Check if room exists
-      const metadataRef = doc(db, 'games', roomId, 'metadata', 'info');
-      const metadataSnap = await getDoc(metadataRef);
+      const metadataRef = fs().doc(db, 'games', roomId, 'metadata', 'info');
+      const metadataSnap = await fs().getDoc(metadataRef);
       if (!metadataSnap.exists()) {
         this.emit('error', { type: 'error', message: 'Room not found' });
         return;
@@ -401,8 +398,8 @@ export class FirestoreClient implements IGameClient {
     const db = getFirestoreDb();
 
     // Subscribe to metadata
-    this.unsubscribeMetadata = onSnapshot(
-      doc(db, 'games', roomId, 'metadata', 'info'),
+    this.unsubscribeMetadata = fs().onSnapshot(
+      fs().doc(db, 'games', roomId, 'metadata', 'info'),
       (snap) => {
         if (snap.exists()) {
           this.metadata = snap.data() as FirestoreMetadata;
@@ -411,8 +408,8 @@ export class FirestoreClient implements IGameClient {
     );
 
     // Subscribe to game config
-    this.unsubscribeConfig = onSnapshot(
-      doc(db, 'games', roomId, 'config', 'current'),
+    this.unsubscribeConfig = fs().onSnapshot(
+      fs().doc(db, 'games', roomId, 'config', 'current'),
       (snap) => {
         if (snap.exists()) {
           this.gameConfig = snap.data() as GameConfig;
@@ -422,8 +419,8 @@ export class FirestoreClient implements IGameClient {
     );
 
     // Subscribe to game state
-    this.unsubscribeState = onSnapshot(
-      doc(db, 'games', roomId, 'state', 'current'),
+    this.unsubscribeState = fs().onSnapshot(
+      fs().doc(db, 'games', roomId, 'state', 'current'),
       (snap) => {
         if (snap.exists()) {
           const stateData = snap.data() as FirestoreGameState;
@@ -440,8 +437,8 @@ export class FirestoreClient implements IGameClient {
     );
 
     // Subscribe to players
-    this.unsubscribePlayers = onSnapshot(
-      collection(db, 'games', roomId, 'players'),
+    this.unsubscribePlayers = fs().onSnapshot(
+      fs().collection(db, 'games', roomId, 'players'),
       (snap) => {
         this.players.clear();
         snap.forEach((doc) => {
@@ -458,10 +455,10 @@ export class FirestoreClient implements IGameClient {
     );
 
     // Subscribe to buzzes (for host to process)
-    this.unsubscribeBuzzes = onSnapshot(
-      query(
-        collection(db, 'games', roomId, 'buzzes'),
-        orderBy('serverTimestamp'),
+    this.unsubscribeBuzzes = fs().onSnapshot(
+      fs().query(
+        fs().collection(db, 'games', roomId, 'buzzes'),
+        fs().orderBy('serverTimestamp'),
       ),
       (snap) => {
         this.buzzes = [];
@@ -651,10 +648,13 @@ export class FirestoreClient implements IGameClient {
     const updatedBuzzerOrder = allBuzzPlayerIds;
 
     const db = getFirestoreDb();
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      buzzerOrder: updatedBuzzerOrder,
-      displayBuzzerOrder: updatedDisplayOrder,
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        buzzerOrder: updatedBuzzerOrder,
+        displayBuzzerOrder: updatedDisplayOrder,
+      },
+    );
   }
 
   private async finalizeBuzzerSelection(): Promise<void> {
@@ -696,14 +696,17 @@ export class FirestoreClient implements IGameClient {
     });
 
     // Update game state
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      currentPlayer: selectedPlayerId,
-      status: 'answering',
-      buzzerOrder,
-      resolvedBuzzerOrder: displayBuzzerOrder,
-      displayBuzzerOrder,
-      notPickedInTies: this.gameState?.notPickedInTies || [],
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        currentPlayer: selectedPlayerId,
+        status: 'answering',
+        buzzerOrder,
+        resolvedBuzzerOrder: displayBuzzerOrder,
+        displayBuzzerOrder,
+        notPickedInTies: this.gameState?.notPickedInTies || [],
+      },
+    );
   }
 
   private selectFromTie(tiedBuzzes: BuzzRecord[]): string {
@@ -774,10 +777,10 @@ export class FirestoreClient implements IGameClient {
     }
 
     const db = getFirestoreDb();
-    await addDoc(collection(db, 'games', this.roomId, 'buzzes'), {
+    await fs().addDoc(fs().collection(db, 'games', this.roomId, 'buzzes'), {
       playerId: this.playerId,
       clientTimestamp: Date.now(),
-      serverTimestamp: serverTimestamp(),
+      serverTimestamp: fs().serverTimestamp(),
     });
   }
 
@@ -785,9 +788,12 @@ export class FirestoreClient implements IGameClient {
     if (!this.roomId || !this.playerId) return;
 
     const db = getFirestoreDb();
-    await updateDoc(doc(db, 'games', this.roomId, 'players', this.playerId), {
-      finalJeopardyWager: wager,
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'players', this.playerId),
+      {
+        finalJeopardyWager: wager,
+      },
+    );
   }
 
   async submitFinalAnswer(answer: string): Promise<void> {
@@ -802,9 +808,12 @@ export class FirestoreClient implements IGameClient {
     }
 
     const db = getFirestoreDb();
-    await updateDoc(doc(db, 'games', this.roomId, 'players', this.playerId), {
-      finalJeopardyAnswer: answer,
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'players', this.playerId),
+      {
+        finalJeopardyAnswer: answer,
+      },
+    );
   }
 
   // Host actions
@@ -823,52 +832,58 @@ export class FirestoreClient implements IGameClient {
       const clue = category?.clues.find((c) => c.id === clueId);
       if (clue) {
         clue.revealed = true;
-        await setDoc(
-          doc(db, 'games', this.roomId, 'config', 'current'),
+        await fs().setDoc(
+          fs().doc(db, 'games', this.roomId, 'config', 'current'),
           this.gameConfig,
         );
       }
     }
 
     // Clear existing buzzes
-    const buzzesSnap = await getDocs(
-      collection(db, 'games', this.roomId, 'buzzes'),
+    const buzzesSnap = await fs().getDocs(
+      fs().collection(db, 'games', this.roomId, 'buzzes'),
     );
-    const batch = writeBatch(db);
+    const batch = fs().writeBatch(db);
     buzzesSnap.forEach((doc) => {
       batch.delete(doc.ref);
     });
     await batch.commit();
 
     // Update game state - buzzers stay locked until host clicks unlock
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      selectedClue: { categoryId, clueId },
-      status: 'clueRevealed',
-      buzzerOrder: [],
-      resolvedBuzzerOrder: [],
-      displayBuzzerOrder: [],
-      currentPlayer: null,
-      judgedPlayers: [],
-      buzzerLocked: true,
-      buzzerUnlockTime: null,
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        selectedClue: { categoryId, clueId },
+        status: 'clueRevealed',
+        buzzerOrder: [],
+        resolvedBuzzerOrder: [],
+        displayBuzzerOrder: [],
+        currentPlayer: null,
+        judgedPlayers: [],
+        buzzerLocked: true,
+        buzzerUnlockTime: null,
+      },
+    );
   }
 
   async unlockBuzzers(): Promise<void> {
     if (!this.roomId || this.role !== 'host') return;
 
     const db = getFirestoreDb();
-    const stateSnap = await getDoc(
-      doc(db, 'games', this.roomId, 'state', 'current'),
+    const stateSnap = await fs().getDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
     );
     if (stateSnap.exists()) {
       const state = stateSnap.data() as FirestoreGameState;
       if (state.status === 'clueRevealed') {
-        await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-          status: 'buzzing',
-          buzzerLocked: false,
-          buzzerUnlockTime: Date.now(),
-        });
+        await fs().updateDoc(
+          fs().doc(db, 'games', this.roomId, 'state', 'current'),
+          {
+            status: 'buzzing',
+            buzzerLocked: false,
+            buzzerUnlockTime: Date.now(),
+          },
+        );
       }
     }
   }
@@ -877,9 +892,12 @@ export class FirestoreClient implements IGameClient {
     if (!this.roomId || this.role !== 'host') return;
 
     const db = getFirestoreDb();
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      status: 'judging',
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        status: 'judging',
+      },
+    );
   }
 
   async judgeAnswer(correct: boolean, playerId: string): Promise<void> {
@@ -889,8 +907,8 @@ export class FirestoreClient implements IGameClient {
     const db = getFirestoreDb();
 
     // Read current state from Firestore to get latest buzzer order (including late buzzes)
-    const stateSnap = await getDoc(
-      doc(db, 'games', this.roomId, 'state', 'current'),
+    const stateSnap = await fs().getDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
     );
     if (!stateSnap.exists()) return;
     const currentState = stateSnap.data() as FirestoreGameState;
@@ -918,9 +936,12 @@ export class FirestoreClient implements IGameClient {
       const newScore = correct
         ? player.score + clue.value
         : player.score - clue.value;
-      await updateDoc(doc(db, 'games', this.roomId, 'players', playerId), {
-        score: newScore,
-      });
+      await fs().updateDoc(
+        fs().doc(db, 'games', this.roomId, 'players', playerId),
+        {
+          score: newScore,
+        },
+      );
     }
 
     judgedPlayers.push(playerId);
@@ -928,15 +949,18 @@ export class FirestoreClient implements IGameClient {
     if (correct) {
       // Mark clue as answered
       clue.answered = true;
-      await setDoc(
-        doc(db, 'games', this.roomId, 'config', 'current'),
+      await fs().setDoc(
+        fs().doc(db, 'games', this.roomId, 'config', 'current'),
         this.gameConfig,
       );
 
-      await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-        judgedPlayers,
-        lastCorrectPlayer: playerId,
-      });
+      await fs().updateDoc(
+        fs().doc(db, 'games', this.roomId, 'state', 'current'),
+        {
+          judgedPlayers,
+          lastCorrectPlayer: playerId,
+        },
+      );
     } else {
       // Find next player using latest displayBuzzerOrder from Firestore
       const displayOrder = currentState.displayBuzzerOrder || [];
@@ -950,11 +974,14 @@ export class FirestoreClient implements IGameClient {
         }
       }
 
-      await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-        judgedPlayers,
-        currentPlayer: nextPlayerId,
-        status: nextPlayerId ? 'answering' : 'judging',
-      });
+      await fs().updateDoc(
+        fs().doc(db, 'games', this.roomId, 'state', 'current'),
+        {
+          judgedPlayers,
+          currentPlayer: nextPlayerId,
+          status: nextPlayerId ? 'answering' : 'judging',
+        },
+      );
     }
   }
 
@@ -964,9 +991,12 @@ export class FirestoreClient implements IGameClient {
     const db = getFirestoreDb();
     const player = this.players.get(playerId);
     if (player) {
-      await updateDoc(doc(db, 'games', this.roomId, 'players', playerId), {
-        score: player.score + delta,
-      });
+      await fs().updateDoc(
+        fs().doc(db, 'games', this.roomId, 'players', playerId),
+        {
+          score: player.score + delta,
+        },
+      );
     }
   }
 
@@ -975,14 +1005,17 @@ export class FirestoreClient implements IGameClient {
 
     const db = getFirestoreDb();
     if (this.gameState?.currentRound === 'jeopardy') {
-      await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-        currentRound: 'doubleJeopardy',
-        status: 'selecting',
-        selectedClue: null,
-        buzzerOrder: [],
-        currentPlayer: null,
-        lastCorrectPlayer: null,
-      });
+      await fs().updateDoc(
+        fs().doc(db, 'games', this.roomId, 'state', 'current'),
+        {
+          currentRound: 'doubleJeopardy',
+          status: 'selecting',
+          selectedClue: null,
+          buzzerOrder: [],
+          currentPlayer: null,
+          lastCorrectPlayer: null,
+        },
+      );
     }
   }
 
@@ -992,25 +1025,28 @@ export class FirestoreClient implements IGameClient {
     const db = getFirestoreDb();
 
     // Clear buzzes
-    const buzzesSnap = await getDocs(
-      collection(db, 'games', this.roomId, 'buzzes'),
+    const buzzesSnap = await fs().getDocs(
+      fs().collection(db, 'games', this.roomId, 'buzzes'),
     );
-    const batch = writeBatch(db);
+    const batch = fs().writeBatch(db);
     buzzesSnap.forEach((doc) => {
       batch.delete(doc.ref);
     });
     await batch.commit();
 
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      status: 'selecting',
-      selectedClue: null,
-      currentPlayer: null,
-      buzzerOrder: [],
-      resolvedBuzzerOrder: [],
-      displayBuzzerOrder: [],
-      judgedPlayers: [],
-      buzzerLocked: true,
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        status: 'selecting',
+        selectedClue: null,
+        currentPlayer: null,
+        buzzerOrder: [],
+        resolvedBuzzerOrder: [],
+        displayBuzzerOrder: [],
+        judgedPlayers: [],
+        buzzerLocked: true,
+      },
+    );
   }
 
   async startGame(): Promise<void> {
@@ -1018,9 +1054,12 @@ export class FirestoreClient implements IGameClient {
 
     const db = getFirestoreDb();
     if (this.gameState?.status === 'ready') {
-      await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-        status: 'selecting',
-      });
+      await fs().updateDoc(
+        fs().doc(db, 'games', this.roomId, 'state', 'current'),
+        {
+          status: 'selecting',
+        },
+      );
     }
   }
 
@@ -1045,27 +1084,30 @@ export class FirestoreClient implements IGameClient {
     });
 
     // Clear wagers and answers
-    const batch = writeBatch(db);
+    const batch = fs().writeBatch(db);
     this.players.forEach((player, id) => {
-      batch.update(doc(db, 'games', this.roomId!, 'players', id), {
+      batch.update(fs().doc(db, 'games', this.roomId!, 'players', id), {
         finalJeopardyWager: null,
         finalJeopardyAnswer: null,
       });
     });
     await batch.commit();
 
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      currentRound: 'finalJeopardy',
-      status: 'finalJeopardyWagering',
-      finalJeopardyInitialScores: initialScores,
-      finalJeopardyJudgingOrder: judgingOrder,
-      finalJeopardyClueShown: false,
-      finalJeopardyCountdownStart: null,
-      finalJeopardyCountdownEnd: null,
-      finalJeopardyJudgingPlayerIndex: null,
-      finalJeopardyRevealedWager: false,
-      finalJeopardyRevealedAnswer: false,
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        currentRound: 'finalJeopardy',
+        status: 'finalJeopardyWagering',
+        finalJeopardyInitialScores: initialScores,
+        finalJeopardyJudgingOrder: judgingOrder,
+        finalJeopardyClueShown: false,
+        finalJeopardyCountdownStart: null,
+        finalJeopardyCountdownEnd: null,
+        finalJeopardyJudgingPlayerIndex: null,
+        finalJeopardyRevealedWager: false,
+        finalJeopardyRevealedAnswer: false,
+      },
+    );
   }
 
   async showFinalJeopardyClue(): Promise<void> {
@@ -1074,12 +1116,15 @@ export class FirestoreClient implements IGameClient {
     const db = getFirestoreDb();
 
     // Show the clue but don't start the timer yet - host reads first
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      status: 'finalJeopardyClueReading',
-      finalJeopardyClueShown: true,
-      finalJeopardyCountdownStart: null,
-      finalJeopardyCountdownEnd: null,
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        status: 'finalJeopardyClueReading',
+        finalJeopardyClueShown: true,
+        finalJeopardyCountdownStart: null,
+        finalJeopardyCountdownEnd: null,
+      },
+    );
   }
 
   async startFinalJeopardyTimer(): Promise<void> {
@@ -1089,41 +1134,53 @@ export class FirestoreClient implements IGameClient {
     const now = Date.now();
 
     // Start the timer and transition to answering
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      status: 'finalJeopardyAnswering',
-      finalJeopardyCountdownStart: now,
-      finalJeopardyCountdownEnd: now + 60000, // 60 seconds
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        status: 'finalJeopardyAnswering',
+        finalJeopardyCountdownStart: now,
+        finalJeopardyCountdownEnd: now + 60000, // 60 seconds
+      },
+    );
   }
 
   async startFinalJeopardyJudging(): Promise<void> {
     if (!this.roomId || this.role !== 'host') return;
 
     const db = getFirestoreDb();
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      status: 'finalJeopardyJudging',
-      finalJeopardyJudgingPlayerIndex: 0,
-      finalJeopardyRevealedWager: false,
-      finalJeopardyRevealedAnswer: false,
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        status: 'finalJeopardyJudging',
+        finalJeopardyJudgingPlayerIndex: 0,
+        finalJeopardyRevealedWager: false,
+        finalJeopardyRevealedAnswer: false,
+      },
+    );
   }
 
   async revealFinalJeopardyWager(): Promise<void> {
     if (!this.roomId || this.role !== 'host') return;
 
     const db = getFirestoreDb();
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      finalJeopardyRevealedWager: true,
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        finalJeopardyRevealedWager: true,
+      },
+    );
   }
 
   async revealFinalJeopardyAnswer(): Promise<void> {
     if (!this.roomId || this.role !== 'host') return;
 
     const db = getFirestoreDb();
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      finalJeopardyRevealedAnswer: true,
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        finalJeopardyRevealedAnswer: true,
+      },
+    );
   }
 
   async revealFinalAnswers(): Promise<void> {
@@ -1131,9 +1188,12 @@ export class FirestoreClient implements IGameClient {
     if (!this.roomId || this.role !== 'host') return;
 
     const db = getFirestoreDb();
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      status: 'finished',
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        status: 'finished',
+      },
+    );
   }
 
   async judgeFinalJeopardyAnswer(
@@ -1159,22 +1219,31 @@ export class FirestoreClient implements IGameClient {
       ? player.score + player.finalJeopardyWager
       : player.score - player.finalJeopardyWager;
 
-    await updateDoc(doc(db, 'games', this.roomId, 'players', playerId), {
-      score: newScore,
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'players', playerId),
+      {
+        score: newScore,
+      },
+    );
 
     // Move to next player or finish
     const nextIndex = this.gameState.finalJeopardyJudgingPlayerIndex + 1;
     if (nextIndex >= this.gameState.finalJeopardyJudgingOrder.length) {
-      await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-        status: 'finished',
-      });
+      await fs().updateDoc(
+        fs().doc(db, 'games', this.roomId, 'state', 'current'),
+        {
+          status: 'finished',
+        },
+      );
     } else {
-      await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-        finalJeopardyJudgingPlayerIndex: nextIndex,
-        finalJeopardyRevealedWager: false,
-        finalJeopardyRevealedAnswer: false,
-      });
+      await fs().updateDoc(
+        fs().doc(db, 'games', this.roomId, 'state', 'current'),
+        {
+          finalJeopardyJudgingPlayerIndex: nextIndex,
+          finalJeopardyRevealedWager: false,
+          finalJeopardyRevealedAnswer: false,
+        },
+      );
     }
   }
 
@@ -1193,9 +1262,9 @@ export class FirestoreClient implements IGameClient {
     const db = getFirestoreDb();
     const user = getCurrentUser();
 
-    await setDoc(doc(db, 'savedGames', gameConfig.id), {
+    await fs().setDoc(fs().doc(db, 'savedGames', gameConfig.id), {
       ...gameConfig,
-      savedAt: serverTimestamp(),
+      savedAt: fs().serverTimestamp(),
       // Track who saved the game (for filtering/ownership)
       savedBy: user
         ? {
@@ -1216,14 +1285,17 @@ export class FirestoreClient implements IGameClient {
     const db = getFirestoreDb();
 
     // Save config
-    await setDoc(
-      doc(db, 'games', this.roomId, 'config', 'current'),
+    await fs().setDoc(
+      fs().doc(db, 'games', this.roomId, 'config', 'current'),
       gameConfig,
     );
 
     // Update state to ready
-    await updateDoc(doc(db, 'games', this.roomId, 'state', 'current'), {
-      status: 'ready',
-    });
+    await fs().updateDoc(
+      fs().doc(db, 'games', this.roomId, 'state', 'current'),
+      {
+        status: 'ready',
+      },
+    );
   }
 }

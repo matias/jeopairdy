@@ -1,13 +1,14 @@
-import { IGameClient } from './game-client-interface';
-import { FirestoreClient } from './firestore-client';
+import type { IGameClient } from './game-client-interface';
 
 /**
  * Creates a FirestoreClient for game communication.
  * All games now use Firebase/Firestore for real-time sync.
  *
- * @returns An IGameClient instance (FirestoreClient)
+ * FirestoreClient is required lazily so Firebase is not loaded during Worker SSR.
  */
 export function createGameClient(): IGameClient {
+  const { FirestoreClient } =
+    require('./firestore-client') as typeof import('./firestore-client');
   return new FirestoreClient();
 }
 

@@ -1,15 +1,6 @@
-import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
-import {
-  getAuth,
-  signInAnonymously,
-  signInWithPopup,
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  Auth,
-  User,
-} from 'firebase/auth';
+import type { FirebaseApp } from 'firebase/app';
+import type { Firestore } from 'firebase/firestore';
+import type { Auth, User } from 'firebase/auth';
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -21,10 +12,22 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Lazy initialization to support SSR
+// Lazy initialization to avoid loading Firebase (protobufjs) during Worker SSR.
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
 let auth: Auth | null = null;
+
+function firebaseAppModule() {
+  return require('firebase/app') as typeof import('firebase/app');
+}
+
+function firebaseAuthModule() {
+  return require('firebase/auth') as typeof import('firebase/auth');
+}
+
+function firebaseFirestoreModule() {
+  return require('firebase/firestore') as typeof import('firebase/firestore');
+}
 
 /**
  * Check if Firebase is configured (environment variables are set)
@@ -47,6 +50,7 @@ export function getFirebaseApp(): FirebaseApp {
         'Firebase is not configured. Please set NEXT_PUBLIC_FIREBASE_* environment variables.',
       );
     }
+    const { initializeApp, getApps } = firebaseAppModule();
     app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
   }
   return app;
@@ -57,6 +61,7 @@ export function getFirebaseApp(): FirebaseApp {
  */
 export function getFirestoreDb(): Firestore {
   if (!db) {
+    const { getFirestore } = firebaseFirestoreModule();
     db = getFirestore(getFirebaseApp());
   }
   return db;
@@ -67,6 +72,7 @@ export function getFirestoreDb(): Firestore {
  */
 export function getFirebaseAuth(): Auth {
   if (!auth) {
+    const { getAuth } = firebaseAuthModule();
     auth = getAuth(getFirebaseApp());
   }
   return auth;
@@ -78,6 +84,7 @@ export function getFirebaseAuth(): Auth {
  */
 export async function ensureAuth(): Promise<string> {
   return new Promise((resolve, reject) => {
+    const { onAuthStateChanged, signInAnonymously } = firebaseAuthModule();
     const authInstance = getFirebaseAuth();
 
     const unsubscribe = onAuthStateChanged(
@@ -119,6 +126,7 @@ export function getCurrentUser(): User | null {
  * Sign in with Google
  */
 export async function signInWithGoogle(): Promise<User> {
+  const { signInWithPopup, GoogleAuthProvider } = firebaseAuthModule();
   const authInstance = getFirebaseAuth();
   const provider = new GoogleAuthProvider();
   const result = await signInWithPopup(authInstance, provider);
@@ -129,6 +137,7 @@ export async function signInWithGoogle(): Promise<User> {
  * Sign out
  */
 export async function signOut(): Promise<void> {
+  const { signOut: firebaseSignOut } = firebaseAuthModule();
   const authInstance = getFirebaseAuth();
   await firebaseSignOut(authInstance);
 }
@@ -139,6 +148,7 @@ export async function signOut(): Promise<void> {
 export function onAuthChange(
   callback: (user: User | null) => void,
 ): () => void {
+  const { onAuthStateChanged } = firebaseAuthModule();
   const authInstance = getFirebaseAuth();
   return onAuthStateChanged(authInstance, callback);
 }

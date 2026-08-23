@@ -1,0 +1,13 @@
+diff --git a/dist/cli/build/patches/plugins/optional-deps.js b/dist/cli/build/patches/plugins/optional-deps.js
+index f5001475b78a258860ab4c2256dd8df58e6f3198..4ee80525a552e8601c587c886e776edd976edbb4 100644
+--- a/dist/cli/build/patches/plugins/optional-deps.js
++++ b/dist/cli/build/patches/plugins/optional-deps.js
+@@ -44,7 +44,7 @@ export function handleOptionalDependencies(dependencies) {
+             // Replaces missing dependency with a throwing implementation.
+             build.onLoad({ filter: /.*/, namespace: nsMissingDependency }, ({ pluginData }) => {
+                 return {
+-                    contents: `throw new Error('Missing optional dependency "${pluginData.name}"')`,
++                    contents: `throw Object.assign(new Error('Missing optional dependency "${pluginData.name}"'), { code: "MODULE_NOT_FOUND" })`,
+                 };
+             });
+         },

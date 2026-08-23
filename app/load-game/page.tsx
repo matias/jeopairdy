@@ -6,18 +6,13 @@ import { createGameClient } from '@/lib/game-client-factory';
 import { IGameClient } from '@/lib/game-client-interface';
 import { GameConfig } from '@/shared/types';
 import { AuthHeader } from '@/components/AuthHeader';
+import {
+  getSavedGame,
+  listSavedGames,
+  type SavedGameSummary,
+} from '@/lib/saved-games-client';
 
-interface SavedGame {
-  id: string;
-  createdAt: string;
-  filename?: string;
-  metadata?: { topics: string; difficulty: string };
-  savedBy?: {
-    uid: string;
-    displayName: string | null;
-    email: string | null;
-  } | null;
-}
+interface SavedGame extends SavedGameSummary {}
 
 function LoadGamePageContent() {
   const router = useRouter();
@@ -37,11 +32,8 @@ function LoadGamePageContent() {
 
   const fetchGames = async () => {
     try {
-      const response = await fetch('/api/games/list');
-      if (response.ok) {
-        const data = await response.json();
-        setGames(data);
-      }
+      const data = await listSavedGames();
+      setGames(data);
     } catch (error) {
       console.error('Error fetching games:', error);
       setError('Failed to load games');
@@ -53,9 +45,8 @@ function LoadGamePageContent() {
   const handlePreviewGame = async (gameId: string) => {
     setPreviewLoading(true);
     try {
-      const response = await fetch(`/api/games/${gameId}`);
-      if (!response.ok) throw new Error('Failed to load game preview');
-      const gameConfig = await response.json();
+      const gameConfig = await getSavedGame(gameId);
+      if (!gameConfig) throw new Error('Failed to load game preview');
       setPreviewGame(gameConfig);
     } catch (error) {
       console.error('Error loading preview:', error);
@@ -72,12 +63,10 @@ function LoadGamePageContent() {
     }
 
     try {
-      const response = await fetch(`/api/games/${gameId}`);
-      if (!response.ok) {
+      const gameConfig = await getSavedGame(gameId);
+      if (!gameConfig) {
         throw new Error('Failed to load game');
       }
-
-      const gameConfig: GameConfig = await response.json();
 
       const client = createGameClient();
       await client.connect();
