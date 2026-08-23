@@ -2,7 +2,7 @@
  * Script to import existing games from server/test-data into Firestore
  *
  * Usage:
- *   npm run import-games
+ *   pnpm run import-games
  *
  * This uses Firebase Admin SDK which bypasses security rules.
  * You need to be logged into Firebase CLI: `firebase login`

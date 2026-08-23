@@ -6,8 +6,8 @@
  * - No game config (game was never loaded/created)
  *
  * Usage:
- *   npm run cleanup-rooms
- *   npm run cleanup-rooms -- --dry-run   # Preview what would be deleted
+ *   pnpm run cleanup-rooms
+ *   pnpm run cleanup-rooms -- --dry-run   # Preview what would be deleted
  */
 
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
